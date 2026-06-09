@@ -1,0 +1,13 @@
+apiVersion: wasmbed.dev/v1
+kind: Device
+metadata:
+  name: stm32f7-device
+  namespace: wasmbed
+spec:
+  deviceType: MCU
+  architecture: ARM_CORTEX_M7
+  mcuType: Stm32F746gDisco
+  publicKey: |
+    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAbc123example_key_for_testing
+status:
+  phase: Pending

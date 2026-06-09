@@ -1,0 +1,92 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/wasmbed-tcp-bridge",
+    "crates/wasmbed-cert",
+    "crates/wasmbed-cert-tool",
+    "crates/wasmbed-gateway",
+    "crates/wasmbed-k8s-resource",
+    "crates/wasmbed-k8s-resource-tool",
+    "crates/wasmbed-protocol",
+    "crates/wasmbed-protocol-tool",
+    "crates/wasmbed-test-utils",
+    "crates/wasmbed-tls-utils",
+    "crates/wasmbed-types",
+    "crates/wasmbed-wasm-runtime",
+    "crates/wasmbed-device-controller",
+    "crates/wasmbed-application-controller",
+    "crates/wasmbed-gateway-controller",
+    "crates/wasmbed-infrastructure",
+    "crates/wasmbed-api-server",
+    "crates/wasmbed-qemu-manager",
+    "crates/wasmbed-config",
+    "crates/wasmbed-edge-client",
+]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+rust-version = "1.88.0"
+repository = "https://github.com/lucadagati/k8s-wasm-edge-orchestration"
+license = "AGPL-3.0"
+
+[workspace.metadata.crane]
+name = "wasmbed"
+
+[workspace.lints.rust]
+arithmetic_overflow = "deny" # Prevent operations that would cause integer overflow
+unnecessary_transmutes = "deny" # Prevent unsafe transmutation
+
+[workspace.lints.clippy]
+# Arithmetic
+checked_conversions = "deny" # Suggest using checked conversions between numeric types
+cast_possible_truncation = "deny" # Detect when casting might truncate a value
+cast_sign_loss = "deny" # Detect when casting might lose sign information
+cast_possible_wrap = "deny" # Detect when casting might cause value to wrap around
+cast_precision_loss = "deny" # Detect when casting might lose precision
+integer_division = "deny" # Highlight potential bugs from integer division truncation
+arithmetic_side_effects = "deny" # Detect arithmetic operations with potential side effects
+unchecked_duration_subtraction = "deny" # Ensure duration subtraction won't cause underflow
+
+# Unwraps
+unwrap_used = "warn" # Discourage using .unwrap() which can cause panics
+expect_used = "warn" # Discourage using .expect() which can cause panics
+panicking_unwrap = "deny" # Prevent unwrap on values known to cause panics
+option_env_unwrap = "deny" # Prevent unwrapping environment variables which might be absent
+
+# Array indexing
+indexing_slicing = "deny" # Avoid direct array indexing and use safer methods like .get()
+
+# Path handling
+join_absolute_paths = "deny" # Prevent issues when joining paths with absolute paths
+
+# Serialization issues
+serde_api_misuse = "deny" # Prevent incorrect usage of Serde's serialization/deserialization API
+
+# Unbounded input
+uninit_vec = "deny" # Prevent creating uninitialized vectors which is unsafe
+
+# Unsafe code detection
+transmute_ptr_to_ref = "deny" # Prevent unsafe transmutation from pointers to references
+transmute_undefined_repr = "deny" # Detect transmutes with potentially undefined representations
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+# Workspace dependencies to resolve version conflicts
+[workspace.dependencies]
+# TLS dependencies (for device-runtime)
+# Note: rustls 0.23 requires subtle ^2.5.0
+# embedded-tls 0.8 requires subtle <2.5, but we can test without TLS (TCP only)
+# ed25519-dalek 2.2 requires subtle ^2.3.0 (compatible with 2.5.0)
+embedded-tls = { git = "https://github.com/fratrung/embedded-tls.git", default-features = true }  # Fork with Ed25519 support and correct exports
+embedded-io = { version = "0.6", default-features = false }
+# Force compatible versions to resolve conflicts
+# Use subtle 2.5.0 for rustls 0.23 (ed25519-dalek 2.2 is compatible with ^2.3.0 which includes 2.5.0)
+subtle = { version = "2.5", default-features = false }
+ed25519-dalek = { version = "2.2", default-features = false }
+
+# Note: Removed patches for deprecated no_std components (wasmbed-device-runtime)

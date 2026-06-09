@@ -1,0 +1,34 @@
+[package]
+name = "wasmbed-k8s-resource-tool"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow = "1.0.98"
+serde_yaml = "0.9.34"
+base64 = "0.22.0"
+
+[dependencies.clap]
+version = "4.5.40"
+features = [ "derive" ]
+
+[dependencies.kube]
+version = "1.1.0"
+default-features = false
+
+[dependencies.rustls-pki-types]
+version = "1.12.0"
+default-features = false
+
+[dependencies.wasmbed-k8s-resource]
+path = "../wasmbed-k8s-resource"
+
+[dependencies.wasmbed-types]
+path = "../wasmbed-types"
+features = [ "cert", "x509" ]

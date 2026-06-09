@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: AGPL-3.0
+# Copyright © 2025 Wasmbed contributors
+
+[package]
+name = "wasmbed-edge-client"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "Linux edge daemon — connects to Gateway via CBOR/TLS and runs WASM apps (Modello A1)"
+
+[[bin]]
+name = "wasmbed-edge-client"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+wasmbed-protocol = { path = "../wasmbed-protocol" }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# TLS — same stack as Gateway
+tokio-rustls = "0.26"
+rustls = { version = "0.23", default-features = false, features = ["ring", "logging", "std", "tls12"] }
+rustls-pki-types = "1"
+rustls-pemfile = "2"
+
+# CBOR
+minicbor = { version = "1.1", features = ["alloc"] }
+
+# WASM execution
+wasmtime = { version = "18.0" }
+wasmtime-wasi = "18.0"
+
+# Error handling + CLI + logging
+anyhow = "1"
+clap = { version = "4.4", features = ["derive", "env"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+hex = "0.4"

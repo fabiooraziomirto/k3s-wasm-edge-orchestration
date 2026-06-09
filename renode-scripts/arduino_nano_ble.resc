@@ -1,0 +1,17 @@
+using sysbus
+
+# Load Arduino Nano 33 BLE platform
+mach create "arduino-nano-ble-001"
+machine LoadPlatformDescription @platforms/boards/arduino_nano_33_ble.repl
+
+# Setup serial connection
+showAnalyzer sysbus.uart0
+
+# Setup GPIO for LED
+sysbus.gpio0 LED @ sysbus.gpio0 0
+
+# Connect to Wasmbed gateway via UART
+connector Connect sysbus.uart0 127.0.0.1:10001
+
+# Start emulation
+start

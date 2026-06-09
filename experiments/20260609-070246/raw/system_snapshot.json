@@ -1,0 +1,30 @@
+{
+  "experiment": "system_snapshot",
+  "trial": 1,
+  "success": true,
+  "duration_ms": 0.0,
+  "details": {
+    "metrics": {
+      "error": "Error from server (Forbidden): pods.metrics.k8s.io is forbidden: User \"system:serviceaccount:wasmbed:wasmbed-api-server\" cannot list resource \"pods\" in API group \"metrics.k8s.io\" in the namespace \"wasmbed\"\n",
+      "metrics": []
+    },
+    "source": "pod-snapshot",
+    "pods": [
+      {
+        "name": "gateway-1-deployment-7c684f64b9-rdwzp",
+        "phase": "Running",
+        "restarts": 7
+      },
+      {
+        "name": "wasmbed-api-server-5bbd98b6b8-ghfms",
+        "phase": "Running",
+        "restarts": 0
+      },
+      {
+        "name": "wasmbed-application-controller-6f94bcd6bb-pk65q",
+        "phase": "Running",
+        "restarts": 7
+      }
+    ]
+  }
+}

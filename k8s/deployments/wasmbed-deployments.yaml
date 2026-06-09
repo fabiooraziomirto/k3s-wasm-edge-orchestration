@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wasmbed
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wasmbed-device-controller
+  namespace: wasmbed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wasmbed-device-controller
+  template:
+    metadata:
+      labels:
+        app: wasmbed-device-controller
+    spec:
+      serviceAccountName: wasmbed-device-controller
+      containers:
+      - name: device-controller
+        image: localhost:5000/wasmbed/device-controller:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: RUST_LOG
+          value: "info"
+        - name: WASMBED_API_SERVER_URL
+          value: "http://wasmbed-api-server.wasmbed.svc.cluster.local:3001"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wasmbed-application-controller
+  namespace: wasmbed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wasmbed-application-controller
+  template:
+    metadata:
+      labels:
+        app: wasmbed-application-controller
+    spec:
+      serviceAccountName: wasmbed-application-controller
+      containers:
+      - name: application-controller
+        image: localhost:5000/wasmbed/application-controller:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: RUST_LOG
+          value: "info"
+        - name: GATEWAY_ENDPOINT
+          value: "http://wasmbed-gateway.wasmbed.svc.cluster.local:8080"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wasmbed-gateway-controller
+  namespace: wasmbed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wasmbed-gateway-controller
+  template:
+    metadata:
+      labels:
+        app: wasmbed-gateway-controller
+    spec:
+      serviceAccountName: wasmbed-gateway-controller
+      containers:
+      - name: gateway-controller
+        image: localhost:5000/wasmbed/gateway-controller:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: RUST_LOG
+          value: "info"
+---
+# The gateway instances are managed by wasmbed-gateway-controller via Gateway CRDs.
+# This service aggregates all controller-managed gateways (label app: wasmbed-gateway).
+apiVersion: v1
+kind: Service
+metadata:
+  name: wasmbed-gateway
+  namespace: wasmbed
+spec:
+  selector:
+    app: wasmbed-gateway
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  - name: tls
+    port: 8081
+    targetPort: 8443
+---
+# Infrastructure deployment removed - wasmbed-infrastructure is not currently used
+# If needed in the future, create Dockerfile.infrastructure and rebuild

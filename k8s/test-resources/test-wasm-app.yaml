@@ -1,0 +1,13 @@
+apiVersion: wasmbed.github.io/v1alpha1
+kind: Application
+metadata:
+  name: test-wasm-app
+  namespace: wasmbed
+spec:
+  name: test-wasm-counter
+  description: "Modulo WASM minimale per test esecuzione: esporta la funzione run() che ritorna immediatamente"
+  # Minimal WASM module: (module (func (export "run")))
+  # Binary (33 bytes): 0061736d01000000010401600000030201000707010372756e00000a040102000b
+  wasmBytes: "AGFzbQEAAAABBAFgAAADAgEABwcBA3J1bgAACgQBAgAL"
+  targetDevices:
+    allDevices: true

@@ -1,0 +1,99 @@
+FROM rust:1.88-slim as builder
+
+WORKDIR /build
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy workspace files
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+
+# Build API server
+RUN cargo build --release --bin wasmbed-api-server
+
+# Runtime stage
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+# Install runtime dependencies and build tools for runtime compilations
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust toolchain (cargo needed for template compilation at runtime)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+# Ensure cargo is in PATH for all subsequent layers
+ENV PATH="/root/.cargo/bin:${PATH}"
+# Install wasm target used for dashboard template compilation
+RUN /root/.cargo/bin/rustup target add wasm32-unknown-unknown
+# Pre-fetch template dependencies so runtime builds can run offline inside the cluster
+RUN set -eux; \
+    mkdir -p /tmp/wasmbed-template/src; \
+    printf 'fn main() {}' > /tmp/wasmbed-template/src/lib.rs; \
+    cat <<'EOF' >/tmp/wasmbed-template/Cargo.toml
+[package]
+name = "wasmbed-app"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"
+wee_alloc = "0.4"
+
+[profile.release]
+opt-level = "s"
+lto = true
+EOF
+COPY crates/wasmbed-api-server/templates/wasm_template.lock /tmp/wasmbed-template/Cargo.lock
+RUN set -eux; \
+    /root/.cargo/bin/cargo fetch --manifest-path /tmp/wasmbed-template/Cargo.toml; \
+    /root/.cargo/bin/cargo fetch --target wasm32-unknown-unknown --manifest-path /tmp/wasmbed-template/Cargo.toml; \
+    rm -rf /tmp/wasmbed-template
+
+# Install kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+    && chmod +x kubectl \
+    && mv kubectl /usr/local/bin/
+
+# Install Docker CLI (for Renode container management)
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y docker-ce-cli \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy binary
+COPY --from=builder /build/target/release/wasmbed-api-server /usr/local/bin/wasmbed-api-server
+
+# Create directory structure for firmware
+RUN mkdir -p /app/zephyr-workspace/build/nrf52840dk/nrf52840/zephyr && \
+    mkdir -p /app/zephyr-workspace/build/stm32f4/zephyr && \
+    mkdir -p /app/zephyr-workspace/build/stm32f746g_disco/zephyr
+
+# Copy Zephyr firmware (if available)
+# Note: Firmware should be built before building this Docker image
+# Correct path: nrf52840dk/nrf52840 (with slash, not underscore)
+COPY zephyr-workspace/build/nrf52840dk/nrf52840/zephyr/zephyr.elf* /app/zephyr-workspace/build/nrf52840dk/nrf52840/zephyr/
+COPY zephyr-workspace/build/stm32f4/zephyr/zephyr.elf* /app/zephyr-workspace/build/stm32f4/zephyr/
+COPY zephyr-workspace/build/stm32f746g_disco/zephyr/zephyr.elf* /app/zephyr-workspace/build/stm32f746g_disco/zephyr/
+
+# Expose port
+EXPOSE 3001
+
+# Run API server
+CMD ["/usr/local/bin/wasmbed-api-server"]

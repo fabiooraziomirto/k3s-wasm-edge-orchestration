@@ -1,0 +1,20 @@
+[package]
+name = "wasmbed-test-utils"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+minicbor = [ "dep:minicbor" ]
+
+[dependencies]
+
+[dependencies.minicbor]
+version = "1.0.0"
+features = [ "alloc" ]
+optional = true

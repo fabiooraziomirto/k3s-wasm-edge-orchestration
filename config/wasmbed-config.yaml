@@ -1,0 +1,207 @@
+platform:
+  name: Wasmbed
+  version: 1.0.0
+  description: WebAssembly runtime platform for edge devices
+gateways:
+  defaults:
+    max_devices: 100
+    heartbeat_interval: 30
+    connection_timeout: 60
+    enrollment_timeout: 300
+    tls_port: 30452
+    http_port: 30453
+    region: us-west-1
+  instances:
+  - name: gateway-1
+    endpoint: 127.0.0.1:30452
+    tls_port: 30452
+    http_port: 30453
+    max_devices: 50
+    region: us-west-1
+    enabled: true
+  - name: gateway-2
+    endpoint: 127.0.0.1:30454
+    tls_port: 30454
+    http_port: 30455
+    max_devices: 50
+    region: us-west-1
+    enabled: true
+  - name: gateway-3
+    endpoint: 127.0.0.1:30456
+    tls_port: 30456
+    http_port: 30457
+    max_devices: 50
+    region: eu-west-1
+    enabled: false
+devices:
+  defaults:
+    architecture: arm
+    capabilities:
+    - wasm
+    - tls
+    - enrollment
+    heartbeat_interval: 30
+    connection_retry_interval: 10
+    max_retries: 5
+  types:
+    ARM_CORTEX_M:
+      architecture: arm
+      memory: 256KB
+      storage: 1MB
+      capabilities:
+      - wasm
+      - tls
+      - enrollment
+      - gpio
+      - uart
+      - spi
+      - i2c
+      - adc
+      - dac
+      - pwm
+      - can
+      - ethernet
+      - renode
+      - rust_native
+  instances:
+  - name: arm-cortex-m-board-1
+    device_type: ARM_CORTEX_M
+    architecture: arm
+    gateway: gateway-1
+    enabled: true
+  - name: arm-cortex-m-board-2
+    device_type: ARM_CORTEX_M
+    architecture: arm
+    gateway: gateway-1
+    enabled: true
+  - name: arm-cortex-m-board-3
+    device_type: ARM_CORTEX_M
+    architecture: arm
+    gateway: gateway-2
+    enabled: true
+  - name: arm-cortex-m-board-4
+    device_type: ARM_CORTEX_M
+    architecture: arm
+    gateway: gateway-2
+    enabled: true
+applications:
+  defaults:
+    max_size: 1MB
+    timeout: 300
+    retries: 3
+    validation:
+      enabled: true
+      strict: true
+  templates:
+    hello-world:
+      name: Hello World
+      description: Simple hello world application for ARM Cortex-M
+      wasm_bytes: base64-encoded-wasm
+      target_devices:
+      - arm-cortex-m-board-1
+      - arm-cortex-m-board-2
+      config:
+        message: Hello from Wasmbed ARM Cortex-M!
+        interval: 1000
+  instances:
+  - name: test-app-1
+    description: Test Application 1 for ARM Cortex-M
+    wasm_bytes: base64-encoded-wasm-1
+    target_devices:
+    - arm-cortex-m-board-1
+    - arm-cortex-m-board-2
+    config:
+      message: Test App 1 ARM Cortex-M
+      interval: 5000
+    enabled: true
+  - name: test-app-2
+    description: Test Application 2 for ARM Cortex-M
+    wasm_bytes: base64-encoded-wasm-2
+    target_devices:
+    - arm-cortex-m-board-3
+    - arm-cortex-m-board-4
+    config:
+      message: Test App 2 ARM Cortex-M
+      interval: 3000
+    enabled: true
+infrastructure:
+  ca:
+    enabled: true
+    cert_path: certs/ca-cert.pem
+    key_path: certs/ca-key.pem
+    validity_days: 365
+  secret_store:
+    enabled: true
+    store_type: kubernetes
+    namespace: wasmbed
+  monitoring:
+    enabled: true
+    metrics:
+      enabled: true
+      port: 9090
+    logging:
+      enabled: true
+      level: info
+      format: json
+  database:
+    enabled: true
+    db_type: etcd
+    endpoints:
+    - localhost:2379
+    namespace: wasmbed
+kubernetes:
+  namespace: wasmbed
+  crds:
+  - device-crd.yaml
+  - application-crd.yaml
+  - gateway-crd.yaml
+  rbac:
+  - device-controller-rbac.yaml
+  - application-controller-rbac.yaml
+  - gateway-controller-rbac.yaml
+dashboard:
+  enabled: true
+  port: 3000
+  theme: light
+  real_time_updates: true
+  polling_interval: 5000
+  websocket:
+    enabled: true
+    port: 3001
+security:
+  tls:
+    enabled: true
+    min_version: '1.2'
+    cipher_suites:
+    - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+    - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  authentication:
+    enabled: true
+    auth_type: certificate
+    required: true
+  authorization:
+    enabled: true
+    rbac: true
+    policies:
+    - admin
+    - operator
+    - viewer
+performance:
+  connection_pool:
+    max_connections: 100
+    idle_timeout: 300
+    max_lifetime: 3600
+  cache:
+    enabled: true
+    ttl: 300
+    max_size: 100MB
+  rate_limit:
+    enabled: true
+    requests_per_minute: 1000
+    burst_size: 100
+development:
+  debug: false
+  verbose: false
+  mock_data: false
+  hot_reload: false
+  profiling: false

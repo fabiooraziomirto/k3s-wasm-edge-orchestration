@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wasmbed-api-server
+  namespace: wasmbed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wasmbed-api-server
+  template:
+    metadata:
+      labels:
+        app: wasmbed-api-server
+    spec:
+      serviceAccountName: wasmbed-api-server
+      securityContext:
+        fsGroup: 988  # docker group
+        supplementalGroups: [988]
+      containers:
+      - name: api-server
+        image: localhost:5000/wasmbed/api-server:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3001
+          name: http
+        env:
+        - name: RUST_LOG
+          value: "info"
+        - name: WASMBED_API_SERVER_PORT
+          value: "3001"
+        # Use Kubernetes service name instead of localhost
+        - name: WASMBED_API_SERVER_GATEWAY_ENDPOINT
+          value: "http://gateway-1-service.wasmbed.svc.cluster.local:8080"
+        - name: RENODE_GATEWAY_HOST
+          value: "192.168.1.1"
+        - name: RENODE_GATEWAY_PORT
+          value: "30443"
+        - name: WASMBED_API_SERVER_INFRASTRUCTURE_ENDPOINT
+          value: "http://172.18.0.1:30460"
+        - name: RENODE_USE_DOCKER
+          value: "true"
+        - name: ZEPHYR_WORKSPACE
+          value: "/opt/k8s-wasm-edge/zephyr-workspace"
+        # In k3d, we need to mount the Docker socket from the host via k3d server container
+        volumeMounts:
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
+          readOnly: false
+        - name: zephyr-workspace
+          mountPath: /opt/k8s-wasm-edge/zephyr-workspace
+          readOnly: true
+        - name: renode-scripts
+          mountPath: /opt/k8s-wasm-edge/zephyr-workspace/renode-scripts
+          readOnly: false
+        # Firmware is in container image, no need for host mount
+        # - name: zephyr-firmware
+        #   mountPath: /app/zephyr-workspace
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock
+          type: Socket
+      - name: zephyr-workspace
+        hostPath:
+          path: /opt/k8s-wasm-edge/zephyr-workspace
+          type: Directory
+      - name: renode-scripts
+        hostPath:
+          path: /opt/k8s-wasm-edge/zephyr-workspace/renode-scripts
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wasmbed-api-server
+  namespace: wasmbed
+spec:
+  selector:
+    app: wasmbed-api-server
+  ports:
+  - name: http
+    port: 3001
+    targetPort: 3001
+  type: ClusterIP
+

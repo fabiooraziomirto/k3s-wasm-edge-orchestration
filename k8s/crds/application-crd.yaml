@@ -1,0 +1,286 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: applications.wasmbed.github.io
+spec:
+  group: wasmbed.github.io
+  names:
+    categories: []
+    kind: Application
+    plural: applications
+    shortNames: []
+    singular: application
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns: []
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Auto-generated derived type for ApplicationSpec via `CustomResource`
+        properties:
+          spec:
+            description: Application CRD for managing WASM applications on devices
+            properties:
+              config:
+                description: Application configuration
+                nullable: true
+                properties:
+                  args:
+                    description: Startup arguments
+                    items:
+                      type: string
+                    nullable: true
+                    type: array
+                  auto_restart:
+                    default: true
+                    description: Auto-restart on failure
+                    type: boolean
+                  cpu_time_limit:
+                    default: 1000
+                    description: CPU time limit in milliseconds
+                    format: uint64
+                    minimum: 0.0
+                    type: integer
+                  env_vars:
+                    additionalProperties:
+                      type: string
+                    description: Environment variables
+                    nullable: true
+                    type: object
+                  max_restarts:
+                    default: 3
+                    description: Maximum restart attempts
+                    format: uint32
+                    minimum: 0.0
+                    type: integer
+                  memory_limit:
+                    default: 1048576
+                    description: Memory limit in bytes
+                    format: uint64
+                    minimum: 0.0
+                    type: integer
+                type: object
+              description:
+                description: Application description
+                nullable: true
+                type: string
+              metadata:
+                description: Application metadata
+                nullable: true
+                properties:
+                  author:
+                    description: Application author
+                    nullable: true
+                    type: string
+                  license:
+                    description: Application license
+                    nullable: true
+                    type: string
+                  tags:
+                    description: Application tags
+                    items:
+                      type: string
+                    nullable: true
+                    type: array
+                  version:
+                    description: Application version
+                    nullable: true
+                    type: string
+                type: object
+              name:
+                description: Application name
+                type: string
+              targetDevices:
+                description: Target devices (device names or selectors)
+                properties:
+                  allDevices:
+                    description: All devices in namespace
+                    nullable: true
+                    type: boolean
+                  deviceNames:
+                    description: Device names (exact match)
+                    items:
+                      type: string
+                    nullable: true
+                    type: array
+                  selectors:
+                    description: Device selectors (label-based)
+                    nullable: true
+                    properties:
+                      match_expressions:
+                        description: Match devices by expressions
+                        items:
+                          description: Device selector requirement
+                          properties:
+                            key:
+                              description: Key to match
+                              type: string
+                            operator:
+                              description: Operator (In, NotIn, Exists, DoesNotExist)
+                              type: string
+                            values:
+                              description: Values to match
+                              items:
+                                type: string
+                              nullable: true
+                              type: array
+                          required:
+                          - key
+                          - operator
+                          type: object
+                        nullable: true
+                        type: array
+                      match_labels:
+                        additionalProperties:
+                          type: string
+                        description: Match devices by labels
+                        nullable: true
+                        type: object
+                    type: object
+                type: object
+              targetRuntime:
+                description: Target runtime for WASM execution on the device. Defaults to WamrRaw (current behaviour) when absent.
+                enum:
+                - WamrRaw
+                - OcreZephyr
+                - OcreLinux
+                nullable: true
+                type: string
+              wasmBytes:
+                description: WASM bytecode (base64 encoded)
+                type: string
+            required:
+            - name
+            - targetDevices
+            - wasmBytes
+            type: object
+          status:
+            description: Application status
+            nullable: true
+            properties:
+              deviceStatuses:
+                additionalProperties:
+                  description: Device application status
+                  properties:
+                    error:
+                      description: Error message if any
+                      nullable: true
+                      type: string
+                    last_heartbeat:
+                      description: Last heartbeat timestamp
+                      nullable: true
+                      type: string
+                    metrics:
+                      description: Application metrics
+                      nullable: true
+                      properties:
+                        cpu_usage:
+                          description: CPU usage percentage
+                          format: double
+                          nullable: true
+                          type: number
+                        function_calls:
+                          description: Number of function calls
+                          format: uint64
+                          minimum: 0.0
+                          nullable: true
+                          type: integer
+                        memory_usage:
+                          description: Memory usage in bytes
+                          format: uint64
+                          minimum: 0.0
+                          nullable: true
+                          type: integer
+                        uptime:
+                          description: Uptime in seconds
+                          format: uint64
+                          minimum: 0.0
+                          nullable: true
+                          type: integer
+                      type: object
+                    restart_count:
+                      default: 0
+                      description: Restart count
+                      format: uint32
+                      minimum: 0.0
+                      type: integer
+                    status:
+                      description: Status on this device
+                      enum:
+                      - Deploying
+                      - Running
+                      - Failed
+                      - Stopped
+                      type: string
+                  required:
+                  - status
+                  type: object
+                description: Deployment status per device
+                nullable: true
+                type: object
+              error:
+                description: Error message if any
+                nullable: true
+                type: string
+              lastUpdated:
+                description: Last update timestamp
+                nullable: true
+                type: string
+              phase:
+                description: Application phase
+                enum:
+                - Creating
+                - Deploying
+                - Running
+                - PartiallyRunning
+                - Failed
+                - Stopping
+                - Stopped
+                - Deleting
+                type: string
+              statistics:
+                description: Overall deployment statistics
+                nullable: true
+                properties:
+                  deployed_devices:
+                    default: 0
+                    description: Number of devices where application is deployed
+                    format: uint32
+                    minimum: 0.0
+                    type: integer
+                  failed_devices:
+                    default: 0
+                    description: Number of devices where application failed
+                    format: uint32
+                    minimum: 0.0
+                    type: integer
+                  running_devices:
+                    default: 0
+                    description: Number of devices where application is running
+                    format: uint32
+                    minimum: 0.0
+                    type: integer
+                  stopped_devices:
+                    default: 0
+                    description: Number of devices where application is stopped
+                    format: uint32
+                    minimum: 0.0
+                    type: integer
+                  total_devices:
+                    default: 0
+                    description: Total number of target devices
+                    format: uint32
+                    minimum: 0.0
+                    type: integer
+                type: object
+            required:
+            - phase
+            type: object
+        required:
+        - spec
+        title: Application
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

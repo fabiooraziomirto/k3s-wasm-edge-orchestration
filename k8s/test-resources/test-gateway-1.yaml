@@ -1,0 +1,12 @@
+apiVersion: wasmbed.io/v1
+kind: Gateway
+metadata:
+  name: gateway-1
+  namespace: wasmbed
+spec:
+  endpoint: "gateway-1.wasmbed.svc.cluster.local:30430"
+  capabilities: ["tls", "enrollment", "deployment"]
+  config:
+    connectionTimeout: "10m"
+    enrollmentTimeout: "5m"
+    heartbeatInterval: "30s"

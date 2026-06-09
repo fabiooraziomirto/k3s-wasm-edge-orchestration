@@ -1,0 +1,11 @@
+apiVersion: wasmbed.github.io/v1alpha1
+kind: Application
+metadata:
+  name: test-app-1
+  namespace: wasmbed
+spec:
+  name: "test-app-1"
+  description: "Test WASM application"
+  wasmBytes: "dGVzdC13YXNtLWJ5dGVjb2Rl"
+  targetDevices:
+    deviceNames: ["test-device-1"]

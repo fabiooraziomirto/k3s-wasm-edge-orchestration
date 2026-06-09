@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wasmbed-api-server
+  namespace: wasmbed
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: wasmbed-api-server
+  namespace: wasmbed
+rules:
+# Read access to devices, applications, gateways
+# Devices and Applications use wasmbed.github.io, Gateway uses wasmbed.io
+- apiGroups: ["wasmbed.github.io"]
+  resources: ["devices", "applications"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["wasmbed.io"]
+  resources: ["gateways"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+# Update device, application and gateway status
+- apiGroups: ["wasmbed.github.io"]
+  resources: ["devices/status", "applications/status"]
+  verbs: ["get", "update", "patch"]
+- apiGroups: ["wasmbed.io"]
+  resources: ["gateways/status"]
+  verbs: ["get", "update", "patch"]
+# Read pods for monitoring / logs
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get"]
+# Read services for monitoring
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wasmbed-api-server
+  namespace: wasmbed
+subjects:
+- kind: ServiceAccount
+  name: wasmbed-api-server
+  namespace: wasmbed
+roleRef:
+  kind: Role
+  name: wasmbed-api-server
+  apiGroup: rbac.authorization.k8s.io
+

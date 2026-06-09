@@ -1,0 +1,100 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: devices.wasmbed.github.io
+spec:
+  group: wasmbed.github.io
+  names:
+    categories: []
+    kind: Device
+    plural: devices
+    shortNames: []
+    singular: device
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns: []
+    name: v0
+    schema:
+      openAPIV3Schema:
+        description: Auto-generated derived type for DeviceSpec via `CustomResource`
+        properties:
+          spec:
+            properties:
+              deviceClass:
+                description: Hardware class — determines applicable transport and runtime strategy
+                enum:
+                - McuConstrained
+                - MpuRich
+                nullable: true
+                type: string
+              mcuType:
+                description: MCU type for QEMU emulation
+                nullable: true
+                type: string
+              preferredGateway:
+                description: Preferred gateway name (optional - if not set, round-robin is used)
+                nullable: true
+                type: string
+              publicKey:
+                type: string
+              runtimeTarget:
+                description: Runtime target the device supports (mirrors Application.targetRuntime)
+                nullable: true
+                type: string
+            required:
+            - publicKey
+            type: object
+          status:
+            nullable: true
+            properties:
+              connected_since:
+                description: Connection establishment timestamp
+                format: date-time
+                nullable: true
+                type: string
+              gateway:
+                description: Gateway pod name the device is connected to
+                nullable: true
+                properties:
+                  connectedAt:
+                    nullable: true
+                    type: string
+                  endpoint:
+                    default: ''
+                    type: string
+                  name:
+                    type: string
+                required:
+                - name
+                type: object
+              last_heartbeat:
+                description: Last heartbeat timestamp
+                format: date-time
+                nullable: true
+                type: string
+              pairing_mode:
+                default: false
+                description: Pairing mode status
+                type: boolean
+              phase:
+                default: Pending
+                description: Current device phase
+                enum:
+                - Pending
+                - Enrolling
+                - Enrolled
+                - Connected
+                - Disconnected
+                - Unreachable
+                type: string
+            type: object
+        required:
+        - spec
+        title: Device
+        type: object
+    selectableFields:
+    - jsonPath: .spec.publicKey
+    served: true
+    storage: true
+    subresources:
+      status: {}

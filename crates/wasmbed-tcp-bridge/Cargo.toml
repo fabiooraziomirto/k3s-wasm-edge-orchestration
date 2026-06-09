@@ -1,0 +1,14 @@
+[package]
+name = "wasmbed-tcp-bridge"
+version = "0.1.0"
+edition = "2021"
+authors = ["Wasmbed contributors"]
+license = "AGPL-3.0"
+description = "TCP Bridge for Renode firmware communication"
+
+[[bin]]
+name = "wasmbed-tcp-bridge"
+path = "src/main.rs"
+
+[dependencies]
+

@@ -1,0 +1,19 @@
+[package]
+name = "wasmbed-qemu-manager"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0"
+description = "QEMU device emulation manager for Wasmbed platform"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+clap = { version = "4.4", features = ["derive"] }
+wasmbed-tcp-bridge = { path = "../wasmbed-tcp-bridge" }
+base64 = "0.21"
+reqwest = { version = "0.11", features = ["json"] }
+
+[dev-dependencies]
+tokio-test = "0.4"

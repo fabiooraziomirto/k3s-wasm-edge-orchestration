@@ -1,0 +1,13 @@
+apiVersion: wasmbed.github.io/v0
+kind: Device
+metadata:
+  name: mcu-board-2
+  namespace: wasmbed
+spec:
+  publicKey: "mcu-board-2-public-key-12345"
+status:
+  phase: "Enrolled"
+  gateway: "gateway-2"
+  connectedSince: "2025-09-27T17:00:00Z"
+  lastHeartbeat: "2025-09-27T17:00:00Z"
+  pairingMode: false

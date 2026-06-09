@@ -1,0 +1,25 @@
+[package]
+name = "wasmbed-cert"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+
+[dependencies.rcgen]
+version = "0.13.2"
+default-features = false
+features = [ "crypto", "ring", "x509-parser" ]
+
+[dependencies.rustls-pki-types]
+version = "1.12.0"
+default-features = false
+
+[dependencies.wasmbed-types]
+path = "../wasmbed-types"
+features = [ "alloc", "cert" ]

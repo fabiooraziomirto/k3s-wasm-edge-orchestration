@@ -1,0 +1,1689 @@
+{
+  "generated_at": "2026-06-09T07:04:58.369353+00:00",
+  "namespace": "wasmbed",
+  "api_base": "http://127.0.0.1:3001",
+  "gateway_http": "http://127.0.0.1:8080",
+  "records": [
+    {
+      "experiment": "system_snapshot",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 0.0,
+      "details": {
+        "metrics": {
+          "error": "Error from server (Forbidden): pods.metrics.k8s.io is forbidden: User \"system:serviceaccount:wasmbed:wasmbed-api-server\" cannot list resource \"pods\" in API group \"metrics.k8s.io\" in the namespace \"wasmbed\"\n",
+          "metrics": []
+        },
+        "source": "pod-snapshot",
+        "pods": [
+          {
+            "name": "gateway-1-deployment-7c684f64b9-rdwzp",
+            "phase": "Running",
+            "restarts": 7
+          },
+          {
+            "name": "wasmbed-api-server-5bbd98b6b8-ghfms",
+            "phase": "Running",
+            "restarts": 0
+          }
+        ]
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 446.2456479668617,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:02:33.003389104Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 5.392547929659486,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 20.5
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 518.5434070881456,
+      "details": {
+        "application": "experiment-1-1780988574",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 2,
+      "success": true,
+      "duration_ms": 456.82297088205814,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:02:33.003389104Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 2,
+      "success": true,
+      "duration_ms": 4.638702841475606,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 24.4
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 2,
+      "success": true,
+      "duration_ms": 591.9134721625596,
+      "details": {
+        "application": "experiment-2-1780988579",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 3,
+      "success": true,
+      "duration_ms": 490.95852207392454,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:02:58.029239419Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 3,
+      "success": true,
+      "duration_ms": 4.253620048984885,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 3.3
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 3,
+      "success": true,
+      "duration_ms": 700.1411949750036,
+      "details": {
+        "application": "experiment-3-1780988583",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 4,
+      "success": true,
+      "duration_ms": 466.0962210036814,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:02:58.029239419Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 4,
+      "success": true,
+      "duration_ms": 5.442734807729721,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 7.3
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 4,
+      "success": true,
+      "duration_ms": 491.1286730784923,
+      "details": {
+        "application": "experiment-4-1780988587",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 5,
+      "success": true,
+      "duration_ms": 462.3743570409715,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:02:58.029239419Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 5,
+      "success": true,
+      "duration_ms": 4.552591126412153,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 11.5
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 5,
+      "success": true,
+      "duration_ms": 547.1985649783164,
+      "details": {
+        "application": "experiment-5-1780988591",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 6,
+      "success": true,
+      "duration_ms": 439.4050829578191,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:02:58.029239419Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 6,
+      "success": true,
+      "duration_ms": 4.000592045485973,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 15.4
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 6,
+      "success": true,
+      "duration_ms": 511.0401220154017,
+      "details": {
+        "application": "experiment-6-1780988595",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 7,
+      "success": true,
+      "duration_ms": 621.0957451257855,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:02:58.029239419Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 7,
+      "success": true,
+      "duration_ms": 4.417310003191233,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 19.4
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 7,
+      "success": true,
+      "duration_ms": 534.5107389148325,
+      "details": {
+        "application": "experiment-7-1780988599",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 8,
+      "success": true,
+      "duration_ms": 461.59722097218037,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:02:58.029239419Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 8,
+      "success": true,
+      "duration_ms": 4.538421053439379,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 23.3
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 8,
+      "success": true,
+      "duration_ms": 658.0688590183854,
+      "details": {
+        "application": "experiment-8-1780988603",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 9,
+      "success": true,
+      "duration_ms": 499.45525894872844,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:23.136381937Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 9,
+      "success": true,
+      "duration_ms": 4.029764095321298,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 2.3
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 9,
+      "success": true,
+      "duration_ms": 530.3211088757962,
+      "details": {
+        "application": "experiment-9-1780988607",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 10,
+      "success": true,
+      "duration_ms": 648.2819479424506,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:23.136381937Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 10,
+      "success": true,
+      "duration_ms": 5.100165959447622,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 6.6
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 10,
+      "success": true,
+      "duration_ms": 530.2863409742713,
+      "details": {
+        "application": "experiment-10-1780988612",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 11,
+      "success": true,
+      "duration_ms": 446.11757015809417,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:23.136381937Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 11,
+      "success": true,
+      "duration_ms": 4.535604035481811,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 10.4
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 11,
+      "success": true,
+      "duration_ms": 840.0914170779288,
+      "details": {
+        "application": "experiment-11-1780988615",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 12,
+      "success": true,
+      "duration_ms": 429.40150294452906,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:23.136381937Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 12,
+      "success": true,
+      "duration_ms": 3.3738110214471817,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 15.2
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 12,
+      "success": true,
+      "duration_ms": 495.46035612002015,
+      "details": {
+        "application": "experiment-12-1780988620",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 13,
+      "success": true,
+      "duration_ms": 427.4196489714086,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:23.136381937Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 13,
+      "success": true,
+      "duration_ms": 4.309742012992501,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 19.2
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 13,
+      "success": true,
+      "duration_ms": 527.5971239898354,
+      "details": {
+        "application": "experiment-13-1780988624",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 14,
+      "success": true,
+      "duration_ms": 422.55706107243896,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:23.136381937Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 14,
+      "success": true,
+      "duration_ms": 3.8227320183068514,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 23.2
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 14,
+      "success": true,
+      "duration_ms": 756.9209199864417,
+      "details": {
+        "application": "experiment-14-1780988628",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 15,
+      "success": true,
+      "duration_ms": 502.7638520114124,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:48.246605558Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 15,
+      "success": true,
+      "duration_ms": 4.678534111008048,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 3.3
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 15,
+      "success": true,
+      "duration_ms": 515.6813210342079,
+      "details": {
+        "application": "experiment-15-1780988633",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 16,
+      "success": true,
+      "duration_ms": 1244.325557956472,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:48.246605558Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 16,
+      "success": true,
+      "duration_ms": 5.8626949321478605,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 8.1
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 16,
+      "success": true,
+      "duration_ms": 475.84306285716593,
+      "details": {
+        "application": "experiment-16-1780988638",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 17,
+      "success": true,
+      "duration_ms": 562.5736219808459,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:48.246605558Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 17,
+      "success": true,
+      "duration_ms": 4.372479161247611,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 12.7
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 17,
+      "success": true,
+      "duration_ms": 674.7742078732699,
+      "details": {
+        "application": "experiment-17-1780988643",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 18,
+      "success": true,
+      "duration_ms": 478.4736989531666,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:48.246605558Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 18,
+      "success": true,
+      "duration_ms": 3.444475121796131,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 16.6
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 18,
+      "success": true,
+      "duration_ms": 500.0289410818368,
+      "details": {
+        "application": "experiment-18-1780988647",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 19,
+      "success": true,
+      "duration_ms": 509.3692720402032,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:48.246605558Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 19,
+      "success": true,
+      "duration_ms": 3.663320792838931,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 20.5
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 19,
+      "success": true,
+      "duration_ms": 519.0185478422791,
+      "details": {
+        "application": "experiment-19-1780988650",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 20,
+      "success": true,
+      "duration_ms": 434.47061302140355,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:03:48.246605558Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 20,
+      "success": true,
+      "duration_ms": 4.290398908779025,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 24.2
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 20,
+      "success": true,
+      "duration_ms": 550.4259229637682,
+      "details": {
+        "application": "experiment-20-1780988654",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 21,
+      "success": true,
+      "duration_ms": 625.3752410411835,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:04:13.297084164Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 21,
+      "success": true,
+      "duration_ms": 4.2594310361891985,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 3.5
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 21,
+      "success": true,
+      "duration_ms": 516.2662630900741,
+      "details": {
+        "application": "experiment-21-1780988658",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 22,
+      "success": true,
+      "duration_ms": 491.8389180675149,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:04:13.297084164Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 22,
+      "success": true,
+      "duration_ms": 4.026843002066016,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 7.5
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 22,
+      "success": true,
+      "duration_ms": 457.6790709979832,
+      "details": {
+        "application": "experiment-22-1780988662",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 23,
+      "success": true,
+      "duration_ms": 487.43878002278507,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:04:13.297084164Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 23,
+      "success": true,
+      "duration_ms": 4.715068032965064,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 11.3
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 23,
+      "success": true,
+      "duration_ms": 520.4455209895968,
+      "details": {
+        "application": "experiment-23-1780988666",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 24,
+      "success": true,
+      "duration_ms": 720.9205871913582,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:04:13.297084164Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 24,
+      "success": true,
+      "duration_ms": 4.104832885786891,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 15.5
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 24,
+      "success": true,
+      "duration_ms": 508.9555629529059,
+      "details": {
+        "application": "experiment-24-1780988670",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 25,
+      "success": true,
+      "duration_ms": 471.47480910643935,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:04:13.297084164Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 25,
+      "success": true,
+      "duration_ms": 3.6850799806416035,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 19.3
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 25,
+      "success": true,
+      "duration_ms": 612.6517341472208,
+      "details": {
+        "application": "experiment-25-1780988674",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 26,
+      "success": true,
+      "duration_ms": 1246.147888014093,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:04:13.297084164Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 26,
+      "success": true,
+      "duration_ms": 4.316938109695911,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 24.0
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 26,
+      "success": true,
+      "duration_ms": 647.1402579918504,
+      "details": {
+        "application": "experiment-26-1780988679",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 27,
+      "success": true,
+      "duration_ms": 1225.7195280399173,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:04:38.438111304Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 27,
+      "success": true,
+      "duration_ms": 4.272244870662689,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 4.0
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 27,
+      "success": true,
+      "duration_ms": 521.981243044138,
+      "details": {
+        "application": "experiment-27-1780988684",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 28,
+      "success": true,
+      "duration_ms": 454.3144500348717,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:04:38.438111304Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 28,
+      "success": true,
+      "duration_ms": 4.096544114872813,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 8.7
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 28,
+      "success": true,
+      "duration_ms": 505.31774712726474,
+      "details": {
+        "application": "experiment-28-1780988689",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 29,
+      "success": true,
+      "duration_ms": 519.8180149309337,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:04:38.438111304Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 29,
+      "success": true,
+      "duration_ms": 4.314968828111887,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 12.6
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 29,
+      "success": true,
+      "duration_ms": 695.0190190691501,
+      "details": {
+        "application": "experiment-29-1780988693",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 30,
+      "success": true,
+      "duration_ms": 617.9116968996823,
+      "details": {
+        "device": "native-sim-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-06-09T07:04:38.438111304Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 30,
+      "success": true,
+      "duration_ms": 4.071047063916922,
+      "details": {
+        "device": "native-sim-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 17.4
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 30,
+      "success": true,
+      "duration_ms": 493.93290700390935,
+      "details": {
+        "application": "experiment-30-1780988697",
+        "device": "native-sim-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    }
+  ],
+  "summary": {
+    "system_snapshot": {
+      "trials": 1,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.20654329147389294,
+          1.0
+        ],
+        "successes": 1,
+        "total": 1
+      },
+      "duration_ms": {
+        "count": 1,
+        "mean": 0.0,
+        "stdev": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "latency_ms": {
+        "count": 1,
+        "mean": 0.0,
+        "stdev": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "p90": 0.0,
+        "p99": 0.0,
+        "iqr": 0.0,
+        "cv": null
+      },
+      "failure_reasons": {},
+      "goodput_tps": null
+    },
+    "enrollment": {
+      "trials": 30,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.8864829086095221,
+          1.0
+        ],
+        "successes": 30,
+        "total": 30
+      },
+      "duration_ms": {
+        "count": 30,
+        "mean": 577.0255095791072,
+        "stdev": 236.24246393186218,
+        "min": 422.55706107243896,
+        "max": 1246.147888014093,
+        "median": 489.1986510483548,
+        "p95": 1245.1456064824015,
+        "ci95": [
+          488.8210286570116,
+          665.2299905012027
+        ]
+      },
+      "latency_ms": {
+        "count": 30,
+        "mean": 577.0255095791072,
+        "stdev": 236.24246393186218,
+        "min": 422.55706107243896,
+        "max": 1246.147888014093,
+        "median": 489.1986510483548,
+        "p95": 1245.1456064824015,
+        "ci95": [
+          488.8210286570116,
+          665.2299905012027
+        ],
+        "p90": 771.4004812762148,
+        "p99": 1245.619412297383,
+        "iqr": 149.13559792330489,
+        "cv": 0.40941424600826
+      },
+      "failure_reasons": {},
+      "goodput_tps": 1.7330256347408592
+    },
+    "heartbeat": {
+      "trials": 30,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.8864829086095221,
+          1.0
+        ],
+        "successes": 30,
+        "total": 30
+      },
+      "duration_ms": {
+        "count": 30,
+        "mean": 4.3527746650700765,
+        "stdev": 0.5601467556798645,
+        "min": 3.3738110214471817,
+        "max": 5.8626949321478605,
+        "median": 4.300070460885763,
+        "p95": 5.631716863717884,
+        "ci95": [
+          4.143635914133291,
+          4.561913416006862
+        ]
+      },
+      "latency_ms": {
+        "count": 30,
+        "mean": 4.3527746650700765,
+        "stdev": 0.5601467556798645,
+        "min": 3.3738110214471817,
+        "max": 5.8626949321478605,
+        "median": 4.300070460885763,
+        "p95": 5.631716863717884,
+        "ci95": [
+          4.143635914133291,
+          4.561913416006862
+        ],
+        "p90": 5.1294041564688095,
+        "p99": 5.740906496066601,
+        "iqr": 0.508963770698756,
+        "cv": 0.12868728541702412
+      },
+      "failure_reasons": {},
+      "goodput_tps": 229.73851782973026
+    },
+    "deployment": {
+      "trials": 30,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.8864829086095221,
+          1.0
+        ],
+        "successes": 30,
+        "total": 30
+      },
+      "duration_ms": {
+        "count": 30,
+        "mean": 564.9461209774017,
+        "stdev": 91.90664097471532,
+        "min": 457.6790709979832,
+        "max": 840.0914170779288,
+        "median": 524.7891835169867,
+        "p95": 794.3476436776109,
+        "ci95": [
+          530.6314705731193,
+          599.2607713816842
+        ]
+      },
+      "latency_ms": {
+        "count": 30,
+        "mean": 564.9461209774017,
+        "stdev": 91.90664097471532,
+        "min": 457.6790709979832,
+        "max": 840.0914170779288,
+        "median": 524.7891835169867,
+        "p95": 794.3476436776109,
+        "ci95": [
+          530.6314705731193,
+          599.2607713816842
+        ],
+        "p90": 695.5312366597354,
+        "p99": 815.9719729213975,
+        "iqr": 97.9904659325257,
+        "cv": 0.16268213474182194
+      },
+      "failure_reasons": {},
+      "goodput_tps": 1.7700803012328334
+    },
+    "transactional": {
+      "trials": 30,
+      "all_stages_success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.8864829086095221,
+          1.0
+        ],
+        "successes": 30,
+        "total": 30
+      },
+      "evidence_consistency_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.8864829086095221,
+          1.0
+        ],
+        "successes": 30,
+        "total": 30
+      },
+      "end_to_end_latency_ms": {
+        "count": 30,
+        "mean": 1141.971630556509,
+        "stdev": 242.80380409128,
+        "min": 924.8618590645492,
+        "max": 1893.2881460059434,
+        "median": 1066.431493149139,
+        "p95": 1813.215089798905,
+        "ci95": [
+          1051.3173800490365,
+          1232.6258810639813
+        ],
+        "p90": 1329.6049505937851,
+        "p99": 1851.0678072785959,
+        "iqr": 208.09316902887076,
+        "cv": 0.21261807000665695
+      }
+    }
+  }
+}

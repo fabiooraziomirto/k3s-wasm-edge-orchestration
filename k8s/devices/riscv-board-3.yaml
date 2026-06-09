@@ -1,0 +1,13 @@
+apiVersion: wasmbed.github.io/v0
+kind: Device
+metadata:
+  name: riscv-board-3
+  namespace: wasmbed
+spec:
+  publicKey: "riscv-board-3-public-key-12345"
+status:
+  phase: "Enrolled"
+  gateway: "gateway-3"
+  connectedSince: "2025-09-27T17:00:00Z"
+  lastHeartbeat: "2025-09-27T17:00:00Z"
+  pairingMode: false

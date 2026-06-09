@@ -1,0 +1,27 @@
+using sysbus
+
+# Load STM32F4 Discovery platform
+mach create "stm32f4-discovery-001"
+machine LoadPlatformDescription @platforms/boards/stm32f4_discovery.repl
+
+# Setup serial connection
+showAnalyzer sysbus.usart2
+
+# Setup ADC for temperature sensor
+sysbus.adc1 TemperatureSensor @ sysbus.adc1 0
+
+# Setup Ethernet interface (STM32F4 has built-in Ethernet MAC)
+# Ethernet is already defined in stm32f4.repl as: Network.SynopsysEthernetMAC @ sysbus 0x40028000
+# Create network switch and TAP interface for host connection
+emulation CreateSwitch "ethernet_switch"
+emulation CreateTap "tap0" "ethernet_tap"
+sysbus.ethernet MAC "00:11:22:33:44:55"
+connector Connect sysbus.ethernet ethernet_switch
+connector Connect host.ethernet_tap ethernet_switch
+host.ethernet_tap Start
+
+# Connect to Wasmbed gateway (legacy UART connection, can be removed if using Ethernet)
+# connector Connect sysbus.usart2 127.0.0.1:10002
+
+# Start emulation
+start

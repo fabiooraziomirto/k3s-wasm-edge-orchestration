@@ -1,0 +1,64 @@
+using sysbus
+
+# Test Ethernet Connection in Renode
+# This script loads the STM32F4 firmware with Ethernet support
+# and attempts to connect to the gateway via TCP/TLS
+
+echo "=== Ethernet Connection Test - STM32F4 Discovery ==="
+echo ""
+
+# Load STM32F4 Discovery platform
+mach create "ethernet-test"
+machine LoadPlatformDescription @platforms/boards/stm32f4_discovery.repl
+
+# Setup serial connection for logs
+showAnalyzer sysbus.usart2
+
+# Setup ADC for temperature sensor (optional)
+sysbus.adc1 TemperatureSensor @ sysbus.adc1 0
+
+# Setup Ethernet interface
+# Ethernet is already defined in stm32f4.repl as: Network.SynopsysEthernetMAC @ sysbus 0x40028000
+echo "Configuring Ethernet interface..."
+emulation CreateSwitch "ethernet_switch"
+emulation CreateTap "tap0" "ethernet_tap"
+sysbus.ethernet MAC "00:11:22:33:44:55"
+connector Connect sysbus.ethernet ethernet_switch
+connector Connect host.ethernet_tap ethernet_switch
+host.ethernet_tap Start
+
+echo "✓ Ethernet configured"
+echo "  MAC: 00:11:22:33:44:55"
+echo "  Switch: ethernet_switch"
+echo "  TAP: tap0"
+echo ""
+
+# Load firmware: set path to Zephyr app ELF (e.g. zephyr-app/build/.../zephyr.elf)
+# wasmbed-device-runtime was removed; use Zephyr app from zephyr-app/ with west build
+$firmware_path?=@zephyr-app/build/zephyr/zephyr.elf
+if exists $firmware_path:
+    echo "Loading firmware: $firmware_path"
+    sysbus LoadELF $firmware_path
+    echo "✓ Firmware loaded"
+    echo ""
+    
+    echo "Starting emulation..."
+    echo "Watch UART analyzer for connection logs"
+    echo ""
+    echo "Expected sequence:"
+    echo "  1. Ethernet MAC initialization"
+    echo "  2. Network stack initialization"
+    echo "  3. TCP/TLS connection to gateway"
+    echo "  4. Heartbeat and protocol messages"
+    echo ""
+    
+    start
+else:
+    echo "ERROR: Firmware not found: $firmware_path"
+    echo ""
+    echo "Build Zephyr firmware first, e.g.:"
+    echo "  cd zephyr-app && west build -b stm32f4_disc1 ."
+    echo "  Then set firmware_path in this script to the zephyr.elf path."
+    echo ""
+    quit 1
+

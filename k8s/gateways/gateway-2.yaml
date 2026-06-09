@@ -1,0 +1,16 @@
+apiVersion: wasmbed.io/v1
+kind: Gateway
+metadata:
+  name: gateway-2
+  namespace: wasmbed
+spec:
+  endpoint: "127.0.0.1:30454"
+  port: 30455
+  tlsPort: 30454
+  maxDevices: 10
+  region: "us-east-1"
+status:
+  phase: "Running"
+  connectedDevices: 0
+  enrolledDevices: 0
+  lastHeartbeat: "2025-09-27T17:00:00Z"

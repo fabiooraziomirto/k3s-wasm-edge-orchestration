@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wasmbed-dashboard
+  namespace: wasmbed
+  annotations:
+    # For Traefik (default in k3d)
+    traefik.ingress.kubernetes.io/rule-type: PathPrefix
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: dashboard.wasmbed.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: wasmbed-dashboard
+            port:
+              number: 3000
+  # Allow access without hostname (for IP access)
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: wasmbed-dashboard
+            port:
+              number: 3000

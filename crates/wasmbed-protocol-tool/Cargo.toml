@@ -1,0 +1,25 @@
+[package]
+name = "wasmbed-protocol-tool"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow = "1.0.98"
+hex = "0.4.3"
+
+[dependencies.clap]
+version = "4.5.40"
+features = [ "derive" ]
+
+[dependencies.minicbor]
+version = "1.0.0"
+default-features = false
+
+[dependencies.wasmbed-protocol]
+path = "../wasmbed-protocol"

@@ -1,0 +1,12 @@
+apiVersion: wasmbed.github.io/v1alpha1
+kind: Application
+metadata:
+  name: test-app-1
+  namespace: wasmbed
+spec:
+  name: "Hello World App"
+  description: "Test WASM application for workflow validation"
+  wasmBytes: "dummy-wasm-bytecode"
+  targetDevices:
+    deviceNames: ["device-gateway-1-1"]
+  config: {}

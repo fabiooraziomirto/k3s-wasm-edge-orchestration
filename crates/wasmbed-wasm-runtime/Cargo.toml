@@ -1,0 +1,72 @@
+[package]
+name = "wasmbed-wasm-runtime"
+version = "0.1.0"
+edition = "2021"
+authors = ["Wasmbed contributors"]
+license = "AGPL-3.0"
+description = "WebAssembly runtime for edge devices with device-specific optimizations"
+repository = "https://github.com/lucadagati/retrospect"
+
+[dependencies]
+# Core WASM runtime
+wasmtime = { version = "18.0", features = ["component-model", "async"] }
+wasmtime-wasi = "18.0"
+wasmtime-wasi-nn = "18.0"
+
+# Async runtime
+tokio = { version = "1.0", features = ["full"] }
+futures = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+postcard = "1.0"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# Collections
+dashmap = "5.0"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Crypto for secure functions
+aes-gcm = "0.10"
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+rand = "0.8"
+
+# DDS integration
+
+# WASM parsing
+wasmparser = "0.118"
+wat = "1.0"
+
+# Memory management
+bytes = "1.0"
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.0"
+
+[features]
+default = ["std"]
+std = []
+no-std = []
+embedded = ["no-std"]
+
+# Device-specific features
+mpu = []
+mcu = ["no-std"]
+riscv = ["no-std"]
+
+# Optional integrations
+secure = []
