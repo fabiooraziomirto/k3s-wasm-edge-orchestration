@@ -43,7 +43,7 @@ kubectl get nodes
 ## Quick Start
 
 ```bash
-cd /home/lucadag/18_10_23_retrospect/retrospect
+cd .
 
 # Deploy entire system
 ./scripts/deploy-k3s.sh

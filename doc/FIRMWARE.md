@@ -2,7 +2,7 @@
 
 ## Overview
 
-The RETROSPECT Wasmbed firmware is based on Zephyr RTOS and integrates:
+The the platform firmware is based on Zephyr RTOS and integrates:
 - Network stack for TCP/TLS communication
 - WAMR runtime for WebAssembly execution
 - Wasmbed protocol for gateway communication
@@ -279,7 +279,7 @@ Monitor UART in Renode to see:
 - Check firmware is compiled for correct board
 - Verify UART configuration matches platform
 
-## Integrazione WAMR
+## WAMR integration
 
 ### Initialization
 
@@ -337,4 +337,4 @@ Example: `"10.42.0.44:8081"` (15 bytes)
 - [WAMR Documentation](https://github.com/bytecodealliance/wasm-micro-runtime)
 - [TLS Connection Guide](TLS_CONNECTION.md)
 - [MCU Support](MCU_SUPPORT.md)
-- [Real Device Integration](REAL_DEVICE_INTEGRATION.md)
+- [Architecture](ARCHITECTURE.md)

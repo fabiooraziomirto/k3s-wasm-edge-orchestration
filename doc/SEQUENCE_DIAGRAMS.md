@@ -1,30 +1,30 @@
-# Sequence Diagrams - Wasmbed Platform
+# Sequence diagrams
 
-Questo documento contiene tutti i sequence diagram che descrivono i flussi di comunicazione e le interazioni tra i componenti della piattaforma Wasmbed.
+Communication flows and component interactions for the platform. See also [ARCHITECTURE.md](ARCHITECTURE.md) and [TEST_GUIDE.md](TEST_GUIDE.md).
 
-## Indice
+## Index
 
-1. [Device Enrollment](#device-enrollment)
-   - [Workflow Completo](#device-enrollment-completo)
-   - [Workflow Semplificato](#device-enrollment-semplificato)
-   - [Processo di Enrollment](#processo-di-enrollment)
-   - [Inizializzazione e Connessione](#inizializzazione-e-connessione)
-   - [Heartbeat e Monitoring](#heartbeat-e-monitoring)
-2. [Application Deployment](#application-deployment)
-   - [Workflow Completo](#application-deployment-completo)
-   - [Workflow Semplificato](#application-deployment-semplificato)
-   - [Deploy e Stop (API Server → Gateway)](#deploy-e-stop-api-server--gateway)
-   - [Compilazione e Creazione](#compilazione-e-creazione)
-   - [Esecuzione su Device](#esecuzione-su-device)
-   - [Monitoring e Management](#monitoring-e-management)
-3. [DeviceInfo e capabilities](#deviceinfo-e-capabilities)
+1. [Device enrollment](#device-enrollment)
+   - [Full workflow](#device-enrollment-completo)
+   - [Simplified workflow](#device-enrollment-semplificato)
+   - [Enrollment process](#processo-di-enrollment)
+   - [Initialization and connection](#inizializzazione-e-connessione)
+   - [Heartbeat and monitoring](#heartbeat-e-monitoring)
+2. [Application deployment](#application-deployment)
+   - [Full workflow](#application-deployment-completo)
+   - [Simplified workflow](#application-deployment-semplificato)
+   - [Deploy and stop (API server → gateway)](#deploy-and-stop-api-server--gateway)
+   - [Compilation and creation](#compilation-and-creation)
+   - [Execution on device](#execution-on-device)
+   - [Monitoring and management](#monitoring-and-management)
+3. [DeviceInfo and capabilities](#deviceinfo-and-capabilities)
 4. [Error Handling](#error-handling)
 
 ---
 
 ## Device Enrollment
 
-### Device Enrollment Completo
+### Device enrollment (full workflow)
 
 ```mermaid
 sequenceDiagram
@@ -103,7 +103,7 @@ sequenceDiagram
     end
 ```
 
-### Device Enrollment Semplificato
+### Device enrollment (simplified)
 
 ```mermaid
 sequenceDiagram
@@ -153,7 +153,7 @@ sequenceDiagram
     end
 ```
 
-### Processo di Enrollment
+### Enrollment process
 
 ```mermaid
 sequenceDiagram
@@ -179,7 +179,7 @@ sequenceDiagram
     Note over MCU,K8S_API: Enrollment Phase Complete<br/>Device is now registered in Kubernetes<br/>and ready for application deployment
 ```
 
-### Inizializzazione e Connessione
+### Initialization and connection
 
 ```mermaid
 sequenceDiagram
@@ -206,9 +206,9 @@ sequenceDiagram
     Note over MCU,GATEWAY: Connection Phase Complete<br/>Device is now connected to Gateway<br/>with secure TLS 1.3 channel
 ```
 
-### Heartbeat e Monitoring
+### Heartbeat and monitoring
 
-Il Gateway riceve gli heartbeat via TLS, aggiorna lo stato in-memory (device_connections) e opzionalmente il Device CRD (PATCH status.last_heartbeat, health).
+The gateway receives heartbeats over TLS, updates in-memory state (`device_connections`), and PATCHes the Device CRD (`status.last_heartbeat`, health).
 
 ```mermaid
 sequenceDiagram
@@ -241,7 +241,7 @@ sequenceDiagram
 
 ## Application Deployment
 
-### Application Deployment Completo
+### Application deployment (full workflow)
 
 ```mermaid
 sequenceDiagram
@@ -324,7 +324,7 @@ sequenceDiagram
     DASHBOARD->>USER: Display Application Status<br/>Real-time dashboard<br/>Performance graphs<br/>Device status<br/>Execution logs<br/>Health indicators
 ```
 
-### Application Deployment Semplificato
+### Application deployment (simplified)
 
 ```mermaid
 sequenceDiagram
@@ -395,9 +395,9 @@ sequenceDiagram
     end
 ```
 
-### Deploy e Stop (API Server → Gateway)
+### Deploy and stop (API server → gateway)
 
-Flusso attuale: l'API Server invia deploy/stop al Gateway via HTTP; il Gateway è owner dello status dell'Application CRD (phase, deviceStatuses, lastUpdated, error).
+Current flow: the API server sends deploy/stop to the gateway over HTTP; the gateway owns Application CRD status (phase, deviceStatuses, lastUpdated, error).
 
 ```mermaid
 sequenceDiagram
@@ -428,7 +428,7 @@ sequenceDiagram
     GATEWAY->>K8S_API: PATCH Application status<br/>phase: Stopped o Failed<br/>deviceStatuses[device_id]: Stopped/Failed
 ```
 
-### Compilazione e Creazione
+### Compilation and creation
 
 ```mermaid
 sequenceDiagram
@@ -459,7 +459,7 @@ sequenceDiagram
     Note over USER,COMPILER: Compilation Phase Complete<br/>Application is compiled and registered<br/>in Kubernetes, ready for deployment
 ```
 
-### Esecuzione su Device
+### Execution on device
 
 ```mermaid
 sequenceDiagram
@@ -488,9 +488,9 @@ sequenceDiagram
     Note over API_SERVER,DEVICE: Deployment Phase Complete<br/>Application is successfully deployed<br/>and running on the device
 ```
 
-### Monitoring e Management
+### Monitoring and management
 
-Il Gateway è owner dello status dell'Application CRD: aggiorna phase, deviceStatuses (per device), lastUpdated in risposta a ApplicationStatus, DeployAck, StopAck ricevuti via TLS dal device.
+The gateway owns Application CRD status: it updates phase, per-device deviceStatuses, and lastUpdated on ApplicationStatus, DeployAck, and StopAck received over TLS from the device.
 
 ```mermaid
 sequenceDiagram
@@ -532,9 +532,9 @@ sequenceDiagram
 
 ---
 
-## DeviceInfo e capabilities
+## DeviceInfo and capabilities
 
-Quando il device invia un messaggio **DeviceInfo** sulla connessione TLS, il Gateway risolve il `device_id` dalla mappa `public_key_to_device` e aggiorna le capabilities nella struttura in-memory `device_connections` (nessun patch al CRD Device in questo step).
+When the device sends a **DeviceInfo** message over TLS, the gateway resolves `device_id` from `public_key_to_device` and updates capabilities in the in-memory `device_connections` structure (no Device CRD patch in this step).
 
 ```mermaid
 sequenceDiagram

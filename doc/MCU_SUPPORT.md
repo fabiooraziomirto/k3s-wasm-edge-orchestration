@@ -67,14 +67,14 @@ Wasmbed now supports multiple MCU types with emphasis on boards that have Ethern
 - **Status**: Code ready, firmware exists
 - **Recommended**: **No** - BLE only, no Ethernet/WiFi
 
-### Board virtuali Zephyr+Renode (no rete in emulatore)
+### Zephyr + Renode virtual boards (no network in emulator)
 
-Board virtuali ufficiali Zephyr; firmware sample hello_world. Il device viene registrato al Gateway alla partenza dall'API server (nessuna connessione TLS dal firmware).
+Official Zephyr virtual boards; sample `hello_world` firmware. The device is registered with the gateway at start by the API server (no TLS connection from firmware).
 
-- **Riscv32Virtual** – RISCV32 Virtual; Renode platform da `zephyr/boards/renode/riscv32_virtual/support/riscv32_virtual.repl`
-- **CortexR8Virtual** – Cortex-R8 Virtual; Renode platform da `zephyr/boards/renode/cortex_r8_virtual/support/cortex_r8_virtual.repl`
+- **Riscv32Virtual** – RISCV32 virtual; Renode platform from `zephyr/boards/renode/riscv32_virtual/support/riscv32_virtual.repl`
+- **CortexR8Virtual** – Cortex-R8 virtual; Renode platform from `zephyr/boards/renode/cortex_r8_virtual/support/cortex_r8_virtual.repl`
 
-**Stato**: Implementati in wasmbed-qemu-manager; build firmware (script Docker) e test E2E da verificare. Vedi scripts/README.md e doc/DEVELOPMENT_STATUS.md.
+**Status:** Implemented in wasmbed-qemu-manager; Docker firmware build and E2E tests still to verify. See [scripts/README.md](../scripts/README.md) and [TEST_GUIDE.md](TEST_GUIDE.md).
 
 ### Legacy Boards
 
@@ -286,7 +286,7 @@ For new devices, use:
 
 - [ ] Firmware compilation for FRDM-K64F
 - [ ] Firmware compilation for ESP32 DevKitC
-- [ ] Build firmware board virtuali (Docker) verificato; E2E con Riscv32Virtual/CortexR8Virtual
+- [ ] Virtual-board firmware Docker build verified; E2E with Riscv32Virtual/CortexR8Virtual
 - [ ] WAMR execution testing (deploy E2E)
 
 ### Done

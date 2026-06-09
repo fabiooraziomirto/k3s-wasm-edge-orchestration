@@ -1,8 +1,13 @@
-# RETROSPECT Wasmbed Architecture
+# Platform architecture
 
 ## Overview
 
-RETROSPECT Wasmbed is a distributed system for managing WebAssembly applications on embedded devices across the Cloud-Fog-Edge computing continuum. The system uses Kubernetes for orchestration, Renode for hardware emulation, and Zephyr RTOS for device firmware.
+This platform is a distributed system for managing WebAssembly applications on embedded devices across the cloud–fog–edge continuum. It uses Kubernetes for orchestration, Renode for hardware emulation, and Zephyr RTOS for device firmware.
+
+**Diagrams:**
+- High-level component and communication views: [repository README](../README.md#architecture) (Mermaid)
+- **Sequence diagrams (Mermaid):** [SEQUENCE_DIAGRAMS.md](SEQUENCE_DIAGRAMS.md) — enrollment, heartbeat, deploy/stop, monitoring
+- TLS transport details: [TLS_CONNECTION.md](TLS_CONNECTION.md)
 
 ## System Components
 
@@ -63,9 +68,9 @@ RETROSPECT Wasmbed is a distributed system for managing WebAssembly applications
 - **Location**: Runs inside API Server Pod. Ensures the **single** Renode container (`wasmbed-renode`) is running, then sends monitor commands (TCP port 9999) to add or pause machines per device.
 - **Responsibilities**: Start/ensure singleton Renode container, copy firmware to shared volume, send Renode monitor commands to add/start or pause machines, register/unregister boards with Gateway.
 
-#### Una Renode, N device proxy
-- **Modello**: Una sola istanza Renode (un container Docker `wasmbed-renode`) gestisce **N device proxy**: ogni device è una **machine** dentro quella istanza, non un container separato. Il volume condiviso `wasmbed-firmware-store` contiene una sottocartella per device con il firmware. Il Renode Manager comunica con Renode via monitor (porta 9999) per avviare/sospendere le machine.
-- **Flusso**: Avvio device → comandi al monitor per creare e avviare la machine; stop device → `mach set` + `pause` sulla machine. Gateway e CRD vedono N device distinti; ogni device ha il proprio endpoint TLS e stato.
+#### One Renode, N device proxies
+- **Model**: A single Renode instance (Docker container `wasmbed-renode`) hosts **N device proxies**: each device is a **machine** inside that instance, not a separate container. Shared volume `wasmbed-firmware-store` has one subdirectory per device with firmware. Renode Manager talks to Renode on monitor port 9999 to start/pause machines.
+- **Flow**: Start device → monitor commands create and run the machine; stop device → `mach set` + `pause`. Gateway and CRDs see N distinct devices, each with its own TLS endpoint and state. See [SEQUENCE_DIAGRAMS.md](SEQUENCE_DIAGRAMS.md) for enrollment and deploy flows.
 
 #### Zephyr RTOS Firmware
 - **Location**: Runs inside device proxy (e.g. inside Renode emulator)
@@ -366,7 +371,7 @@ The Gateway is the component in the middle between the control plane and devices
 1. **Certificate Management**: Implement proper CA with certificate rotation
 2. **Device Persistence**: Store device state in persistent volumes
 3. **Scalability**: Support multiple gateway instances with load balancing
-4. **Real Hardware Support**: Complete integration guide for physical devices (see [REAL_DEVICE_INTEGRATION.md](REAL_DEVICE_INTEGRATION.md))
+4. **Real hardware support**: physical device integration (not yet documented)
 5. **Performance Optimization**: Optimize Renode startup time and API response times
 6. **Monitoring**: Enhanced metrics collection and distributed tracing
 
