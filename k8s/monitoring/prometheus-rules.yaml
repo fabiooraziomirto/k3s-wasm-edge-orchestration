@@ -13,10 +13,17 @@
 # Treat it as an upper bound on the Renode emulation cost, not an exact
 # figure. See k8s/monitoring/README.md.
 #
-# Metric names below match Kepler release-0.7.x. If a different Kepler
-# version is deployed, run `curl -s localhost:9102/metrics | grep kepler_`
-# on a node and adjust these rules to match — Kepler's metric surface has
-# changed across releases.
+# Metric names and the `instance` grouping label below were verified against
+# a real Kepler release-0.7.11 container (reading actual RAPL via
+# rapl-sysfs on an AMD Zen 3 host) on 2026-07-28 — see
+# doc/energy-tracking-validation.md. Kepler does NOT expose a `node` label;
+# `instance` is the correct per-scrape-target grouping key (one per node in
+# a real DaemonSet deployment). An earlier version of this file grouped `by
+# (node)`, which doesn't error but silently collapses everything into a
+# single series with an empty node label — fixed here. If a different
+# Kepler version is deployed, run `curl -s localhost:9102/metrics | grep
+# kepler_` on a node and confirm these labels still match — Kepler's metric
+# surface has changed across releases.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -32,18 +39,18 @@ data:
           - record: wasmbed:kepler_namespace_watts:sum
             expr: >-
               sum(rate(kepler_container_joules_total{container_namespace="wasmbed"}[1m]))
-              by (node)
+              by (instance)
 
           # Watts attributed to ALL k8s pods on the node, any namespace.
           - record: wasmbed:kepler_all_pods_watts:sum
             expr: >-
-              sum(rate(kepler_container_joules_total[1m])) by (node)
+              sum(rate(kepler_container_joules_total[1m])) by (instance)
 
           # Whole-host watts, as measured by RAPL (or Kepler's model-based
           # estimate if RAPL isn't exposed by the host/VM).
           - record: wasmbed:kepler_host_watts:sum
             expr: >-
-              sum(rate(kepler_node_platform_joules_total[1m])) by (node)
+              sum(rate(kepler_node_platform_joules_total[1m])) by (instance)
 
           # Approximate non-pod share of host power: host total minus
           # everything attributed to a k8s pod. Dominated by the Renode
