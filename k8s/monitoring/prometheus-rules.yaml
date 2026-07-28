@@ -24,6 +24,28 @@
 # Kepler version is deployed, run `curl -s localhost:9102/metrics | grep
 # kepler_` on a node and confirm these labels still match — Kepler's metric
 # surface has changed across releases.
+#
+# Two further bugs were found on 2026-07-28 by running these rules against a
+# real Kepler DaemonSet in a real k3s cluster (see
+# doc/energy-tracking-validation.md §2.1a). Both were invisible to static
+# validation and to the earlier RAPL-host spot check:
+#
+#   1. MODE MISMATCH. The rules summed kepler_container_joules_total across
+#      both mode="dynamic" and mode="idle" (idle was 33x larger), while
+#      kepler_node_platform_joules_total only exposes mode="dynamic" on a
+#      host without RAPL. :unattributed = host - all_pods therefore returned
+#      -229 W. Every rule is now pinned to mode="dynamic".
+#
+#   2. PSEUDO-NAMESPACE CONTAMINATION. :all_pods had no namespace filter, so
+#      it also summed Kepler's synthetic container_namespace="system"/"kernel"
+#      buckets — which is exactly where the raw-`docker run` Renode container
+#      is filed. That made :unattributed (whose purpose is to approximate the
+#      Renode share) cancel Renode out against itself: measured 0.33 W where
+#      the true non-pod figure was 10.08 W, a 30x under-report.
+#
+# Regression check after any edit here — with a CPU-burning raw `docker run`
+# container active, :unattributed must track it, not ignore it:
+#   sum(rate(kepler_container_joules_total{mode="dynamic",container_namespace=~"system|kernel"}[1m]))
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -36,26 +58,61 @@ data:
         interval: 15s
         rules:
           # Watts attributed to wasmbed namespace pods only.
+          #
+          # mode="dynamic" is required on EVERY rule below: Kepler splits
+          # each container series into mode="dynamic" (power caused by the
+          # workload's own activity) and mode="idle" (that container's share
+          # of the node's static power). They are different quantities and
+          # must never be summed together or compared across metrics.
           - record: wasmbed:kepler_namespace_watts:sum
             expr: >-
-              sum(rate(kepler_container_joules_total{container_namespace="wasmbed"}[1m]))
+              sum(rate(kepler_container_joules_total{container_namespace="wasmbed",mode="dynamic"}[1m]))
               by (instance)
 
-          # Watts attributed to ALL k8s pods on the node, any namespace.
+          # Watts attributed to real k8s pods, any namespace.
+          #
+          # container_namespace!~"system|kernel" is required: Kepler files
+          # every process it CANNOT tie to a kubelet pod into the synthetic
+          # buckets container_namespace="system" / "kernel" (container_name
+          # and pod_name both become "system_processes"/"kernel_processes").
+          # The `wasmbed-renode` container — started by a raw `docker run`
+          # from inside the api-server pod, not by kubelet — lands in
+          # "system". Without this filter Renode is counted as a pod, and
+          # the :unattributed rule below (whose entire purpose is to
+          # approximate the Renode share) cancels it out to ~zero.
           - record: wasmbed:kepler_all_pods_watts:sum
             expr: >-
-              sum(rate(kepler_container_joules_total[1m])) by (instance)
+              sum(rate(kepler_container_joules_total{mode="dynamic",container_namespace!~"system|kernel"}[1m]))
+              by (instance)
 
-          # Whole-host watts, as measured by RAPL (or Kepler's model-based
-          # estimate if RAPL isn't exposed by the host/VM).
+          # Whole-host dynamic watts, as measured by RAPL (or Kepler's
+          # model-based estimate if RAPL isn't exposed by the host/VM).
+          #
+          # NOTE: kepler_node_platform_joules_total exposes ONLY mode="dynamic"
+          # when Kepler has no real power source (platform_power_source="none",
+          # i.e. a VM without RAPL). It may also expose mode="idle" on a host
+          # with real RAPL. Pinning to "dynamic" keeps this rule comparable
+          # with the pod rules above in BOTH environments.
           - record: wasmbed:kepler_host_watts:sum
             expr: >-
-              sum(rate(kepler_node_platform_joules_total[1m])) by (instance)
+              sum(rate(kepler_node_platform_joules_total{mode="dynamic"}[1m]))
+              by (instance)
 
           # Approximate non-pod share of host power: host total minus
-          # everything attributed to a k8s pod. Dominated by the Renode
+          # everything attributed to a real k8s pod. Dominated by the Renode
           # container in this deployment, but not exclusively — see the
           # file header above before quoting this as "Renode power".
+          #
+          # clamp_min(...,0): host and pod power come from two different
+          # Kepler estimators that are not reconciled with each other, so
+          # independent scrape/rounding skew can make this marginally
+          # negative (observed: -0.04 W on an idle host). Negative watts are
+          # meaningless; clamping avoids propagating them into the dataset.
+          # A LARGE negative value before clamping means the mode/namespace
+          # filters above have drifted out of sync — investigate, don't clamp.
           - record: wasmbed:kepler_unattributed_watts:approx
             expr: >-
-              wasmbed:kepler_host_watts:sum - wasmbed:kepler_all_pods_watts:sum
+              clamp_min(
+                wasmbed:kepler_host_watts:sum - wasmbed:kepler_all_pods_watts:sum,
+                0
+              )

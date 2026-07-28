@@ -26,7 +26,15 @@ capture_env() {
   (uname -a; lscpu | head -20; free -h; df -h /) >"$ENV/host.txt" 2>&1
   (docker version; kubectl version; rustc --version; python3 --version) >"$ENV/toolchain.txt" 2>&1
   (kubectl get ns,pods,svc,crd -A; kubectl get all,devices,applications -n wasmbed -o wide) >"$ENV/kubernetes.txt" 2>&1
-  (ip link; ss -tln | grep -E '3001|8080|30443'; sudo iptables -t nat -L PREROUTING -n 2>/dev/null | head -10) >"$ENV/network.txt" 2>&1
+  # sudo -n (non-interactive): environments without passwordless sudo must
+  # not abort the whole campaign over a diagnostic snapshot. Under `set -e
+  # -o pipefail`, a plain `sudo` here that fails auth makes the pipeline's
+  # exit status nonzero and kills the script before a single trial runs --
+  # confirmed 2026-07-28 on a host with no passwordless sudo configured (see
+  # doc/energy-tracking-validation.md). The `|| true` is required in
+  # addition to `-n`: pipefail still propagates sudo's failure through the
+  # `| head -10` pipe even though head itself succeeds.
+  (ip link; ss -tln | grep -E '3001|8080|30443'; sudo -n iptables -t nat -L PREROUTING -n 2>/dev/null | head -10 || true) >"$ENV/network.txt" 2>&1
 }
 
 capture_logs() {

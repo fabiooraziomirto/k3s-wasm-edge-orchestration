@@ -38,27 +38,36 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 # Install wasm target used for dashboard template compilation
 RUN /root/.cargo/bin/rustup target add wasm32-unknown-unknown
 # Pre-fetch template dependencies so runtime builds can run offline inside the cluster
+# NOTE: this manifest is written with printf, NOT with a `cat <<EOF` heredoc.
+# Heredocs in RUN are a BuildKit-only Dockerfile feature. Docker's classic
+# builder (still the default whenever the buildx component is absent -- e.g.
+# Docker 29.3.1 with no buildx plugin) does not parse them: it runs `cat` with
+# empty stdin and writes a ZERO-BYTE Cargo.toml, with no error at that step.
+# The build then dies further down with the misleading
+#   "failed to parse manifest ... missing either a `[package]` or a `[workspace]`"
+# printf is understood by both builders, so this stays portable.
 RUN set -eux; \
     mkdir -p /tmp/wasmbed-template/src; \
     printf 'fn main() {}' > /tmp/wasmbed-template/src/lib.rs; \
-    cat <<'EOF' >/tmp/wasmbed-template/Cargo.toml
-[package]
-name = "wasmbed-app"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-crate-type = ["cdylib"]
-
-[dependencies]
-wasm-bindgen = "0.2"
-console_error_panic_hook = "0.1"
-wee_alloc = "0.4"
-
-[profile.release]
-opt-level = "s"
-lto = true
-EOF
+    printf '%s\n' \
+      '[package]' \
+      'name = "wasmbed-app"' \
+      'version = "0.1.0"' \
+      'edition = "2021"' \
+      '' \
+      '[lib]' \
+      'crate-type = ["cdylib"]' \
+      '' \
+      '[dependencies]' \
+      'wasm-bindgen = "0.2"' \
+      'console_error_panic_hook = "0.1"' \
+      'wee_alloc = "0.4"' \
+      '' \
+      '[profile.release]' \
+      'opt-level = "s"' \
+      'lto = true' \
+      > /tmp/wasmbed-template/Cargo.toml; \
+    test -s /tmp/wasmbed-template/Cargo.toml
 COPY crates/wasmbed-api-server/templates/wasm_template.lock /tmp/wasmbed-template/Cargo.lock
 RUN set -eux; \
     /root/.cargo/bin/cargo fetch --manifest-path /tmp/wasmbed-template/Cargo.toml; \
@@ -86,11 +95,24 @@ RUN mkdir -p /app/zephyr-workspace/build/nrf52840dk/nrf52840/zephyr && \
     mkdir -p /app/zephyr-workspace/build/stm32f746g_disco/zephyr
 
 # Copy Zephyr firmware (if available)
-# Note: Firmware should be built before building this Docker image
+# Note: Firmware should be built before building this Docker image, but its
+# absence must not fail THIS build -- doc/K3S_DEPLOYMENT.md's own
+# troubleshooting section ("1. Firmware not found in image") checks for
+# missing firmware INSIDE an already-built image at runtime, which only makes
+# sense if the image can be built without firmware in the first place.
+# A wildcard COPY (zephyr.elf*) does NOT give that: Docker errors with
+# "no source files were specified" when the glob matches zero files, which is
+# every fresh clone (zephyr-workspace/ is gitignored -- see .gitignore:40 --
+# and nothing here has built firmware yet). Confirmed 2026-07-28: this broke
+# `docker build -f Dockerfile.api-server .` outright on an unmodified clone.
+# Copying the directory itself (no wildcard) tolerates an empty dir; the
+# build-context side of this fix (mkdir -p on the host before `docker build`,
+# so the directory exists even when no firmware was built) lives in
+# scripts/deploy-k3s.sh.
 # Correct path: nrf52840dk/nrf52840 (with slash, not underscore)
-COPY zephyr-workspace/build/nrf52840dk/nrf52840/zephyr/zephyr.elf* /app/zephyr-workspace/build/nrf52840dk/nrf52840/zephyr/
-COPY zephyr-workspace/build/stm32f4/zephyr/zephyr.elf* /app/zephyr-workspace/build/stm32f4/zephyr/
-COPY zephyr-workspace/build/stm32f746g_disco/zephyr/zephyr.elf* /app/zephyr-workspace/build/stm32f746g_disco/zephyr/
+COPY zephyr-workspace/build/nrf52840dk/nrf52840/zephyr/ /app/zephyr-workspace/build/nrf52840dk/nrf52840/zephyr/
+COPY zephyr-workspace/build/stm32f4/zephyr/ /app/zephyr-workspace/build/stm32f4/zephyr/
+COPY zephyr-workspace/build/stm32f746g_disco/zephyr/ /app/zephyr-workspace/build/stm32f746g_disco/zephyr/
 
 # Expose port
 EXPOSE 3001

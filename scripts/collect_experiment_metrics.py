@@ -64,6 +64,14 @@ ENERGY_RECORDING_RULES = {
     "unattributed_watts_approx": "wasmbed:kepler_unattributed_watts:approx",
 }
 
+# Kepler publishes the provenance of its own numbers on this metric.
+KEPLER_NODE_INFO_QUERY = "kepler_node_info"
+
+# platform_power_source values that mean "read from hardware". Anything else
+# (notably "none") means Kepler could not find a RAPL/ACPI power meter and
+# every watt above is the output of a regression model instead.
+KEPLER_HARDWARE_POWER_SOURCES = {"rapl-sysfs", "rapl-msr", "acpi", "hmc", "redfish"}
+
 
 @dataclass
 class TrialRecord:
@@ -104,6 +112,55 @@ def query_prometheus_instant(prom_base: str, query: str, at_ts: float, timeout: 
         return None
 
 
+def query_kepler_power_provenance(prom_base: str, at_ts: float, timeout: float = 5.0) -> dict[str, Any]:
+    """Record WHICH power source produced the energy numbers in this run.
+
+    Kepler emits kepler_node_*_joules_total identically whether it read a real
+    RAPL counter or fell back to its regression estimator, so a dataset
+    collected on a VM without RAPL is byte-for-byte indistinguishable from one
+    collected on instrumented hardware unless the provenance is written down.
+    That ambiguity must never reach a paper: `is_estimated` here is the energy
+    analogue of the `is_synthetic` markers used in crates/ (Phase 0).
+
+    Returns is_estimated=None when provenance could not be determined -- an
+    unknown provenance is NOT the same as a verified hardware measurement, and
+    downstream consumers must treat None as "unverified", not as False.
+    """
+    provenance: dict[str, Any] = {
+        "is_estimated": None,
+        "detail": "kepler_node_info unavailable -- provenance unverified",
+    }
+    try:
+        resp = requests.get(
+            f"{prom_base}/api/v1/query",
+            params={"query": KEPLER_NODE_INFO_QUERY, "time": at_ts},
+            timeout=timeout,
+        )
+        resp.raise_for_status()
+        result = resp.json().get("data", {}).get("result", [])
+        if not result:
+            return provenance
+        labels = result[0].get("metric", {})
+        platform = labels.get("platform_power_source", "")
+        components = labels.get("components_power_source", "")
+        is_estimated = platform not in KEPLER_HARDWARE_POWER_SOURCES
+        return {
+            "platform_power_source": platform,
+            "components_power_source": components,
+            "cpu_architecture": labels.get("cpu_architecture", ""),
+            "is_estimated": is_estimated,
+            "detail": (
+                f"MODEL ESTIMATE -- no hardware power meter "
+                f"(platform_power_source={platform!r}); watts are regression "
+                f"output, not measurements"
+                if is_estimated else
+                f"hardware measurement (platform_power_source={platform!r})"
+            ),
+        }
+    except Exception:
+        return provenance
+
+
 def query_energy_window(prom_base: str, start_ts: float, end_ts: float) -> dict[str, Any]:
     """Average each Kepler-derived recording rule over [start_ts, end_ts]
     via avg_over_time(), evaluated at end_ts. This is a window average, not
@@ -113,6 +170,17 @@ def query_energy_window(prom_base: str, start_ts: float, end_ts: float) -> dict[
     two samples and is flagged `low_confidence` rather than silently trusted.
     """
     window_s = max(end_ts - start_ts, 0.001)
+    # PromQL range-vector durations do not accept decimals: `avg_over_time(x[11.13s])`
+    # is a parse error ("unknown unit \".\" in duration"), not silently truncated.
+    # Confirmed 2026-07-28 against a real Prometheus v2.55.1: with the raw
+    # `{window_s:.3f}s` formatting previously used here, EVERY trial's energy
+    # query failed this way and silently degraded to `unavailable: true` --
+    # the whole point of Phase 3 was never actually exercised until this was
+    # run against a live cluster. window_s itself (float, precise wall-clock
+    # duration) is still recorded in the output for analysis; only the PromQL
+    # literal needs whole seconds, and 1s is the floor since a 0s range is
+    # meaningless.
+    promql_window_s = max(round(window_s), 1)
     result: dict[str, Any] = {
         "window_start": start_ts,
         "window_end": end_ts,
@@ -121,7 +189,7 @@ def query_energy_window(prom_base: str, start_ts: float, end_ts: float) -> dict[
         "low_confidence": window_s < 2 * PROMETHEUS_SCRAPE_INTERVAL_S,
     }
     for key, rule in ENERGY_RECORDING_RULES.items():
-        expr = f"avg_over_time({rule}[{window_s:.3f}s])"
+        expr = f"avg_over_time({rule}[{promql_window_s}s])"
         result[key] = query_prometheus_instant(prom_base, expr, end_ts)
     if all(result.get(key) is None for key in ENERGY_RECORDING_RULES):
         result["unavailable"] = True
@@ -140,14 +208,26 @@ def run_kubectl_json(args: list[str]) -> dict[str, Any] | list[Any] | None:
 
 
 def get_devices(namespace: str) -> list[dict[str, Any]]:
-    payload = run_kubectl_json(["get", "devices", "-n", namespace, "-o", "json"])
+    # Fully qualified as devices.wasmbed.github.io, NOT bare "devices": on a
+    # cluster that also runs any other operator defining a "devices" resource
+    # (e.g. a Crossplane provider), kubectl's plural-name resolution is
+    # genuinely ambiguous and not guaranteed to pick this project's CRD.
+    # Confirmed 2026-07-28: on a cluster already running
+    # devices.iot.s4t.crossplane.io, `kubectl get devices` silently resolved
+    # to that OTHER, unrelated, empty CRD -- every trial in this script then
+    # failed with "no device found" even though a real, enrolled wasmbed
+    # device existed, because get_devices() was reading the wrong resource
+    # entirely rather than erroring. Same fix applied in the Rust api-server
+    # (crates/wasmbed-api-server, crates/wasmbed-qemu-manager) for the
+    # identical bug against the same live symptom.
+    payload = run_kubectl_json(["get", "devices.wasmbed.github.io", "-n", namespace, "-o", "json"])
     if not isinstance(payload, dict):
         return []
     return list(payload.get("items", []))
 
 
 def get_applications(namespace: str) -> list[dict[str, Any]]:
-    payload = run_kubectl_json(["get", "applications", "-n", namespace, "-o", "json"])
+    payload = run_kubectl_json(["get", "applications.wasmbed.github.io", "-n", namespace, "-o", "json"])
     if not isinstance(payload, dict):
         return []
     return list(payload.get("items", []))
@@ -307,7 +387,7 @@ def run_enrollment_trial(api_base: str, gateway_http: str, namespace: str, trial
             f"{gateway_http}/api/v1/board/register",
             json={
                 "device_id": device_name,
-                "endpoint": jsonpath(namespace, "device", device_name, "{.status.gateway.endpoint}") or "",
+                "endpoint": jsonpath(namespace, "devices.wasmbed.github.io", device_name, "{.status.gateway.endpoint}") or "",
                 "mcu_type": device.get("spec", {}).get("mcuType", ""),
                 "capabilities": {"has_ethernet": True, "has_wifi": False, "has_network": True},
             },
@@ -323,8 +403,8 @@ def run_enrollment_trial(api_base: str, gateway_http: str, namespace: str, trial
     except Exception as exc:
         return TrialRecord("enrollment", trial, False, details={"reason": f"api probe failed: {exc}"})
 
-    phase = jsonpath(namespace, "device", device_name, "{.status.phase}")
-    last_hb = jsonpath(namespace, "device", device_name, "{.status.last_heartbeat}")
+    phase = jsonpath(namespace, "devices.wasmbed.github.io", device_name, "{.status.phase}")
+    last_hb = jsonpath(namespace, "devices.wasmbed.github.io", device_name, "{.status.last_heartbeat}")
     end = time.perf_counter()
 
     # Success: device is visible via API and has sent at least one heartbeat.
@@ -381,7 +461,7 @@ def run_deploy_trial(api_base: str, namespace: str, trial: int) -> TrialRecord:
     existing_apps = get_applications(namespace)
     for app in existing_apps:
         app_name = app["metadata"]["name"]
-        run_kubectl_json(["delete", "application", app_name, "-n", namespace, "--ignore-not-found=true"])
+        run_kubectl_json(["delete", "applications.wasmbed.github.io", app_name, "-n", namespace, "--ignore-not-found=true"])
     if existing_apps:
         time.sleep(2)  # let the controller process the deletions
 
@@ -430,7 +510,7 @@ def run_deploy_trial(api_base: str, namespace: str, trial: int) -> TrialRecord:
     observed_phase = None
     observed_device_status = None
     while time.time() < deadline:
-        app_obj = run_kubectl_json(["get", "application", app_name, "-n", namespace, "-o", "json"])
+        app_obj = run_kubectl_json(["get", "applications.wasmbed.github.io", app_name, "-n", namespace, "-o", "json"])
         if isinstance(app_obj, dict):
             status = app_obj.get("status") or {}
             observed_phase = status.get("phase")
@@ -644,6 +724,18 @@ def main() -> int:
 
     records: list[TrialRecord] = []
 
+    # Resolved once per run: Kepler's power source cannot change mid-run, and
+    # it decides whether every watt below is a measurement or a model output.
+    power_provenance = (
+        None if args.no_energy
+        else query_kepler_power_provenance(args.prometheus_base, time.time())
+    )
+    if power_provenance is not None and power_provenance.get("is_estimated") is not False:
+        print(
+            f"WARNING: energy provenance -- {power_provenance.get('detail')}",
+            file=sys.stderr,
+        )
+
     snapshot_start = time.time()
     snapshot = run_system_snapshot_trial(args.api_base, 1)
     snapshot_end = time.time()
@@ -681,6 +773,9 @@ def main() -> int:
         "measurement_scope": MEASUREMENT_SCOPE,
         "energy_enabled": not args.no_energy,
         "prometheus_base": None if args.no_energy else args.prometheus_base,
+        # See query_kepler_power_provenance(): is_estimated True means the
+        # watts in every record below are regression output, not measurements.
+        "energy_power_provenance": power_provenance,
         "records": [asdict(record) for record in records],
         "summary": summary,
     }

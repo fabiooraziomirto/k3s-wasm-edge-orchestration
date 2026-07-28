@@ -1,0 +1,38 @@
+# Energy-tracking validation tool, not a production wasmbed component.
+# Runs a real Wasmtime-fueled WASM invocation in a cycle of idle/load phases
+# so fuel consumption can be correlated with Kepler-observed wattage for the
+# sustainability claim. See Dockerfile.energy-probe and
+# crates/wasmbed-wasm-runtime/src/bin/fuel_load_probe.rs.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: energy-probe
+  namespace: wasmbed
+  labels:
+    app: energy-probe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: energy-probe
+  template:
+    metadata:
+      labels:
+        app: energy-probe
+    spec:
+      containers:
+      - name: energy-probe
+        image: localhost:5000/wasmbed/energy-probe:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: IDLE_SECS
+          value: "30"
+        - name: LOAD_SECS
+          value: "30"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: "1"
+            memory: 256Mi

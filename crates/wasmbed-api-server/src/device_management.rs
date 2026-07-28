@@ -22,9 +22,21 @@ impl DeviceManager {
     pub async fn get_all_devices(&self) -> anyhow::Result<Vec<DeviceInfo>> {
         info!("Fetching all devices from Kubernetes");
         
-        // Query Kubernetes for Device CRDs
+        // Query Kubernetes for Device CRDs. Fully qualified as
+        // devices.wasmbed.github.io, NOT the bare "devices" -- clusters that
+        // also run any other operator defining a "devices" resource (e.g. a
+        // Crossplane provider) make the bare plural genuinely ambiguous.
+        // kubectl's tie-break is deterministic but not "this project wins":
+        // on 2026-07-28, alongside a cluster already running
+        // devices.iot.s4t.crossplane.io, `kubectl get devices` consistently
+        // resolved to the OTHER (cluster-scoped) CRD -- 403 Forbidden for
+        // this ServiceAccount's correctly-scoped RBAC, and for any identity
+        // with broader RBAC, a silent, wrong, empty/unrelated result instead
+        // of this project's devices. Same fix applied to every other bare
+        // device/application/gateway kubectl invocation in this crate and in
+        // wasmbed-qemu-manager (which shares this pod's ServiceAccount).
         let output = tokio::process::Command::new("kubectl")
-            .args(&["get", "devices", "-n", "wasmbed", "-o", "json"])
+            .args(&["get", "devices.wasmbed.github.io", "-n", "wasmbed", "-o", "json"])
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .output()

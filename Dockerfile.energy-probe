@@ -1,0 +1,28 @@
+# Energy-tracking probe: runs crates/wasmbed-wasm-runtime/src/bin/fuel_load_probe.rs
+# as a real, Kepler-attributable pod in the wasmbed namespace, so Wasmtime
+# fuel consumption from a REAL WASM invocation can be correlated with
+# Kepler-observed power under an actual (not synthetic) load -- see that
+# file's header comment for why this exists.
+FROM rust:1.88-slim as builder
+
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+
+RUN cargo build --release --bin fuel_load_probe -p wasmbed-wasm-runtime
+
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /build/target/release/fuel_load_probe /usr/local/bin/fuel_load_probe
+
+CMD ["fuel_load_probe"]

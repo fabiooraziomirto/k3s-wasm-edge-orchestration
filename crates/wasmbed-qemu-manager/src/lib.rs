@@ -661,7 +661,7 @@ impl RenodeManager {
         let device_from_crd = {
             // Try to get device from Kubernetes
             let output = tokio::process::Command::new("kubectl")
-                .args(&["get", "device", device_id, "-n", "wasmbed", "-o", "json"])
+                .args(&["get", "devices.wasmbed.github.io", device_id, "-n", "wasmbed", "-o", "json"])
                 .output()
                 .await;
             
@@ -800,7 +800,7 @@ impl RenodeManager {
                 // It's a non-local IP address - try to get gateway name from device CRD
                 eprintln!("Gateway endpoint {} is an IP address, trying to get gateway name from device CRD", gateway_ep);
                 let device_crd_output = Command::new("kubectl")
-                    .args(&["get", "device", device_id, "-n", "wasmbed", "-o", "jsonpath={.status.gateway.name}"])
+                    .args(&["get", "devices.wasmbed.github.io", device_id, "-n", "wasmbed", "-o", "jsonpath={.status.gateway.name}"])
                     .output();
                 
                 if let Ok(output) = device_crd_output {
@@ -888,7 +888,7 @@ impl RenodeManager {
             // No gateway endpoint provided - try to get from device CRD
             eprintln!("No gateway endpoint provided, getting gateway name from device CRD");
             let device_crd_output = Command::new("kubectl")
-                .args(&["get", "device", device_id, "-n", "wasmbed", "-o", "jsonpath={.status.gateway.name}"])
+                .args(&["get", "devices.wasmbed.github.io", device_id, "-n", "wasmbed", "-o", "jsonpath={.status.gateway.name}"])
                 .output();
             
             if let Ok(output) = device_crd_output {
@@ -1545,7 +1545,7 @@ impl RenodeManager {
         eprintln!("🔍🔍🔍 CRITICAL: Reading mcuType from CRD for device {} 🔍🔍🔍", device_id);
         
         let crd_mcu_type = std::process::Command::new("kubectl")
-            .args(&["get", "device", device_id, "-n", "wasmbed", "-o", "jsonpath={.spec.mcuType}"])
+            .args(&["get", "devices.wasmbed.github.io", device_id, "-n", "wasmbed", "-o", "jsonpath={.spec.mcuType}"])
             .output();
         
         let final_mcu_type = match crd_mcu_type {

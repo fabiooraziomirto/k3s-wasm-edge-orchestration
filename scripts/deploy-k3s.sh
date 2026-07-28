@@ -49,6 +49,14 @@ echo ""
 echo "=== Build e Push Immagini ==="
 cd "$(dirname "$0")/.."
 
+# Dockerfile.api-server COPYs these directories (not a firmware.elf* glob,
+# see that file for why) so the image build succeeds whether or not Zephyr
+# firmware has actually been built yet. zephyr-workspace/ is gitignored, so
+# on a fresh clone it doesn't exist at all -- create the empty tree here.
+mkdir -p zephyr-workspace/build/nrf52840dk/nrf52840/zephyr \
+         zephyr-workspace/build/stm32f4/zephyr \
+         zephyr-workspace/build/stm32f746g_disco/zephyr
+
 IMAGES=(
     "api-server:Dockerfile.api-server"
     "gateway:Dockerfile.gateway"

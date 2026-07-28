@@ -447,6 +447,17 @@ impl WasmRuntime {
             .ok_or_else(|| WasmRuntimeError::ExecutionError(
                 format!("Instance {} not found", instance_id)
             ))?;
+        // create_instance() increments context.active_instances (runtime.rs)
+        // but this method never decremented it -- only shutdown() reset it
+        // to 0. Confirmed 2026-07-28: every previous test/caller only ever
+        // created 1-2 instances per run, so the leak was invisible. The
+        // first sustained create/remove loop (crates/wasmbed-wasm-runtime/
+        // src/bin/fuel_load_probe.rs, built to correlate real Wasmtime fuel
+        // consumption with Kepler-observed power) hit max_instances after a
+        // handful of iterations and then failed every subsequent
+        // create_instance() call permanently, for the rest of the process
+        // lifetime.
+        self.context.active_instances = self.context.active_instances.saturating_sub(1);
         Ok(())
     }
 

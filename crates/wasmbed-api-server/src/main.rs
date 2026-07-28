@@ -262,7 +262,7 @@ async fn do_connect_device(
     
     let patch_str = serde_json::to_string(&patch).unwrap_or_else(|_| "{}".to_string());
     let _output = tokio::process::Command::new("kubectl")
-        .args(&["patch", "device", &device_id, "-n", "wasmbed", "--type", "merge", "--subresource", "status", "--patch", &patch_str])
+        .args(&["patch", "devices.wasmbed.github.io", &device_id, "-n", "wasmbed", "--type", "merge", "--subresource", "status", "--patch", &patch_str])
         .output()
         .await;
     
@@ -390,7 +390,7 @@ async fn connect_device_standalone_handler(
     
     let patch_str = serde_json::to_string(&patch).unwrap_or_else(|_| "{}".to_string());
     let output = tokio::process::Command::new("kubectl")
-        .args(&["patch", "device", &device_id, "-n", "wasmbed", "--type", "merge", "--subresource", "status", "--patch", &patch_str])
+        .args(&["patch", "devices.wasmbed.github.io", &device_id, "-n", "wasmbed", "--type", "merge", "--subresource", "status", "--patch", &patch_str])
         .output()
         .await;
         
@@ -658,7 +658,7 @@ impl DashboardApi {
         info!("Deleting gateway: {}", id);
 
         let output = tokio::process::Command::new("kubectl")
-            .args(&["delete", "gateway", &id, "-n", "wasmbed"])
+            .args(&["delete", "gateways.wasmbed.io", &id, "-n", "wasmbed"])
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .output()
@@ -692,7 +692,7 @@ impl DashboardApi {
         info!("Deleting device: {}", id);
 
         let output = tokio::process::Command::new("kubectl")
-            .args(&["delete", "device", &id, "-n", "wasmbed"])
+            .args(&["delete", "devices.wasmbed.github.io", &id, "-n", "wasmbed"])
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .output()
@@ -726,7 +726,7 @@ impl DashboardApi {
         info!("Deleting application: {}", id);
 
         let output = tokio::process::Command::new("kubectl")
-            .args(&["delete", "application", &id, "-n", "wasmbed"])
+            .args(&["delete", "applications.wasmbed.github.io", &id, "-n", "wasmbed"])
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .output()
@@ -761,7 +761,7 @@ impl DashboardApi {
 
         // Get current gateway status
         let output = tokio::process::Command::new("kubectl")
-            .args(&["get", "gateway", &id, "-n", "wasmbed", "-o", "json"])
+            .args(&["get", "gateways.wasmbed.io", &id, "-n", "wasmbed", "-o", "json"])
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .output()
@@ -785,7 +785,7 @@ impl DashboardApi {
                         // Update gateway status using kubectl patch
                         let patch_output = tokio::process::Command::new("kubectl")
                             .args(&[
-                                "patch", "gateway", &id, "-n", "wasmbed",
+                                "patch", "gateways.wasmbed.io", &id, "-n", "wasmbed",
                                 "--type", "merge",
                                 "--patch", &format!("{{\"status\":{{\"phase\":\"{}\"}}}}", new_status)
                             ])
@@ -858,7 +858,7 @@ impl DashboardApi {
         let patch_str = serde_json::to_string(&patch).unwrap_or_else(|_| "{}".to_string());
         
         let output = tokio::process::Command::new("kubectl")
-            .args(&["patch", "gateway", &id, "-n", "wasmbed", "--type", "merge", "--patch", &patch_str])
+            .args(&["patch", "gateways.wasmbed.io", &id, "-n", "wasmbed", "--type", "merge", "--patch", &patch_str])
             .output()
             .await;
             
@@ -1284,7 +1284,7 @@ spec:
         let patch_str = serde_json::to_string(&patch).unwrap_or_else(|_| "{}".to_string());
         
         let output = tokio::process::Command::new("kubectl")
-            .args(&["patch", "device", &device_id, "-n", "wasmbed", "--type", "merge", "--subresource", "status", "--patch", &patch_str])
+            .args(&["patch", "devices.wasmbed.github.io", &device_id, "-n", "wasmbed", "--type", "merge", "--subresource", "status", "--patch", &patch_str])
             .output()
             .await;
             
@@ -1380,7 +1380,7 @@ spec:
         
         // Try to get TLS port from gateway CRD
         let output = tokio::process::Command::new("kubectl")
-            .args(&["get", "gateway", &gateway_name, "-n", "wasmbed", "-o", "json"])
+            .args(&["get", "gateways.wasmbed.io", &gateway_name, "-n", "wasmbed", "-o", "json"])
             .output()
             .await;
         
@@ -1475,7 +1475,7 @@ spec:
         
         let patch_str = serde_json::to_string(&patch).unwrap_or_else(|_| "{}".to_string());
         let _ = tokio::process::Command::new("kubectl")
-            .args(&["patch", "device", device_id, "-n", "wasmbed", "--type", "merge", "--subresource", "status", "--patch", &patch_str])
+            .args(&["patch", "devices.wasmbed.github.io", device_id, "-n", "wasmbed", "--type", "merge", "--subresource", "status", "--patch", &patch_str])
             .output()
             .await;
     }
@@ -1499,7 +1499,7 @@ spec:
         let patch_str = serde_json::to_string(&patch).unwrap_or_else(|_| "{}".to_string());
         
         let output = tokio::process::Command::new("kubectl")
-            .args(&["patch", "device", &device_id, "-n", "wasmbed", "--type", "merge", "--subresource", "status", "--patch", &patch_str])
+            .args(&["patch", "devices.wasmbed.github.io", &device_id, "-n", "wasmbed", "--type", "merge", "--subresource", "status", "--patch", &patch_str])
             .output()
             .await;
             
@@ -1943,7 +1943,7 @@ spec:
         let gateway_endpoint = {
             // Fetch device from Kubernetes to get gateway name
             let output = tokio::process::Command::new("kubectl")
-                .args(&["get", "device", &device_id, "-n", "wasmbed", "-o", "json"])
+                .args(&["get", "devices.wasmbed.github.io", &device_id, "-n", "wasmbed", "-o", "json"])
                 .output()
                 .await;
             
@@ -2044,7 +2044,7 @@ spec:
         // Look up the device's assigned gateway from the Kubernetes CRD
         let gateway_endpoint = {
             let output = tokio::process::Command::new("kubectl")
-                .args(&["get", "device", &device_id, "-n", "wasmbed", "-o", "json"])
+                .args(&["get", "devices.wasmbed.github.io", &device_id, "-n", "wasmbed", "-o", "json"])
                 .output()
                 .await;
             match output {

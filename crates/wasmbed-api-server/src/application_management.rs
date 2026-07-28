@@ -24,7 +24,7 @@ impl ApplicationManager {
         
         // Query Kubernetes for Application CRDs
         let output = tokio::process::Command::new("kubectl")
-            .args(&["get", "applications", "-n", "wasmbed", "-o", "json"])
+            .args(&["get", "applications.wasmbed.github.io", "-n", "wasmbed", "-o", "json"])
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .output()
