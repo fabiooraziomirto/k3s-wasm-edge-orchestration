@@ -28,6 +28,25 @@ int wamr_call_function(uint32_t instance_id, const char *function_name,
 /* Call WASI _start entry point (falls back to "run" for non-WASI modules) */
 int wamr_call_wasi_start(uint32_t instance_id);
 
+/*
+ * Instruction metering: WAMR's equivalent of Wasmtime's fuel API, enabled by
+ * WAMR_BUILD_INSTRUCTION_METERING in CMakeLists.txt. Every instance gets a
+ * fixed instruction budget at wamr_instantiate() time (see
+ * WAMR_INSTRUCTION_LIMIT in wamr_integration.c) — this is a computational
+ * proxy for comparing workloads, not a time or energy measurement. Correlate
+ * with Kepler energy readings over the same wall-clock window if you need to
+ * relate it to power (see k8s/monitoring/README.md).
+ *
+ * True if the most recently completed call on this instance failed because
+ * it hit the configured instruction limit, as opposed to any other trap
+ * (WASI proc_exit, illegal instruction, out-of-bounds access, ...). Best
+ * effort: implemented by matching the WAMR exception string, the same
+ * technique wamr_call_wasi_start() already uses for "wasi proc exit" — see
+ * the implementation comment for how to confirm the exact string against
+ * the vendored WAMR revision.
+ */
+bool wamr_last_call_hit_instruction_limit(uint32_t instance_id);
+
 /* Process WAMR runtime (call periodically) */
 void wamr_process(void);
 

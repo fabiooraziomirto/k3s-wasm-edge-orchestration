@@ -18,6 +18,21 @@ pub struct MetricValue {
     pub value: f64,
     pub timestamp: u64, // Changed to u64 for JSON serialization
     pub labels: HashMap<String, String>,
+    /// True when `value` is a hardcoded placeholder (local fallback, or an
+    /// upstream infrastructure service reporting its own placeholder), not a
+    /// real measurement. `#[serde(default)]` so metrics fetched from an older
+    /// infrastructure build that doesn't emit this field still deserialize,
+    /// defaulting to "not synthetic" would be misleading, so absence of the
+    /// field is unexpected and should be treated as suspect data upstream.
+    #[serde(default = "default_is_synthetic_unknown")]
+    pub is_synthetic: bool,
+}
+
+/// Deserializing a `MetricValue` with no `is_synthetic` field means it came
+/// from code that predates this tagging; treat it as synthetic until proven
+/// otherwise rather than silently assuming it's real telemetry.
+fn default_is_synthetic_unknown() -> bool {
+    true
 }
 
 impl MonitoringDashboard {
@@ -59,7 +74,15 @@ impl MonitoringDashboard {
     
     async fn get_fallback_metrics(&self) -> anyhow::Result<Vec<MetricValue>> {
         let mut metrics = Vec::new();
-        
+
+        // No real collector is wired up here either (no /proc, no cgroups,
+        // no metrics-server query) — these are hardcoded placeholders used
+        // only when the infrastructure service is unreachable or unconfigured.
+        // Tagged `is_synthetic: true` so callers (dashboard, experiment
+        // scripts) can't mistake them for telemetry. See
+        // doc/energy-tracking-assessment.md, section 2.
+        warn!("get_fallback_metrics: returning synthetic placeholder values (cpu_usage/memory_usage/disk_usage), not real telemetry");
+
         metrics.push(MetricValue {
             name: "cpu_usage".to_string(),
             value: 45.0,
@@ -68,8 +91,9 @@ impl MonitoringDashboard {
                 .unwrap()
                 .as_secs(),
             labels: HashMap::new(),
+            is_synthetic: true,
         });
-        
+
         metrics.push(MetricValue {
             name: "memory_usage".to_string(),
             value: 60.0,
@@ -78,8 +102,9 @@ impl MonitoringDashboard {
                 .unwrap()
                 .as_secs(),
             labels: HashMap::new(),
+            is_synthetic: true,
         });
-        
+
         metrics.push(MetricValue {
             name: "disk_usage".to_string(),
             value: 30.0,
@@ -88,8 +113,9 @@ impl MonitoringDashboard {
                 .unwrap()
                 .as_secs(),
             labels: HashMap::new(),
+            is_synthetic: true,
         });
-        
+
         info!("Using fallback metrics: {}", metrics.len());
         Ok(metrics)
     }

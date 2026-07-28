@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kepler-exporter
+  namespace: wasmbed-monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kepler-exporter
+rules:
+# Kepler correlates cgroup/process samples with pod metadata (namespace, pod
+# name, container name) by reading nodes and pods cluster-wide.
+- apiGroups: [""]
+  resources: ["nodes", "nodes/proxy", "nodes/metrics", "pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["replicasets"]
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kepler-exporter
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kepler-exporter
+subjects:
+- kind: ServiceAccount
+  name: kepler-exporter
+  namespace: wasmbed-monitoring

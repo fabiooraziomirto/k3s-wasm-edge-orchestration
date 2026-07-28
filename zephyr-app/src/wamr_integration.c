@@ -38,12 +38,35 @@ typedef struct {
     wasm_module_inst_t instance;
     wasm_exec_env_t exec_env;
     bool in_use;
+    /* True once a call on this instance has failed by hitting
+     * WAMR_INSTRUCTION_LIMIT (see wamr_last_call_hit_instruction_limit). */
+    bool instruction_limit_hit;
 } instance_entry_t;
 
 static module_entry_t modules[MAX_MODULES];
 static instance_entry_t instances[MAX_INSTANCES];
 static uint32_t next_module_id = 1;
 static uint32_t next_instance_id = 1;
+
+/* Fixed per-instance instruction budget, WAMR_BUILD_INSTRUCTION_METERING
+ * required (see CMakeLists.txt). Same order of magnitude as the MCU fuel
+ * budget in crates/wasmbed-wasm-runtime/src/config.rs (5_000_000) so the two
+ * runtimes are at least roughly comparable — "one WAMR instruction" and "one
+ * Wasmtime fuel unit" are NOT guaranteed equivalent costs, treat any
+ * cross-runtime comparison as approximate. See
+ * doc/energy-tracking-assessment.md. */
+#define WAMR_INSTRUCTION_LIMIT 5000000
+
+/* Substring WAMR is believed to use in the exception message when
+ * instruction metering trips (based on the public API's naming, not a
+ * verified source read — no vendored WAMR tree or internet access in this
+ * sandbox). Deliberately more specific than just "instruction", to avoid
+ * false-matching unrelated traps whose message also mentions
+ * "instruction" (e.g. an illegal/unreachable instruction trap). The first
+ * time this actually fires during a real build, check the logged exception
+ * text (LOG_ERR below prints it verbatim) and correct this constant if it
+ * doesn't match — do not trust it unverified. */
+#define WAMR_INSTRUCTION_LIMIT_EXCEPTION_SUBSTR "instruction limit"
 
 /* Initialize WAMR runtime */
 int wamr_init(void)
@@ -221,6 +244,15 @@ int wamr_instantiate(uint32_t module_id, uint32_t *instance_id)
     instances[slot].instance = instance;
     instances[slot].exec_env = exec_env;
     instances[slot].in_use = true;
+    instances[slot].instruction_limit_hit = false;
+
+#if WASM_ENABLE_INSTRUCTION_METERING != 0
+    wasm_runtime_set_instruction_count_limit(exec_env, WAMR_INSTRUCTION_LIMIT);
+    LOG_DBG("Instruction limit set to %u for instance %u", WAMR_INSTRUCTION_LIMIT, instances[slot].id);
+#else
+    LOG_WRN("Instruction metering not compiled into this WAMR build "
+            "(WASM_ENABLE_INSTRUCTION_METERING==0) — no instruction budget enforced");
+#endif
 
     *instance_id = instances[slot].id;
     LOG_INF("WASM module instantiated (instance_id: %u)", *instance_id);
@@ -240,16 +272,18 @@ int wamr_call_function(uint32_t instance_id, const char *function_name,
     LOG_INF("Calling WASM function: %s (instance_id: %u)", function_name, instance_id);
 
     /* Find instance */
+    int slot_idx = -1;
     wasm_module_inst_t instance = NULL;
     wasm_exec_env_t exec_env = NULL;
     for (int i = 0; i < MAX_INSTANCES; i++) {
         if (instances[i].in_use && instances[i].id == instance_id) {
             instance = instances[i].instance;
             exec_env = instances[i].exec_env;
+            slot_idx = i;
             break;
         }
     }
-    
+
     if (instance == NULL || exec_env == NULL) {
         LOG_ERR("Instance not found: %u", instance_id);
         return -1;
@@ -263,16 +297,25 @@ int wamr_call_function(uint32_t instance_id, const char *function_name,
     }
 
     /* Call WASM function - wasm_runtime_call_wasm takes argc and argv array */
-    /* Note: Results are stored in the WASM stack and can be read using 
+    /* Note: Results are stored in the WASM stack and can be read using
      * wasm_runtime_get_function_ret_value or similar APIs if needed */
     if (!wasm_runtime_call_wasm(exec_env, function, args_count, args)) {
         const char *exception = wasm_runtime_get_exception(instance);
+        bool limit_hit = exception != NULL
+            && strstr(exception, WAMR_INSTRUCTION_LIMIT_EXCEPTION_SUBSTR) != NULL;
+        if (slot_idx >= 0) {
+            instances[slot_idx].instruction_limit_hit = limit_hit;
+        }
         if (exception) {
-            LOG_ERR("WASM exception: %s", exception);
+            LOG_ERR("WASM exception: %s%s", exception, limit_hit ? " (instruction limit hit)" : "");
         } else {
             LOG_ERR("Failed to call WASM function: %s", function_name);
         }
         return -1;
+    }
+
+    if (slot_idx >= 0) {
+        instances[slot_idx].instruction_limit_hit = false;
     }
 
     /* TODO: Read return values from WASM stack if results_count > 0
@@ -297,12 +340,14 @@ int wamr_call_wasi_start(uint32_t instance_id)
         return -1;
     }
 
+    int slot_idx = -1;
     wasm_module_inst_t instance = NULL;
     wasm_exec_env_t exec_env = NULL;
     for (int i = 0; i < MAX_INSTANCES; i++) {
         if (instances[i].in_use && instances[i].id == instance_id) {
             instance = instances[i].instance;
             exec_env = instances[i].exec_env;
+            slot_idx = i;
             break;
         }
     }
@@ -324,6 +369,9 @@ int wamr_call_wasi_start(uint32_t instance_id)
             if (ex != NULL && strstr(ex, "wasi proc exit") != NULL) {
                 uint32_t exit_code = wasm_runtime_get_wasi_exit_code(instance);
                 wasm_runtime_clear_exception(instance);
+                if (slot_idx >= 0) {
+                    instances[slot_idx].instruction_limit_hit = false;
+                }
                 if (exit_code == 0) {
                     LOG_INF("WASI module exited cleanly (proc_exit 0)");
                     return 0;
@@ -331,8 +379,16 @@ int wamr_call_wasi_start(uint32_t instance_id)
                 LOG_ERR("WASI module exited with error (proc_exit %u)", exit_code);
                 return -1;
             }
-            LOG_ERR("WASI _start failed: %s", ex ? ex : "(unknown)");
+            bool limit_hit = ex != NULL
+                && strstr(ex, WAMR_INSTRUCTION_LIMIT_EXCEPTION_SUBSTR) != NULL;
+            if (slot_idx >= 0) {
+                instances[slot_idx].instruction_limit_hit = limit_hit;
+            }
+            LOG_ERR("WASI _start failed: %s%s", ex ? ex : "(unknown)", limit_hit ? " (instruction limit hit)" : "");
             return -1;
+        }
+        if (slot_idx >= 0) {
+            instances[slot_idx].instruction_limit_hit = false;
         }
         return 0;
     }
@@ -343,14 +399,34 @@ int wamr_call_wasi_start(uint32_t instance_id)
     if (run_fn != NULL) {
         LOG_INF("Calling 'run' (instance %u)", instance_id);
         if (!wasm_runtime_call_wasm(exec_env, run_fn, 0, NULL)) {
-            LOG_ERR("'run' failed: %s", wasm_runtime_get_exception(instance));
+            const char *ex = wasm_runtime_get_exception(instance);
+            bool limit_hit = ex != NULL
+                && strstr(ex, WAMR_INSTRUCTION_LIMIT_EXCEPTION_SUBSTR) != NULL;
+            if (slot_idx >= 0) {
+                instances[slot_idx].instruction_limit_hit = limit_hit;
+            }
+            LOG_ERR("'run' failed: %s%s", ex ? ex : "(unknown)", limit_hit ? " (instruction limit hit)" : "");
             return -1;
+        }
+        if (slot_idx >= 0) {
+            instances[slot_idx].instruction_limit_hit = false;
         }
         return 0;
     }
 
     LOG_ERR("No entry point found (_start / run) in instance %u", instance_id);
     return -1;
+}
+
+/* See wamr_integration.h for the contract. */
+bool wamr_last_call_hit_instruction_limit(uint32_t instance_id)
+{
+    for (int i = 0; i < MAX_INSTANCES; i++) {
+        if (instances[i].in_use && instances[i].id == instance_id) {
+            return instances[i].instruction_limit_hit;
+        }
+    }
+    return false;
 }
 
 /* Process WAMR runtime (call periodically) */

@@ -1,0 +1,54 @@
+# Recording rules that split Kepler's host-wide energy reading into:
+#   (a) energy attributable to k8s-managed pods in the `wasmbed` namespace
+#       (gateway, controllers, api-server, dashboard — anything Wasmtime
+#       runs inside those processes counts here too), and
+#   (b) everything else on the same host, which in this deployment is
+#       dominated by the `wasmbed-renode` Docker container (started outside
+#       kubelet — see k8s/monitoring/kepler-daemonset.yaml) plus OS/kubelet
+#       overhead.
+#
+# (b) is an approximation, NOT an isolated Renode measurement: it is
+# "whatever Kepler couldn't attribute to a kubelet-known pod", which also
+# includes containerd/kubelet itself and any other non-pod host process.
+# Treat it as an upper bound on the Renode emulation cost, not an exact
+# figure. See k8s/monitoring/README.md.
+#
+# Metric names below match Kepler release-0.7.x. If a different Kepler
+# version is deployed, run `curl -s localhost:9102/metrics | grep kepler_`
+# on a node and adjust these rules to match — Kepler's metric surface has
+# changed across releases.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: wasmbed-monitoring
+data:
+  wasmbed-energy.yaml: |
+    groups:
+      - name: wasmbed-energy-attribution
+        interval: 15s
+        rules:
+          # Watts attributed to wasmbed namespace pods only.
+          - record: wasmbed:kepler_namespace_watts:sum
+            expr: >-
+              sum(rate(kepler_container_joules_total{container_namespace="wasmbed"}[1m]))
+              by (node)
+
+          # Watts attributed to ALL k8s pods on the node, any namespace.
+          - record: wasmbed:kepler_all_pods_watts:sum
+            expr: >-
+              sum(rate(kepler_container_joules_total[1m])) by (node)
+
+          # Whole-host watts, as measured by RAPL (or Kepler's model-based
+          # estimate if RAPL isn't exposed by the host/VM).
+          - record: wasmbed:kepler_host_watts:sum
+            expr: >-
+              sum(rate(kepler_node_platform_joules_total[1m])) by (node)
+
+          # Approximate non-pod share of host power: host total minus
+          # everything attributed to a k8s pod. Dominated by the Renode
+          # container in this deployment, but not exclusively — see the
+          # file header above before quoting this as "Renode power".
+          - record: wasmbed:kepler_unattributed_watts:approx
+            expr: >-
+              wasmbed:kepler_host_watts:sum - wasmbed:kepler_all_pods_watts:sum

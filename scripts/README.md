@@ -52,6 +52,26 @@ TRIALS=100 ./scripts/run_experiment_campaign.sh
 
 See [doc/EXPERIMENTS.md](../doc/EXPERIMENTS.md).
 
+### Energy metrics (optional)
+
+`collect_experiment_metrics.py` also queries Prometheus/Kepler (see
+[k8s/monitoring/](../k8s/monitoring/)) and attaches a `measurement_scope` +
+`energy` field to every trial record, additive to the existing
+latency/success-rate output — no existing field is removed or renamed.
+
+```bash
+kubectl -n wasmbed-monitoring port-forward svc/prometheus 9090:9090 &
+python3 scripts/collect_experiment_metrics.py --trials 100 --output-dir /tmp/campaign
+# or, if k8s/monitoring/ isn't deployed:
+python3 scripts/collect_experiment_metrics.py --trials 100 --output-dir /tmp/campaign --no-energy
+```
+
+Every record's `measurement_scope` is `"host_shared_with_renode"` — these
+are whole-host readings that include the `wasmbed-renode` container, not an
+isolated per-process measurement. See
+[doc/energy-tracking-assessment.md](../doc/energy-tracking-assessment.md)
+before quoting them.
+
 ## Port-forward reference
 
 | Local | Service | Remote |
@@ -60,3 +80,4 @@ See [doc/EXPERIMENTS.md](../doc/EXPERIMENTS.md).
 | 8080 | gateway-1-service | 8080 (HTTP) |
 | 30443 | gateway-1-service | 8443 (TLS) |
 | 3000 | wasmbed-dashboard | 3000 |
+| 9090 | prometheus (wasmbed-monitoring ns) | 9090 |

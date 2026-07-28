@@ -340,8 +340,14 @@ impl DashboardTemplates {
 
     pub async fn render_monitoring(&self, metrics: &[MetricValue]) -> anyhow::Result<String> {
         let metric_rows = metrics.iter().map(|metric| {
+            let synthetic_badge = if metric.is_synthetic {
+                r#"<span style="color:#b00; font-weight:bold;">SYNTHETIC (not measured)</span>"#
+            } else {
+                "real"
+            };
             format!(r#"
                 <tr>
+                    <td>{}</td>
                     <td>{}</td>
                     <td>{}</td>
                     <td>{}</td>
@@ -349,7 +355,8 @@ impl DashboardTemplates {
             "#,
                 metric.name,
                 metric.value,
-                format!("{:?}", metric.timestamp)
+                format!("{:?}", metric.timestamp),
+                synthetic_badge
             )
         }).collect::<Vec<_>>().join("");
 
@@ -394,6 +401,7 @@ impl DashboardTemplates {
                     <th>Metric Name</th>
                     <th>Value</th>
                     <th>Timestamp</th>
+                    <th>Source</th>
                 </tr>
             </thead>
             <tbody>

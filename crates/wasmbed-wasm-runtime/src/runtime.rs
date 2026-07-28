@@ -54,6 +54,9 @@ pub struct WasmInstance {
     pub execution_count: u64,
     /// Total execution time (in seconds)
     pub total_execution_time: u64,
+    /// Fuel consumed by this instance since creation. Zero when fuel
+    /// accounting is disabled for this device architecture.
+    pub fuel_consumed: u64,
 }
 
 /// Runtime statistics
@@ -75,6 +78,11 @@ pub struct RuntimeStats {
     pub error_count: u64,
     /// Last error time (Unix timestamp)
     pub last_error_time: Option<u64>,
+    /// Cumulative Wasmtime fuel consumed across all calls, all instances.
+    /// Zero when fuel accounting is disabled (`WasmRuntimeConfig::fuel_budget`
+    /// is `None`) — see doc/energy-tracking-assessment.md for what this
+    /// proxy is (and isn't) useful for.
+    pub total_fuel_consumed: u64,
 }
 
 /// WASM module metadata
@@ -210,6 +218,13 @@ impl WasmRuntime {
         config.wasm_multi_memory(true);
         config.wasm_memory64(false); // 32-bit for embedded systems
         
+        // Required for Store::set_fuel/get_fuel to work; a no-op at the
+        // Wasmtime level when wasm_config.fuel_budget is None (the store
+        // just never has its fuel set, and get_fuel then errors — callers
+        // only touch fuel when fuel_budget.is_some(), see create_instance
+        // and call_function below).
+        config.consume_fuel(wasm_config.fuel_budget.is_some());
+
         // Configure memory limits
         config.max_wasm_stack(wasm_config.max_stack_size);
         
@@ -289,6 +304,13 @@ impl WasmRuntime {
         // Create store with context
         let mut store = Store::new(&self.engine, self.context.clone());
 
+        // Refill this instance's fuel budget. Only meaningful when
+        // Config::consume_fuel(true) was set in configure_engine(), which
+        // only happens when wasm_config.fuel_budget is Some(_).
+        if let Some(budget) = self.config.wasm_config.fuel_budget {
+            store.set_fuel(budget)?;
+        }
+
         // Create host function imports only if the module needs them
         let imports = if module.imports().count() > 0 {
             self.host_functions.create_imports(&mut store)?
@@ -309,6 +331,7 @@ impl WasmRuntime {
             last_execution: None,
             execution_count: 0,
             total_execution_time: 0,
+            fuel_consumed: 0,
         };
 
         // Store instance
@@ -342,8 +365,32 @@ impl WasmRuntime {
         let estimated_time = Duration::from_millis(10); // Conservative estimate
         self.context.check_cpu_time_limit(estimated_time)?;
 
+        // Fuel accounting: read remaining fuel before the call. Errors (fuel
+        // consumption not enabled for this device architecture) mean this
+        // instance has no budget to track — see WasmRuntimeConfig::fuel_budget.
+        let fuel_before = instance.store.get_fuel().ok();
+
         // Call function using a helper to avoid borrow checker issues
-        Self::call_instance_function(&mut instance, function_name, args)?;
+        let call_result = Self::call_instance_function(&mut instance, function_name, args);
+
+        if let Some(before) = fuel_before {
+            let after = instance.store.get_fuel().unwrap_or(0);
+            let consumed = before.saturating_sub(after);
+            instance.fuel_consumed += consumed;
+            self.stats.total_fuel_consumed += consumed;
+
+            if let Err(ref e) = call_result {
+                if Self::is_out_of_fuel(e) {
+                    let budget = self.config.wasm_config.fuel_budget.unwrap_or(0);
+                    return Err(WasmRuntimeError::FuelExhausted {
+                        consumed: instance.fuel_consumed,
+                        budget,
+                    });
+                }
+            }
+        }
+
+        call_result?;
 
         // Update execution statistics
         let execution_time = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() - start_time;
@@ -375,6 +422,7 @@ impl WasmRuntime {
             last_execution: instance.last_execution,
             execution_count: instance.execution_count,
             total_execution_time: instance.total_execution_time,
+            fuel_consumed: instance.fuel_consumed,
         })
     }
 
@@ -389,6 +437,7 @@ impl WasmRuntime {
             current_memory_usage: self.context.memory_usage,
             error_count: self.stats.error_count,
             last_error_time: self.stats.last_error_time,
+            total_fuel_consumed: self.stats.total_fuel_consumed,
         }
     }
 
@@ -427,6 +476,9 @@ pub struct InstanceInfo {
     pub execution_count: u64,
     /// Total execution time (in seconds)
     pub total_execution_time: u64,
+    /// Fuel consumed by this instance since creation. Zero when fuel
+    /// accounting is disabled for this device architecture.
+    pub fuel_consumed: u64,
 }
 
 impl WasmRuntime {
@@ -440,9 +492,28 @@ impl WasmRuntime {
             .ok_or_else(|| WasmRuntimeError::ExecutionError(
                 format!("Function {} not found", function_name)
             ))?;
-        
-        func.call(&mut instance.store, args, &mut [])?;
+
+        // Wasmtime requires the results slice to have exactly as many slots
+        // as the function returns, or the call fails immediately with
+        // "expected N results, got 0" before any WASM code (and so no fuel)
+        // runs. Results are discarded here, matching call_function()'s
+        // WasmResult<()> signature — see execute_function() for the
+        // (unfinished) path that would actually return them to the caller.
+        let result_count = func.ty(&instance.store).results().len();
+        let mut results = vec![Val::I32(0); result_count];
+        func.call(&mut instance.store, args, &mut results)?;
         Ok(())
+    }
+
+    /// True if `err` wraps a Wasmtime out-of-fuel trap, i.e. the call ran
+    /// out of its fuel budget rather than failing for another reason.
+    fn is_out_of_fuel(err: &WasmRuntimeError) -> bool {
+        match err {
+            WasmRuntimeError::AnyhowError(e) => {
+                matches!(e.downcast_ref::<Trap>(), Some(&Trap::OutOfFuel))
+            }
+            _ => false,
+        }
     }
 
     /// Shutdown an instance

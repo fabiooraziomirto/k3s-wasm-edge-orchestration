@@ -4,6 +4,16 @@
 This script is intentionally lightweight: it polls the existing API, Gateway,
 and Kubernetes resources used by the platform, then emits raw trial records and
 aggregated statistics for the paper.
+
+Energy metrics (added alongside latency/success-rate, not in place of them):
+each trial round is bracketed by a wall-clock window and, unless --no-energy
+is passed, that window is used to query the Kepler-derived Prometheus
+recording rules set up in k8s/monitoring/prometheus-rules.yaml (Phase 1 of
+doc/energy-tracking-assessment.md). Every TrialRecord carries a
+`measurement_scope` field so nobody downstream has to remember the caveat
+by hand: these numbers are host-wide (RAPL/estimate for the whole k3s node),
+NOT isolated to this process or namespace -- see
+k8s/monitoring/README.md before quoting them in the paper.
 """
 
 from __future__ import annotations
@@ -31,6 +41,28 @@ except ImportError as exc:  # pragma: no cover - environment dependent
 DEFAULT_NAMESPACE = "wasmbed"
 DEFAULT_API_BASE = "http://127.0.0.1:3001"
 DEFAULT_GATEWAY_HTTP = "http://127.0.0.1:8080"
+# Matches the port-forward instructions in k8s/monitoring/README.md.
+DEFAULT_PROMETHEUS_BASE = "http://127.0.0.1:9090"
+
+# Every record from this script measures Kepler's view of the whole k3s
+# host, which also runs the wasmbed-renode Docker container (started outside
+# kubelet, see crates/wasmbed-qemu-manager/src/lib.rs) -- energy numbers are
+# NOT isolated to the wasmbed namespace or to a single trial's process.
+# See k8s/monitoring/README.md and doc/energy-tracking-assessment.md.
+MEASUREMENT_SCOPE = "host_shared_with_renode"
+
+# Must match global.scrape_interval in k8s/monitoring/prometheus-config.yaml.
+# Used only to flag low-confidence (sub-two-scrapes) energy windows below;
+# if that file changes, update this constant too.
+PROMETHEUS_SCRAPE_INTERVAL_S = 5
+
+# Prometheus recording rules from k8s/monitoring/prometheus-rules.yaml.
+ENERGY_RECORDING_RULES = {
+    "namespace_watts": "wasmbed:kepler_namespace_watts:sum",
+    "all_pods_watts": "wasmbed:kepler_all_pods_watts:sum",
+    "host_watts": "wasmbed:kepler_host_watts:sum",
+    "unattributed_watts_approx": "wasmbed:kepler_unattributed_watts:approx",
+}
 
 
 @dataclass
@@ -40,10 +72,60 @@ class TrialRecord:
     success: bool
     duration_ms: float | None = None
     details: dict[str, Any] | None = None
+    # Additive fields (energy metrics, Phase 3 of doc/energy-tracking-assessment.md).
+    # Existing consumers (postprocess_experiment.py, run_experiment_campaign.sh)
+    # access records by known key, so these are ignored where unused -- no
+    # existing column is removed or renamed.
+    measurement_scope: str = MEASUREMENT_SCOPE
+    energy: dict[str, Any] | None = None
 
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def query_prometheus_instant(prom_base: str, query: str, at_ts: float, timeout: float = 5.0) -> float | None:
+    """Single Prometheus instant query at a given epoch timestamp. Returns
+    None on any failure (Prometheus unreachable, empty result, etc.) rather
+    than raising -- a missing energy sample must never abort a trial whose
+    latency/success-rate measurement already succeeded."""
+    try:
+        resp = requests.get(
+            f"{prom_base}/api/v1/query",
+            params={"query": query, "time": at_ts},
+            timeout=timeout,
+        )
+        resp.raise_for_status()
+        result = resp.json().get("data", {}).get("result", [])
+        if not result:
+            return None
+        return float(result[0]["value"][1])
+    except Exception:
+        return None
+
+
+def query_energy_window(prom_base: str, start_ts: float, end_ts: float) -> dict[str, Any]:
+    """Average each Kepler-derived recording rule over [start_ts, end_ts]
+    via avg_over_time(), evaluated at end_ts. This is a window average, not
+    a per-instruction or per-call attribution -- Prometheus/Kepler scrape
+    every PROMETHEUS_SCRAPE_INTERVAL_S seconds (k8s/monitoring/prometheus-config.yaml),
+    so a window shorter than ~2 scrape intervals is backed by at most one or
+    two samples and is flagged `low_confidence` rather than silently trusted.
+    """
+    window_s = max(end_ts - start_ts, 0.001)
+    result: dict[str, Any] = {
+        "window_start": start_ts,
+        "window_end": end_ts,
+        "window_s": round(window_s, 3),
+        "scrape_interval_s": PROMETHEUS_SCRAPE_INTERVAL_S,
+        "low_confidence": window_s < 2 * PROMETHEUS_SCRAPE_INTERVAL_S,
+    }
+    for key, rule in ENERGY_RECORDING_RULES.items():
+        expr = f"avg_over_time({rule}[{window_s:.3f}s])"
+        result[key] = query_prometheus_instant(prom_base, expr, end_ts)
+    if all(result.get(key) is None for key in ENERGY_RECORDING_RULES):
+        result["unavailable"] = True
+    return result
 
 
 def run_kubectl_json(args: list[str]) -> dict[str, Any] | list[Any] | None:
@@ -551,18 +633,44 @@ def main() -> int:
     parser.add_argument("--namespace", default=DEFAULT_NAMESPACE)
     parser.add_argument("--trials", type=int, default=50)
     parser.add_argument("--output-dir", default="experiments")
+    parser.add_argument("--prometheus-base", default=DEFAULT_PROMETHEUS_BASE,
+                         help="Prometheus base URL (port-forward svc/prometheus -n wasmbed-monitoring 9090:9090)")
+    parser.add_argument("--no-energy", action="store_true",
+                         help="Skip Prometheus/Kepler queries (e.g. when k8s/monitoring/ isn't deployed)")
     args = parser.parse_args()
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     records: list[TrialRecord] = []
-    records.append(run_system_snapshot_trial(args.api_base, 1))
+
+    snapshot_start = time.time()
+    snapshot = run_system_snapshot_trial(args.api_base, 1)
+    snapshot_end = time.time()
+    if not args.no_energy:
+        snapshot.energy = query_energy_window(args.prometheus_base, snapshot_start, snapshot_end)
+    records.append(snapshot)
 
     for trial in range(1, args.trials + 1):
-        records.append(run_enrollment_trial(args.api_base, args.gateway_http, args.namespace, trial))
-        records.append(run_heartbeat_trial(args.gateway_http, args.namespace, trial))
-        records.append(run_deploy_trial(args.api_base, args.namespace, trial))
+        wall_start = time.time()
+        enr = run_enrollment_trial(args.api_base, args.gateway_http, args.namespace, trial)
+        hrt = run_heartbeat_trial(args.gateway_http, args.namespace, trial)
+        dep = run_deploy_trial(args.api_base, args.namespace, trial)
+        wall_end = time.time()
+
+        # One energy sample per trial round (enrollment+heartbeat+deployment
+        # together), not per stage: with a 5s Prometheus/Kepler scrape
+        # interval, attributing energy to individual sub-second stages would
+        # be spurious precision. See query_energy_window()'s docstring.
+        if not args.no_energy:
+            energy = query_energy_window(args.prometheus_base, wall_start, wall_end)
+            enr.energy = energy
+            hrt.energy = energy
+            dep.energy = energy
+
+        records.append(enr)
+        records.append(hrt)
+        records.append(dep)
 
     summary = summarize(records)
     payload = {
@@ -570,6 +678,9 @@ def main() -> int:
         "namespace": args.namespace,
         "api_base": args.api_base,
         "gateway_http": args.gateway_http,
+        "measurement_scope": MEASUREMENT_SCOPE,
+        "energy_enabled": not args.no_energy,
+        "prometheus_base": None if args.no_energy else args.prometheus_base,
         "records": [asdict(record) for record in records],
         "summary": summary,
     }

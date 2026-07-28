@@ -483,7 +483,11 @@ static int handle_deploy_application(const uint8_t *cbor, uint32_t cbor_len,
     LOG_INF("WASM deployed: app_id=%s module_id=%u instance_id=%u", deploy_app_id_buf, (unsigned)module_id, (unsigned)instance_id);
     /* Execute the WASM "run" entry point */
     if (wamr_call_wasi_start(instance_id) != 0) {
-        LOG_WRN("WASM run() returned error");
+        if (wamr_last_call_hit_instruction_limit(instance_id)) {
+            LOG_WRN("WASM run() returned error: instruction limit exceeded (computational proxy budget, see wamr_integration.c)");
+        } else {
+            LOG_WRN("WASM run() returned error");
+        }
     }
     current_instance_id = instance_id;
     app_deployed = true;

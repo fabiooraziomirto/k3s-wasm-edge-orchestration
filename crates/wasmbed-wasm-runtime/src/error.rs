@@ -21,6 +21,9 @@ pub enum WasmRuntimeError {
     #[error("CPU time limit exceeded: {elapsed:?} (limit: {limit:?})")]
     CpuTimeLimitExceeded { elapsed: std::time::Duration, limit: std::time::Duration },
 
+    #[error("Fuel budget exhausted: {consumed} consumed (budget: {budget})")]
+    FuelExhausted { consumed: u64, budget: u64 },
+
     #[error("Stack overflow: {current} bytes (limit: {limit} bytes)")]
     StackOverflow { current: usize, limit: usize },
 

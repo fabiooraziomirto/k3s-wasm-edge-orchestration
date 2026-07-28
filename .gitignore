@@ -29,6 +29,9 @@ venv/
 build/
 dist/
 *.wasm
+# Tiny compiled fixtures for wasmbed-wasm-runtime's own test suite, built
+# from the .wat sources checked in next to them — not a build artifact.
+!crates/wasmbed-wasm-runtime/test_data/*.wasm
 
 qemu_devices.json
 .wasmbed-pids

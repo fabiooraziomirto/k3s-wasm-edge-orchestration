@@ -26,6 +26,18 @@ set(WAMR_BUILD_LIBC_WASI 1)
 set(WAMR_BUILD_MULTI_MODULE 1)
 set(WAMR_BUILD_FAST_INTERP 1)
 
+# Instruction metering: WAMR's equivalent of Wasmtime's fuel API. Exposes
+# wasm_runtime_set_instruction_count_limit() so wamr_integration.c can cap
+# execution by instruction count (deterministic, host-speed-independent)
+# instead of only wall-clock time. See doc/energy-tracking-assessment.md.
+# Verify after a clean build that this flag actually produced the API:
+#   grep -r WASM_ENABLE_INSTRUCTION_METERING build/wasmbed/zephyr/include/generated/
+# If the vendored WAMR revision predates this option, the flag is simply
+# unused by runtime_lib.cmake and wamr_integration.c's own
+# `#if WASM_ENABLE_INSTRUCTION_METERING` guard keeps the build working
+# without it (metering silently compiles out).
+set(WAMR_BUILD_INSTRUCTION_METERING 1)
+
 # Global heap configuration: disabilitato — usiamo Alloc_With_Pool in wamr_init()
 # Non definire WAMR_BUILD_GLOBAL_HEAP_POOL per evitare di allocare un BSS statico
 # duplicato da 128 KB dentro WAMR stesso.

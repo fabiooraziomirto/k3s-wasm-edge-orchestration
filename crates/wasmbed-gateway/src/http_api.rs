@@ -1156,12 +1156,24 @@ async fn get_k8s_applications(State(server): State<Arc<HttpApiServer>>) -> Json<
 }
 
 /// Get system metrics
+///
+/// NOTE: this handler fabricates its entire response with `rand::random()`
+/// and hardcoded literals — there is no real collector behind it (no
+/// /proc, no cgroups, no metrics-server query). Found during the energy-
+/// tracking validation pass; see doc/energy-tracking-assessment.md section 2
+/// and the analogous (already fixed) stubs in
+/// crates/wasmbed-infrastructure/src/monitoring.rs and
+/// crates/wasmbed-api-server/src/monitoring.rs. Tagged `is_synthetic: true`
+/// so nothing downstream (dashboard, experiment scripts, a future
+/// Prometheus scrape of this endpoint) can mistake it for telemetry.
 async fn get_system_metrics(State(_server): State<Arc<HttpApiServer>>) -> Json<serde_json::Value> {
     use std::time::{SystemTime, UNIX_EPOCH};
-    
+
+    warn!("get_system_metrics: returning fabricated placeholder data (random cpu/memory/devices/applications), not real telemetry");
+
     let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
     let mut metrics = Vec::new();
-    
+
     // Generate last 24 hours of data
     for i in 0..24 {
         let time = now - (24 - i) * 3600;
@@ -1171,18 +1183,21 @@ async fn get_system_metrics(State(_server): State<Arc<HttpApiServer>>) -> Json<s
             "cpu": 20.0 + (i as f64 * 2.5) + (rand::random::<f64>() * 20.0),
             "memory": 30.0 + (i as f64 * 1.5) + (rand::random::<f64>() * 15.0),
             "devices": 3 + (rand::random::<u8>() % 3),
-            "applications": 5 + (rand::random::<u8>() % 5)
+            "applications": 5 + (rand::random::<u8>() % 5),
+            "is_synthetic": true
         }));
     }
-    
+
     Json(serde_json::json!({
+        "is_synthetic": true,
         "metrics": metrics,
         "current": {
             "cpu": 45.2,
             "memory": 67.8,
             "storage": 23.1,
             "network_in": 1024,
-            "network_out": 2048
+            "network_out": 2048,
+            "is_synthetic": true
         }
     }))
 }

@@ -19,6 +19,11 @@ pub struct MetricValue {
     pub value: f64,
     pub timestamp: SystemTime,
     pub labels: HashMap<String, String>,
+    /// True when `value` is a hardcoded placeholder, not a real measurement.
+    /// This service does not yet read `/proc`, cgroups, or any real collector;
+    /// see doc/energy-tracking-assessment.md. Never treat a synthetic value
+    /// as telemetry in experiment data.
+    pub is_synthetic: bool,
 }
 
 impl MonitoringService {
@@ -42,31 +47,42 @@ impl MonitoringService {
 
     async fn collect_metrics(&self) {
         let mut metrics = self.metrics.write().await;
-        
+
+        // NOTE: no real collector is wired up yet (no /proc, no cgroups, no
+        // metrics-server query). These are hardcoded placeholders so the
+        // monitoring endpoints have something to return during development.
+        // They are marked `is_synthetic: true` so nothing downstream (dashboards,
+        // experiment scripts) can mistake them for telemetry. See
+        // doc/energy-tracking-assessment.md, section 2.
+        warn!("collect_metrics: emitting synthetic placeholder values (cpu_usage/memory_usage/disk_usage), not real telemetry");
+
         // Collect CPU usage
         metrics.insert("cpu_usage".to_string(), MetricValue {
             name: "cpu_usage".to_string(),
-            value: 45.0, // Simulate 45% CPU usage
+            value: 45.0, // Placeholder, not measured
             timestamp: SystemTime::now(),
             labels: HashMap::new(),
+            is_synthetic: true,
         });
-        
+
         // Collect memory usage
         metrics.insert("memory_usage".to_string(), MetricValue {
             name: "memory_usage".to_string(),
-            value: 60.0, // Simulate 60% memory usage
+            value: 60.0, // Placeholder, not measured
             timestamp: SystemTime::now(),
             labels: HashMap::new(),
+            is_synthetic: true,
         });
-        
+
         // Collect disk usage
         metrics.insert("disk_usage".to_string(), MetricValue {
             name: "disk_usage".to_string(),
-            value: 30.0, // Simulate 30% disk usage
+            value: 30.0, // Placeholder, not measured
             timestamp: SystemTime::now(),
             labels: HashMap::new(),
+            is_synthetic: true,
         });
-        
+
         info!("Metrics collected successfully");
     }
 
@@ -78,10 +94,5 @@ impl MonitoringService {
     pub async fn get_metric(&self, name: &str) -> Option<MetricValue> {
         let metrics = self.metrics.read().await;
         metrics.get(name).cloned()
-    }
-    
-    pub async fn get_system_metrics(&self) -> HashMap<String, f64> {
-        let metrics = self.metrics.read().await;
-        metrics.iter().map(|(name, metric)| (name.clone(), metric.value)).collect()
     }
 }

@@ -160,20 +160,23 @@ impl InfrastructureApi {
     pub async fn get_metrics(State(state): State<Arc<InfrastructureState>>) -> Result<Json<Vec<serde_json::Value>>, StatusCode> {
         info!("Getting metrics from monitoring service");
         let mut metrics = Vec::new();
-        
-        // Get system metrics from monitoring service
-        let system_metrics = state.monitoring.get_system_metrics().await;
+
+        // Use get_metrics() (not get_system_metrics(), which collapses to a
+        // bare f64 and drops is_synthetic) so synthetic/placeholder values
+        // stay tagged all the way to the HTTP response.
+        let system_metrics = state.monitoring.get_metrics().await;
         info!("Retrieved {} system metrics", system_metrics.len());
-        
-        for (name, value) in system_metrics {
+
+        for (name, metric) in system_metrics {
             metrics.push(serde_json::json!({
                 "name": name,
-                "value": value,
-                "timestamp": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
-                "labels": {}
+                "value": metric.value,
+                "timestamp": metric.timestamp.duration_since(UNIX_EPOCH).unwrap_or_default().as_secs(),
+                "labels": metric.labels,
+                "is_synthetic": metric.is_synthetic,
             }));
         }
-        
+
         info!("Returning {} metrics", metrics.len());
         Ok(Json(metrics))
     }

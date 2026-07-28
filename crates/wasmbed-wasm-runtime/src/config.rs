@@ -44,6 +44,12 @@ pub struct WasmRuntimeConfig {
     pub enable_debug: bool,
     /// Enable profiling
     pub enable_profiling: bool,
+    /// Wasmtime fuel budget per function call, when fuel metering is
+    /// enabled (`Config::consume_fuel(true)`). One unit is roughly one
+    /// interpreted/compiled instruction step (Wasmtime does not document an
+    /// exact cost model) — treat it as a relative computational proxy, not
+    /// a real time or energy unit. `None` disables fuel accounting.
+    pub fuel_budget: Option<u64>,
 }
 
 impl WasmRuntimeConfig {
@@ -66,6 +72,10 @@ impl WasmRuntimeConfig {
             max_functions_per_instance: 1000,
             enable_debug: true,
             enable_profiling: true,
+            // MPU stays wall-clock-limited only (60s budget above is
+            // already generous); fuel accounting isn't needed for the
+            // isolation properties this profile targets.
+            fuel_budget: None,
         }
     }
 
@@ -88,6 +98,11 @@ impl WasmRuntimeConfig {
             max_functions_per_instance: 50,
             enable_debug: false,
             enable_profiling: false,
+            // MCU already caps wall-clock time at 100ms; a fuel budget adds
+            // a second, deterministic ceiling independent of host speed —
+            // useful because Renode emulation speed varies with host load,
+            // while fuel consumed for the same module does not.
+            fuel_budget: Some(5_000_000),
         }
     }
 
@@ -110,6 +125,9 @@ impl WasmRuntimeConfig {
             max_functions_per_instance: 200,
             enable_debug: true,
             enable_profiling: false,
+            // Same rationale as MCU, scaled to the RISC-V profile's larger
+            // 500ms wall-clock budget.
+            fuel_budget: Some(20_000_000),
         }
     }
 

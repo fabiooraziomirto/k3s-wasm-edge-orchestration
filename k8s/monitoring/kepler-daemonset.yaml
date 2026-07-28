@@ -1,0 +1,122 @@
+# Kepler (https://sustainable-computing.io) reads RAPL counters (or falls
+# back to a model-based estimate if RAPL is not exposed by the host/VM) and
+# attributes energy to containers by correlating cgroups with pod metadata
+# obtained from the kubelet.
+#
+# IMPORTANT — read doc/energy-tracking-assessment.md and
+# k8s/monitoring/README.md before trusting any number this produces:
+#
+#   1. Kepler runs once per node (DaemonSet) and measures the WHOLE PHYSICAL
+#      HOST. On this project's single-node k3s deployment, that host also
+#      runs the `wasmbed-renode` Docker container that emulates every edge
+#      device. Kepler's node-level totals (`kepler_node_*_joules_total`)
+#      THEREFORE INCLUDE the Renode emulation cost — they are not a "cluster
+#      only" number.
+#   2. The Renode container is started with a raw `docker run` from inside
+#      the api-server pod (see crates/wasmbed-qemu-manager/src/lib.rs), NOT
+#      by kubelet/CRI. Kepler's per-pod attribution
+#      (`kepler_container_joules_total{container_namespace=...}`) is built
+#      from the kubelet's pod list, so the Renode container will NOT carry a
+#      `container_namespace`/`pod_name` label — it has no Pod object. See
+#      k8s/monitoring/README.md for how to approximate its share anyway.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kepler-exporter
+  namespace: wasmbed-monitoring
+  labels:
+    app: kepler-exporter
+spec:
+  selector:
+    matchLabels:
+      app: kepler-exporter
+  template:
+    metadata:
+      labels:
+        app: kepler-exporter
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9102"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: kepler-exporter
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: kepler-exporter
+        # Pin to a specific release, not `latest`, so the exposed metric
+        # names (which have changed across Kepler versions) stay predictable.
+        # Verify after deploy: `curl -s localhost:9102/metrics | grep kepler_`.
+        image: quay.io/sustainable_computing_io/kepler:release-0.7.11
+        command:
+        - /usr/bin/kepler
+        - -address
+        - 0.0.0.0:9102
+        - -v=1
+        ports:
+        - containerPort: 9102
+          name: http
+          protocol: TCP
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: proc
+          mountPath: /proc
+          readOnly: true
+        - name: cgroup
+          mountPath: /sys/fs/cgroup
+          readOnly: true
+        # RAPL powercap sysfs — if this path doesn't exist on the host (e.g.
+        # cloud VM without exposed RAPL), Kepler falls back to its
+        # model-based estimator and logs a warning; check the pod logs after
+        # deploy to see which mode is active.
+        - name: sys
+          mountPath: /sys
+          readOnly: true
+        - name: lib-modules
+          mountPath: /lib/modules
+          readOnly: true
+        - name: kernel-debug
+          mountPath: /sys/kernel/debug
+      volumes:
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: lib-modules
+        hostPath:
+          path: /lib/modules
+      - name: kernel-debug
+        hostPath:
+          path: /sys/kernel/debug
+      tolerations:
+      - operator: Exists
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kepler-exporter
+  namespace: wasmbed-monitoring
+  labels:
+    app: kepler-exporter
+spec:
+  clusterIP: None
+  selector:
+    app: kepler-exporter
+  ports:
+  - name: http
+    port: 9102
+    targetPort: 9102

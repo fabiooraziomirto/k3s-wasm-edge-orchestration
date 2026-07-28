@@ -224,6 +224,69 @@ async fn test_host_function_integration() -> WasmResult<()> {
 }
 
 #[tokio::test]
+async fn test_fuel_metering_consumes_fuel_on_mcu() -> WasmResult<()> {
+    // MCU profile has fuel_budget = Some(5_000_000) (config.rs).
+    let config = RuntimeConfig::for_architecture(DeviceArchitecture::Mcu, "fuel-device".to_string());
+    let mut runtime = WasmRuntime::new(config)?;
+
+    let wasm_bytes = include_bytes!("../test_data/simple.wasm");
+    runtime.load_module("fuel-module", wasm_bytes).await?;
+    let instance_id = runtime.create_instance("fuel-module", None).await?;
+
+    runtime.call_function(&instance_id, "test_function", &[]).await?;
+
+    let info = runtime.get_instance_info(&instance_id)?;
+    assert!(info.fuel_consumed > 0, "expected non-zero fuel consumption for a real call");
+
+    let stats = runtime.get_stats();
+    assert_eq!(stats.total_fuel_consumed, info.fuel_consumed);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_fuel_metering_disabled_on_mpu() -> WasmResult<()> {
+    // MPU profile has fuel_budget = None: no fuel accounting.
+    let config = RuntimeConfig::for_architecture(DeviceArchitecture::Mpu, "no-fuel-device".to_string());
+    let mut runtime = WasmRuntime::new(config)?;
+
+    let wasm_bytes = include_bytes!("../test_data/simple.wasm");
+    runtime.load_module("no-fuel-module", wasm_bytes).await?;
+    let instance_id = runtime.create_instance("no-fuel-module", None).await?;
+
+    runtime.call_function(&instance_id, "test_function", &[]).await?;
+
+    let info = runtime.get_instance_info(&instance_id)?;
+    assert_eq!(info.fuel_consumed, 0, "MPU profile has no fuel budget, nothing should be tracked");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_fuel_exhaustion_is_reported() -> WasmResult<()> {
+    let mut config = RuntimeConfig::for_architecture(DeviceArchitecture::Mcu, "fuel-exhaust-device".to_string());
+    // A budget too small to complete even this trivial function's
+    // arithmetic + call overhead.
+    config.wasm_config.fuel_budget = Some(1);
+    let mut runtime = WasmRuntime::new(config)?;
+
+    let wasm_bytes = include_bytes!("../test_data/simple.wasm");
+    runtime.load_module("exhaust-module", wasm_bytes).await?;
+    let instance_id = runtime.create_instance("exhaust-module", None).await?;
+
+    let result = runtime.call_function(&instance_id, "test_function", &[]).await;
+    match result {
+        Err(crate::error::WasmRuntimeError::FuelExhausted { consumed, budget }) => {
+            assert_eq!(budget, 1);
+            assert!(consumed >= 1);
+        }
+        other => panic!("expected FuelExhausted, got {:?}", other),
+    }
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_error_handling() -> WasmResult<()> {
     let config = RuntimeConfig::for_architecture(DeviceArchitecture::Mpu, "test-device".to_string());
     let mut runtime = WasmRuntime::new(config)?;
