@@ -28,8 +28,6 @@ NAMESPACE="${NAMESPACE:-wasmbed}"
 API_BASE="${API_BASE:-http://127.0.0.1:3001}"
 GATEWAY_HTTP="${GATEWAY_HTTP:-http://127.0.0.1:8080}"
 PREFIX="${PREFIX:-fleet-device}"
-ZEPHYR_WORKSPACE="${ZEPHYR_WORKSPACE:-/opt/k8s-wasm-edge/zephyr-workspace}"
-FIRMWARE_ELF="${FIRMWARE_ELF:-$ZEPHYR_WORKSPACE/build/stm32f746g_disco/zephyr/zephyr.elf}"
 RENODE_IMAGE="${RENODE_IMAGE:-antmicro/renode:nightly}"
 REGISTRY="${REGISTRY:-localhost:5000}"
 
@@ -52,6 +50,28 @@ ok()    { echo -e "  ${G}✅${NC} $*"; }
 warn()  { echo -e "  ${Y}⚠️ ${NC} $*"; }
 err()   { echo -e "  ${R}❌${NC} $*"; }
 die()   { err "$*"; echo ""; echo "Interrotto."; exit 1; }
+
+# --- Workspace Zephyr ------------------------------------------------------
+# Gli script .resc vengono scritti in ZEPHYR_WORKSPACE, che l'api-server monta
+# come hostPath: se il valore qui non coincide con quello del deployment, Renode
+# legge script vecchi o non li trova. Fonte di verità = il deployment stesso.
+WORKSPACE_SOURCE="default"
+if [ -n "${ZEPHYR_WORKSPACE:-}" ]; then
+  WORKSPACE_SOURCE="variabile d'ambiente"
+else
+  ZEPHYR_WORKSPACE=$(kubectl -n "$NAMESPACE" get deploy wasmbed-api-server \
+    -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="ZEPHYR_WORKSPACE")].value}' 2>/dev/null)
+  if [ -n "$ZEPHYR_WORKSPACE" ]; then
+    WORKSPACE_SOURCE="deployment api-server"
+  else
+    for candidate in /home/ubuntu/retrospect/zephyr-workspace /opt/k8s-wasm-edge/zephyr-workspace; do
+      [ -d "$candidate" ] && { ZEPHYR_WORKSPACE="$candidate"; break; }
+    done
+    ZEPHYR_WORKSPACE="${ZEPHYR_WORKSPACE:-/home/ubuntu/retrospect/zephyr-workspace}"
+  fi
+fi
+MCU_BUILD="${MCU_BUILD:-stm32f746g_disco}"
+FIRMWARE_ELF="${FIRMWARE_ELF:-$ZEPHYR_WORKSPACE/build/$MCU_BUILD/zephyr/zephyr.elf}"
 
 DEVICES=(); for i in $(seq 1 "$N"); do DEVICES+=("${PREFIX}-${i}"); done
 
@@ -98,11 +118,19 @@ else
   warn "immagine Renode assente: docker pull $RENODE_IMAGE"
 fi
 
+ok "workspace Zephyr: $ZEPHYR_WORKSPACE (fonte: $WORKSPACE_SOURCE)"
+DEPLOY_WS=$(kubectl -n "$NAMESPACE" get deploy wasmbed-api-server \
+  -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="ZEPHYR_WORKSPACE")].value}' 2>/dev/null)
+if [ -n "$DEPLOY_WS" ] && [ "$DEPLOY_WS" != "$ZEPHYR_WORKSPACE" ]; then
+  err "workspace diverso da quello montato dall'api-server ($DEPLOY_WS): i .resc finirebbero dove Renode non li legge"
+  FATAL=1
+fi
+
 if [ -f "$FIRMWARE_ELF" ]; then
   ok "firmware Zephyr: $FIRMWARE_ELF"
 else
   err "firmware Zephyr non trovato: $FIRMWARE_ELF"
-  echo "     cd $ZEPHYR_WORKSPACE && west build -b stm32f746g_disco ../zephyr-app --pristine --build-dir build/stm32f746g_disco"
+  echo "     cd $ZEPHYR_WORKSPACE && west build -b $MCU_BUILD ../zephyr-app --pristine --build-dir build/$MCU_BUILD"
   FATAL=1
 fi
 
