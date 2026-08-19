@@ -218,6 +218,21 @@ done
 
 # --- Fase 3: port-forward ---------------------------------------------------
 phase "3/6 Port-forward"
+
+# I pod morti restano negli endpoint del Service finché non spariscono, e
+# `kubectl port-forward svc/...` ne sceglie uno all'avvio: se becca quello
+# vecchio, le richieste vanno al codice precedente e il pod nuovo non vede nulla
+# (sintomo: connect risponde 200, nessun container parte, poi "lost connection to pod").
+kubectl -n "$NAMESPACE" delete pod --field-selector status.phase!=Running >/dev/null 2>&1 || true
+for svc in wasmbed-api-server gateway-1-service; do
+  for _ in $(seq 1 30); do
+    n=$(kubectl -n "$NAMESPACE" get endpoints "$svc" -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null | wc -w)
+    [ "${n:-0}" -eq 1 ] && break
+    sleep 2
+  done
+  n=$(kubectl -n "$NAMESPACE" get endpoints "$svc" -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null | wc -w)
+  [ "${n:-0}" -eq 1 ] && ok "$svc: un solo endpoint pronto" || warn "$svc: $n endpoint pronti"
+done
 ./scripts/ensure-experiment-runtime.sh 2>&1 | sed 's/^/  /' || die "ensure-experiment-runtime.sh fallito"
 curl -sf -o /dev/null "$API_BASE/api/v1/devices"     && ok "API server risponde ($API_BASE)"     || die "API server non raggiungibile"
 curl -sf -o /dev/null "$GATEWAY_HTTP/api/v1/devices" && ok "gateway risponde ($GATEWAY_HTTP)"    || warn "gateway HTTP non raggiungibile su $GATEWAY_HTTP"

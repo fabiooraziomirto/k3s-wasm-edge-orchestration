@@ -366,6 +366,9 @@ async fn connect_device_standalone_handler(
     let bridge_port = 40000 + (device_hash % 1000) as u16;
     let bridge_endpoint = format!("127.0.0.1:{}", bridge_port);
     
+    // If the emulation did not start there is no device to attach, and saying so
+    // here is the only way the caller can tell. Reporting success would put a
+    // device that never booted into the connected count.
     match renode_start_response {
         Ok(resp) if resp.status().is_success() => {
             info!("Renode Docker container started for device {} (bridge endpoint: {})", device_id, bridge_endpoint);
@@ -373,19 +376,31 @@ async fn connect_device_standalone_handler(
         Ok(resp) => {
             let status = resp.status();
             let error_text = resp.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            warn!("Failed to start Renode for device {}: HTTP {} - {} (continuing anyway)", device_id, status, error_text);
+            error!("Failed to start Renode for device {}: HTTP {} - {}", device_id, status, error_text);
+            return Ok(Json(serde_json::json!({
+                "success": false,
+                "status": "Error",
+                "message": format!("Failed to start emulation for device {}: HTTP {} - {}", device_id, status, error_text)
+            })));
         }
         Err(e) => {
-            warn!("Failed to call Renode start endpoint for device {}: {} (continuing anyway)", device_id, e);
+            error!("Failed to call Renode start endpoint for device {}: {}", device_id, e);
+            return Ok(Json(serde_json::json!({
+                "success": false,
+                "status": "Error",
+                "message": format!("Failed to reach the emulation endpoint for device {}: {}", device_id, e)
+            })));
         }
     }
-    
-    // Update device status in Kubernetes
+
+    // Update device status in Kubernetes.
+    // phase=Connected, connectedSince and lastHeartbeat are evidence that the
+    // device attached: they belong to the gateway, which sees the TLS session and
+    // the heartbeats. All this endpoint knows is that the emulation started, so
+    // it records the gateway association and leaves the phase at Enrolling.
     let patch = serde_json::json!({
         "status": {
-            "phase": "Connected",
-            "lastHeartbeat": chrono::Utc::now().to_rfc3339(),
-            "connectedSince": chrono::Utc::now().to_rfc3339(),
+            "phase": "Enrolling",
             "gateway": {
                 "name": gateway_id,
                 "endpoint": bridge_endpoint,
@@ -404,31 +419,28 @@ async fn connect_device_standalone_handler(
     match output {
         Ok(output) => {
             if output.status.success() {
-                info!("Device {} connected successfully (Kubernetes + Gateway + Renode)", device_id);
+                info!("Emulation started for device {}; waiting for it to enroll with the gateway", device_id);
                 Ok(Json(serde_json::json!({
                     "success": true,
-                    "message": format!("Device {} connected and registered with gateway", device_id),
-                    "lastHeartbeat": SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(),
-                    "status": "Connected"
+                    "status": "Enrolling",
+                    "message": format!("Emulation started for device {}; the gateway will report it connected once the TLS session is established", device_id)
                 })))
             } else {
                 let stderr = String::from_utf8_lossy(&output.stderr);
-                warn!("Failed to update Kubernetes status for device {}: {}", device_id, stderr);
+                error!("Failed to update Kubernetes status for device {}: {}", device_id, stderr);
                 Ok(Json(serde_json::json!({
-                    "success": true,
-                    "message": format!("Device {} connected to gateway (Kubernetes update pending)", device_id),
-                    "lastHeartbeat": SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(),
-                    "status": "Connected"
+                    "success": false,
+                    "status": "Error",
+                    "message": format!("Emulation started for device {} but its Kubernetes status could not be updated: {}", device_id, stderr)
                 })))
             }
         }
         Err(e) => {
             error!("Failed to execute kubectl for device connection {}: {}", device_id, e);
             Ok(Json(serde_json::json!({
-                "success": true,
-                "message": format!("Device {} connected successfully (Renode emulation)", device_id),
-                "lastHeartbeat": SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs(),
-                "status": "Connected"
+                "success": false,
+                "status": "Error",
+                "message": format!("Emulation started for device {} but kubectl could not be executed: {}", device_id, e)
             })))
         }
     }
