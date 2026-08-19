@@ -49,12 +49,34 @@ Expected: HTTP 200 from API (3001) and gateway (8080).
 ## 4. Start emulated device
 
 ```bash
+# 1. Prepare the host network first: bridge + one persistent TAP per device.
+sudo ./scripts/setup-renode-net.sh native-sim-1
+# 2. Then start the emulation.
 curl -X POST http://127.0.0.1:3001/api/v1/devices/native-sim-1/renode/start \
   -H 'Content-Type: application/json' -d '{}'
-sudo ./scripts/setup-renode-net.sh
 ```
 
-Expected: Renode container running, `tap0` up, firmware connects via TLS to gateway.
+Expected: Renode container running, the device's TAP (`wtap-<hash>`) up and enslaved to
+`wasmbr0`, firmware connects via TLS to gateway.
+
+Multiple devices at once (fleet) — the one-command entry point, which also runs the
+preflight checks, rebuilds the api-server image (where the per-device emulation identity
+is generated), sets up port-forwards and prints diagnostics on failure:
+
+```bash
+./scripts/run-e2e-fleet.sh --check     # prerequisites only
+./scripts/run-e2e-fleet.sh -n 3        # full run
+./scripts/run-e2e-fleet.sh --cleanup -n 3
+```
+
+The test itself, if the environment is already up:
+
+```bash
+./scripts/test-fleet-scalability.sh 3
+```
+
+Expected: 3 devices in phase `Connected`, **3 distinct TLS sessions** in the gateway,
+3 distinct DHCP leases, and a WASM deploy reaching all 3.
 
 Details: [RENODE_TLS_DEPLOY_VERIFICATION.md](RENODE_TLS_DEPLOY_VERIFICATION.md).
 
@@ -109,6 +131,7 @@ Details: [EXPERIMENTS.md](EXPERIMENTS.md).
 
 | Symptom | Check |
 |---------|--------|
-| Device stays `Unreachable` | `tap0`, `setup-renode-net.sh`, gateway TLS port-forward 30443 |
+| Device stays `Unreachable` | Its TAP (`wtap-<hash>`, see `setup-renode-net.sh`), gateway TLS port-forward 30443 |
+| Only one device connects out of N | TAP/MAC/publicKey must be per-device: check the generated `.resc` and `spec.publicKey` |
 | Deploy timeout | Application controller logs, gateway “Waiting for TLS” messages |
 | API unreachable | `ensure-experiment-runtime.sh`, pod status in `wasmbed` |

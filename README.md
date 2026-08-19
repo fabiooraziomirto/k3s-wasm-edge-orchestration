@@ -575,36 +575,36 @@ curl -X POST http://localhost:3001/api/v1/devices/my-device/renode/start
 
 ### Emulated device networking (TAP + DHCP + routing)
 
-When you use an **Ethernet-capable** board (e.g. `Stm32F746gDisco`) and call **Connect**, Renode creates a **TAP** interface on the host (`tap0`) so the emulated device can use the network. For the firmware to get an IP via DHCP and reach the Gateway pod (TLS), you must configure the host once per session (or after each reboot if you use the same machine).
+Every Ethernet-capable emulated device (e.g. `Stm32F746gDisco`) attaches to **its own
+TAP interface** on the host, enslaved to the `wasmbr0` bridge (192.168.1.1/24). The TAP
+name and the device MAC are derived from the device id, so a fleet of devices gets
+distinct L2 identities and distinct DHCP leases:
 
-**1. After Connect, configure the TAP interface** (requires sudo):
-
-```bash
-sudo ip addr add 192.168.1.1/24 dev tap0
-sudo ip link set tap0 up
+```
+tap = "wtap-" + sha256(device_id)[0..4]     e.g. wtap-295b324f
+mac = "02:"  + sha256(device_id)[0..5]      e.g. 02:29:5b:32:4f:cd
 ```
 
-**2. Install and run DHCP on tap0** (so the emulated device gets an IP, e.g. 192.168.1.2):
+Run the setup script **before** Connect (it creates the bridge, the persistent TAPs,
+DHCP, forwarding and the DNAT to the gateway TLS port):
 
 ```bash
-sudo apt-get update && sudo apt-get install -y dnsmasq
-sudo systemctl stop dnsmasq 2>/dev/null
-sudo systemctl mask dnsmasq 2>/dev/null
-sudo dnsmasq -p 0 --bind-interfaces -i tap0 --listen-address=192.168.1.1 \
-  --dhcp-range=192.168.1.2,192.168.1.254,255.255.255.0,1h \
-  --dhcp-option=3,192.168.1.1 -k &
+# devices read from the Device CRDs in the wasmbed namespace...
+sudo ./scripts/setup-renode-net.sh
+# ...or listed explicitly
+sudo ./scripts/setup-renode-net.sh device-1 device-2 device-3
+# teardown
+sudo ./scripts/setup-renode-net.sh --down
 ```
 
-**3. Enable forwarding and NAT** toward the cluster (so 192.168.1.x can reach the Gateway pod, e.g. 10.42.0.43):
+Then start emulation (Connect from the dashboard, or `POST /api/v1/devices/{id}/connect`).
+Renode opens the TAP the script prepared; the firmware gets an IP via DHCP and reaches the
+gateway TLS port through the DNAT rule. Without this setup the device stays in `Enrolled`
+and never reaches `Connected` (no TLS).
 
-```bash
-sudo sysctl -w net.ipv4.ip_forward=1
-sudo iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o cni0 -j MASQUERADE
-sudo iptables -A FORWARD -i tap0 -o cni0 -j ACCEPT
-sudo iptables -A FORWARD -i cni0 -o tap0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-```
-
-**Summary:** `tap0` is created by Renode at Connect; you give it the address 192.168.1.1/24 and bring it up. dnsmasq provides DHCP on that subnet so the firmware gets an IP; IP forwarding and NAT allow that traffic to reach the Kubernetes pod network (e.g. Gateway at 10.42.0.43). Without this setup, the device stays in "Enrolled" and never reaches "Connected" (no TLS).
+**Fleet note:** the TAP, the MAC and the public key injected into the device are all
+per-device. Sharing any of them collapses the whole fleet onto a single gateway session —
+see [doc/RENODE_TLS_DEPLOY_VERIFICATION.md](doc/RENODE_TLS_DEPLOY_VERIFICATION.md#7-multi-device-fleet).
 
 ## Documentation
 

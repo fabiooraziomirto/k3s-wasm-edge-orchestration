@@ -151,6 +151,7 @@ async fn unregister_board_from_gateway(gateway_http: &str, device_id: &str) {
 // --- Per-device Renode containers ---
 const WASMBED_RENODE_CONTAINER_NAME: &str = "wasmbed-renode";
 const WASMBED_FIRMWARE_VOLUME: &str = "wasmbed-firmware-store";
+const RENODE_IMAGE: &str = "antmicro/renode:nightly";
 
 /// Build a unique, stable Docker container name for one device's Renode instance.
 fn renode_container_name(device_id: &str) -> String {
@@ -159,6 +160,149 @@ fn renode_container_name(device_id: &str) -> String {
     format!("{}-{}", WASMBED_RENODE_CONTAINER_NAME, suffix)
 }
 const RENODE_MONITOR_PORT: u16 = 9999;
+
+// --- Per-device emulation identity ---
+//
+// Every emulated device needs three things that MUST be unique per device,
+// otherwise a multi-device fleet collapses onto a single logical device:
+//   * the host TAP interface it attaches to (L2),
+//   * its Ethernet MAC (L2 + DHCP lease, i.e. its IP),
+//   * the public key it enrolls with (the gateway indexes devices by key).
+
+/// Memory address where the gateway endpoint is injected (read by the firmware).
+const DEVICE_ENDPOINT_ADDR: u32 = 0x2000_1000;
+/// Memory address where the device public key is injected (read by the firmware,
+/// see `DEVICE_KEY_ADDR` in `zephyr-app/src/wasmbed_protocol.c`).
+const DEVICE_KEY_ADDR: u32 = 0x2000_2000;
+/// Ed25519 public key size, and the buffer size the firmware expects.
+const DEVICE_KEY_LEN: usize = 32;
+
+/// SHA-256 of the device id, used to derive all per-device identifiers.
+fn device_digest(device_id: &str) -> [u8; 32] {
+    use sha2::{Digest, Sha256};
+    let mut hasher = Sha256::new();
+    hasher.update(device_id.as_bytes());
+    hasher.finalize().into()
+}
+
+/// Host TAP interface name for a device: `wtap-<8 hex>` (13 chars, fits IFNAMSIZ).
+/// Must stay in sync with `tap_name()` in `scripts/setup-renode-net.sh`.
+pub fn device_tap_name(device_id: &str) -> String {
+    let d = device_digest(device_id);
+    format!("wtap-{:02x}{:02x}{:02x}{:02x}", d[0], d[1], d[2], d[3])
+}
+
+/// Ethernet MAC for a device. First octet `02` = locally administered, unicast,
+/// so the derived addresses can never collide with a real vendor OUI.
+/// Must stay in sync with `mac_addr()` in `scripts/setup-renode-net.sh`.
+pub fn device_mac_address(device_id: &str) -> String {
+    let d = device_digest(device_id);
+    format!("02:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}", d[0], d[1], d[2], d[3], d[4])
+}
+
+/// Build Renode `sysbus WriteDoubleWord` commands placing a length-prefixed blob
+/// at `base`: u32 length at `base`, then the bytes packed little-endian.
+fn renode_write_blob(base: u32, bytes: &[u8]) -> String {
+    let mut out = format!("sysbus WriteDoubleWord 0x{:08x} 0x{:08x}", base, bytes.len());
+    for (i, chunk) in bytes.chunks(4).enumerate() {
+        let mut word: u32 = 0;
+        for (j, &byte) in chunk.iter().enumerate() {
+            word |= (byte as u32) << (j * 8);
+        }
+        out.push_str(&format!(
+            "\nsysbus WriteDoubleWord 0x{:08x} 0x{:08x}",
+            base + 4 + (i as u32 * 4),
+            word
+        ));
+    }
+    out
+}
+
+/// Resolve the public key the emulated device must enroll with.
+///
+/// Source of truth is the Device CRD (`spec.publicKey`, URL-safe base64 of the raw
+/// key, matching `PublicKey::to_base64()` used by `Device::find`). If the CRD is
+/// unreachable or its key is not decodable, fall back to a key derived from the
+/// device id: still unique per device, so devices never collapse onto one another.
+fn device_public_key_bytes(device_id: &str) -> (Vec<u8>, bool) {
+    use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
+
+    let crd_key = Command::new("kubectl")
+        .args(&[
+            "get", "devices.wasmbed.github.io", device_id,
+            "-n", "wasmbed",
+            "-o", "jsonpath={.spec.publicKey}",
+        ])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .filter(|k| !k.is_empty());
+
+    if let Some(key_b64) = crd_key {
+        for engine_decoded in [URL_SAFE_NO_PAD.decode(&key_b64), STANDARD.decode(&key_b64)] {
+            if let Ok(bytes) = engine_decoded {
+                if !bytes.is_empty() && bytes.len() <= DEVICE_KEY_LEN {
+                    return (bytes, true);
+                }
+            }
+        }
+        eprintln!(
+            "WARN: device {} has a publicKey that is not raw base64 ('{}'); \
+             falling back to a key derived from the device id",
+            device_id, key_b64
+        );
+    } else {
+        eprintln!(
+            "WARN: could not read spec.publicKey for device {} from the CRD; \
+             falling back to a key derived from the device id",
+            device_id
+        );
+    }
+
+    let derived = device_digest(device_id).to_vec();
+    eprintln!(
+        "Device {} will enroll with derived key {} (set this as spec.publicKey to pre-register it)",
+        device_id,
+        URL_SAFE_NO_PAD.encode(&derived)
+    );
+    (derived, false)
+}
+
+/// Check whether the per-device TAP exists in the HOST network namespace.
+///
+/// The manager runs inside a pod, so it cannot see host interfaces directly; it
+/// probes through the Docker socket it already uses to run Renode (`/sys/class/net`
+/// needs no extra tooling in the image).
+fn host_tap_exists(tap: &str) -> Option<bool> {
+    let out = Command::new("docker")
+        .args(&[
+            "run", "--rm", "--net=host", "--entrypoint", "sh",
+            RENODE_IMAGE, "-c", &format!("test -e /sys/class/net/{tap}"),
+        ])
+        .output()
+        .ok()?;
+    Some(out.status.success())
+}
+
+/// Renode commands wiring one machine's Ethernet to its own host TAP interface.
+/// Both the TAP name and the MAC are derived from the device id, so several
+/// Renode containers sharing the host network namespace never collide.
+fn ethernet_setup_commands(mcu: &McuType, device_id: &str) -> String {
+    if !mcu.has_ethernet() {
+        return String::new();
+    }
+    let tap = device_tap_name(device_id);
+    let mac = device_mac_address(device_id);
+    format!(
+        "emulation CreateSwitch \"ethernet_switch\"\n\
+         emulation CreateTap \"{tap}\" \"ethernet_tap\"\n\
+         sysbus.ethernet MAC \"{mac}\"\n\
+         connector Connect sysbus.ethernet ethernet_switch\n\
+         connector Connect host.ethernet_tap ethernet_switch\n\
+         host.ethernet_tap Start"
+    )
+}
 
 /// Ensure the singleton Renode container is running. Start it if not.
 fn ensure_renode_container_running() -> Result<(), anyhow::Error> {
@@ -187,7 +331,7 @@ fn ensure_renode_container_running() -> Result<(), anyhow::Error> {
             "--net=host",
             "--name", WASMBED_RENODE_CONTAINER_NAME,
             "-v", &format!("{}:/firmware:ro", WASMBED_FIRMWARE_VOLUME),
-            "antmicro/renode:nightly",
+            RENODE_IMAGE,
             "renode", "-P", &RENODE_MONITOR_PORT.to_string(), "--plain",
         ])
         .status()?;
@@ -1013,6 +1157,22 @@ impl RenodeManager {
 
             eprintln!("Renode .resc written to {} for device {}:\n{}", resc_host_path, device_id, resc_content);
 
+            // Pre-flight: the device attaches to its own TAP interface, which must
+            // already exist (and be bridged) in the host network namespace.
+            // See scripts/setup-renode-net.sh.
+            if has_eth {
+                let tap = device_tap_name(device_id);
+                match host_tap_exists(&tap) {
+                    Some(true) => println!("TAP {} present on the host for device {}", tap, device_id),
+                    Some(false) => eprintln!(
+                        "WARN: TAP {tap} for device {device_id} does not exist on the host. \
+                         Renode will create an unbridged interface and the device will not reach \
+                         the gateway. Run: sudo ./scripts/setup-renode-net.sh {device_id}"
+                    ),
+                    None => eprintln!("WARN: could not probe the host for TAP {tap}"),
+                }
+            }
+
             // Remove any stale container for this device
             let container_name = renode_container_name(device_id);
             let _ = Command::new("docker")
@@ -1033,7 +1193,7 @@ impl RenodeManager {
                     "--name", &container_name,
                     "-v", &format!("{}:/scripts:ro", resc_dir),
                     "-v", &format!("{}:/firmware:ro", WASMBED_FIRMWARE_VOLUME),
-                    "antmicro/renode:nightly",
+                    RENODE_IMAGE,
                     "renode", "--plain",
                     &resc_container_path,
                 ])
@@ -1408,16 +1568,14 @@ impl RenodeManager {
         let mcu = &device.mcu_type;
         let platform = mcu.renode_platform();
         let uart = mcu.get_uart_name();
+        // Per-device TAP + MAC (see ethernet_setup_commands): a fixed tap0/MAC would
+        // let only one emulated device reach the gateway.
         let ethernet_config = if mcu.has_ethernet() {
-            match mcu {
-                McuType::Stm32F746gDisco => "\nemulation CreateSwitch \"ethernet_switch\"\nemulation CreateTap \"tap0\" \"ethernet_tap\"\nsysbus.ethernet MAC \"00:11:22:33:44:55\"\nconnector Connect sysbus.ethernet ethernet_switch\nconnector Connect host.ethernet_tap ethernet_switch\nhost.ethernet_tap Start",
-                McuType::FrdmK64f => "\nemulation CreateSwitch \"ethernet_switch\"\nemulation CreateTap \"tap0\" \"ethernet_tap\"\nsysbus.ethernet MAC \"00:11:22:33:44:66\"\nconnector Connect sysbus.ethernet ethernet_switch\nconnector Connect host.ethernet_tap ethernet_switch\nhost.ethernet_tap Start",
-                _ => "",
-            }
+            ethernet_setup_commands(mcu, device_id)
         } else if mcu.has_wifi() {
-            "\n# WiFi configuration for ESP32 (if supported)"
+            "# WiFi configuration for ESP32 (if supported)".to_string()
         } else {
-            ""
+            String::new()
         };
         let pc_sp = if *mcu == McuType::RenodeArduinoNano33Ble {
             "\nsysbus.cpu PC 0x866b\nsysbus.cpu SP 0x20020000"
@@ -1428,7 +1586,7 @@ impl RenodeManager {
         let ethernet_block = if ethernet_config.is_empty() {
             "".to_string()
         } else {
-            ethernet_config.trim().split(';').map(|c| c.trim()).filter(|c| !c.is_empty()).collect::<Vec<_>>().join("\n")
+            format!("\n{}", ethernet_config.trim())
         };
         let renode_commands = format!(
             "mach add \"{id}\"\ninclude @platforms/boards/{platform}.repl\nshowAnalyzer sysbus.{uart}\n{loadelf}\nmach set \"{id}\"\n{ethernet}{pc_sp}\nlogLevel -1\nstart",
@@ -1439,16 +1597,23 @@ impl RenodeManager {
             ethernet = ethernet_block,
             pc_sp = pc_sp
         );
-        let endpoint_bytes = gateway_endpoint_str.as_bytes();
-        let mut endpoint_write = format!("\nsysbus WriteDoubleWord 0x20001000 0x{:08x}", endpoint_bytes.len());
-        for (i, chunk) in endpoint_bytes.chunks(4).enumerate() {
-            let mut word: u32 = 0;
-            for (j, &byte) in chunk.iter().enumerate() {
-                word |= (byte as u32) << (j * 8);
-            }
-            endpoint_write.push_str(&format!("\nsysbus WriteDoubleWord 0x{:08x} 0x{:08x}", 0x20001004 + (i as u32 * 4), word));
-        }
-        Ok(format!("{}{}", renode_commands, endpoint_write))
+        let endpoint_write = renode_write_blob(DEVICE_ENDPOINT_ADDR, gateway_endpoint_str.as_bytes());
+        let (key_bytes, _from_crd) = device_public_key_bytes(device_id);
+        let key_write = renode_write_blob(DEVICE_KEY_ADDR, &key_bytes);
+        Ok(format!("{}\n{}\n{}", renode_commands, endpoint_write, key_write))
+    }
+
+    /// Test-only wrapper around [`RenodeManager::build_resc_script`], so integration
+    /// tests can assert on the generated script without making the builder public.
+    #[doc(hidden)]
+    pub fn build_resc_script_for_test(
+        &self,
+        device: &QemuDevice,
+        device_id: &str,
+        gateway_endpoint_str: &str,
+        firmware_path_in_container: &str,
+    ) -> Result<String, std::io::Error> {
+        self.build_resc_script(device, device_id, gateway_endpoint_str, firmware_path_in_container)
     }
 
     /// Build a self-contained .resc startup script for one device.
@@ -1465,29 +1630,9 @@ impl RenodeManager {
         let platform = mcu.renode_platform();
         let uart = mcu.get_uart_name();
 
-        let ethernet_block = if mcu.has_ethernet() {
-            match mcu {
-                McuType::Stm32F746gDisco => {
-                    "emulation CreateSwitch \"ethernet_switch\"\n\
-                     emulation CreateTap \"tap0\" \"ethernet_tap\"\n\
-                     sysbus.ethernet MAC \"00:11:22:33:44:55\"\n\
-                     connector Connect sysbus.ethernet ethernet_switch\n\
-                     connector Connect host.ethernet_tap ethernet_switch\n\
-                     host.ethernet_tap Start"
-                }
-                McuType::FrdmK64f => {
-                    "emulation CreateSwitch \"ethernet_switch\"\n\
-                     emulation CreateTap \"tap0\" \"ethernet_tap\"\n\
-                     sysbus.ethernet MAC \"00:11:22:33:44:66\"\n\
-                     connector Connect sysbus.ethernet ethernet_switch\n\
-                     connector Connect host.ethernet_tap ethernet_switch\n\
-                     host.ethernet_tap Start"
-                }
-                _ => "",
-            }
-        } else {
-            ""
-        };
+        // Per-device TAP + MAC: several Renode containers share the host network
+        // namespace, so a fixed tap0/MAC would let only one device reach the gateway.
+        let ethernet_block = ethernet_setup_commands(mcu, device_id);
 
         let pc_sp = if *mcu == McuType::RenodeArduinoNano33Ble {
             "sysbus.cpu PC 0x866b\nsysbus.cpu SP 0x20020000\n"
@@ -1496,15 +1641,18 @@ impl RenodeManager {
         };
 
         // Encode gateway endpoint address into memory at a known location
-        let endpoint_bytes = gateway_endpoint_str.as_bytes();
-        let mut endpoint_write = format!("sysbus WriteDoubleWord 0x20001000 0x{:08x}", endpoint_bytes.len());
-        for (i, chunk) in endpoint_bytes.chunks(4).enumerate() {
-            let mut word: u32 = 0;
-            for (j, &byte) in chunk.iter().enumerate() {
-                word |= (byte as u32) << (j * 8);
-            }
-            endpoint_write.push_str(&format!("\nsysbus WriteDoubleWord 0x{:08x} 0x{:08x}", 0x20001004 + (i as u32 * 4), word));
-        }
+        let endpoint_write = renode_write_blob(DEVICE_ENDPOINT_ADDR, gateway_endpoint_str.as_bytes());
+
+        // Inject the device public key: the gateway indexes connections by key, so
+        // without a per-device key every emulated device maps onto the same Device CRD.
+        let (key_bytes, from_crd) = device_public_key_bytes(device_id);
+        eprintln!(
+            "Injecting {}-byte public key for device {} (source: {})",
+            key_bytes.len(),
+            device_id,
+            if from_crd { "Device CRD" } else { "derived from device id" }
+        );
+        let key_write = renode_write_blob(DEVICE_KEY_ADDR, &key_bytes);
 
         let mut script = format!(
             "using sysbus\n\
@@ -1519,11 +1667,13 @@ impl RenodeManager {
         );
 
         if !ethernet_block.is_empty() {
-            script.push_str(ethernet_block);
+            script.push_str(&ethernet_block);
             script.push('\n');
         }
 
         script.push_str(&endpoint_write);
+        script.push('\n');
+        script.push_str(&key_write);
         script.push('\n');
         script.push_str(pc_sp);
         script.push_str("logLevel 3\n");
@@ -1691,24 +1841,15 @@ impl RenodeManager {
         // Renode command format: mach add "name" (not mach create "name")
         // For boards with Ethernet/WiFi, configure network interface
         // Use final_mcu_type (from CRD) instead of device.mcu_type
+        // Per-device TAP + MAC (see ethernet_setup_commands): a fixed tap0/MAC would
+        // let only one emulated device reach the gateway.
         let ethernet_config = if final_mcu_type.has_ethernet() {
-            // Configure Ethernet for boards that support it
-            match final_mcu_type {
-                McuType::Stm32F746gDisco => {
-                    // STM32F746G Discovery has Ethernet MAC
-                    "\nemulation CreateSwitch \"ethernet_switch\"\nemulation CreateTap \"tap0\" \"ethernet_tap\"\nsysbus.ethernet MAC \"00:11:22:33:44:55\"\nconnector Connect sysbus.ethernet ethernet_switch\nconnector Connect host.ethernet_tap ethernet_switch\nhost.ethernet_tap Start"
-                },
-                McuType::FrdmK64f => {
-                    // FRDM-K64F has Ethernet MAC
-                    "\nemulation CreateSwitch \"ethernet_switch\"\nemulation CreateTap \"tap0\" \"ethernet_tap\"\nsysbus.ethernet MAC \"00:11:22:33:44:66\"\nconnector Connect sysbus.ethernet ethernet_switch\nconnector Connect host.ethernet_tap ethernet_switch\nhost.ethernet_tap Start"
-                },
-                _ => ""
-            }
+            ethernet_setup_commands(&final_mcu_type, device_id)
         } else if final_mcu_type.has_wifi() {
             // Configure WiFi for ESP32 (if supported by Renode)
-            "\n# WiFi configuration for ESP32 (if supported)"
+            "# WiFi configuration for ESP32 (if supported)".to_string()
         } else {
-            ""
+            String::new()
         };
         
         let pc_sp_commands = if final_mcu_type == McuType::RenodeArduinoNano33Ble {
@@ -1741,14 +1882,7 @@ impl RenodeManager {
             ethernet = if ethernet_config.is_empty() {
                 "".to_string()
             } else {
-                ethernet_config
-                    .trim()
-                    .trim_start_matches(';')
-                    .split(';')
-                    .map(|cmd| cmd.trim())
-                    .filter(|cmd| !cmd.is_empty())
-                    .collect::<Vec<_>>()
-                    .join("\n")
+                format!("\n{}", ethernet_config.trim())
             },
             pc_sp = pc_sp_commands
         );
@@ -1818,22 +1952,20 @@ impl RenodeManager {
         // Append gateway endpoint configuration to Renode commands
         // The endpoint will be written to memory address 0x20001000 (in RAM)
         // Format: write endpoint string bytes to memory
-        let endpoint_bytes = gateway_endpoint_str.as_bytes();
-        let mut endpoint_write_commands = String::new();
-        
-        // Write endpoint string to memory starting at 0x20001000
-        // First write the length, then the string bytes
-        endpoint_write_commands.push_str(&format!("\nsysbus WriteDoubleWord 0x20001000 0x{:08x}", endpoint_bytes.len()));
-        
-        // Write endpoint bytes (4 bytes at a time)
-        for (i, chunk) in endpoint_bytes.chunks(4).enumerate() {
-            let mut word: u32 = 0;
-            for (j, &byte) in chunk.iter().enumerate() {
-                word |= (byte as u32) << (j * 8);
-            }
-            endpoint_write_commands.push_str(&format!("\nsysbus WriteDoubleWord 0x{:08x} 0x{:08x}", 
-                0x20001004 + (i as u32 * 4), word));
-        }
+        let mut endpoint_write_commands = format!(
+            "\n{}",
+            renode_write_blob(DEVICE_ENDPOINT_ADDR, gateway_endpoint_str.as_bytes())
+        );
+
+        // Inject the per-device public key the firmware enrolls with (0x20002000).
+        let (key_bytes, from_crd) = device_public_key_bytes(device_id);
+        eprintln!(
+            "Injecting {}-byte public key for device {} (source: {})",
+            key_bytes.len(),
+            device_id,
+            if from_crd { "Device CRD" } else { "derived from device id" }
+        );
+        endpoint_write_commands.push_str(&format!("\n{}", renode_write_blob(DEVICE_KEY_ADDR, &key_bytes)));
         
         // Append endpoint configuration to Renode commands
         let renode_commands_with_endpoint = format!("{}{}", renode_commands, endpoint_write_commands);
@@ -2061,6 +2193,122 @@ impl RenodeManager {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Build a device fixture with an Ethernet-capable MCU.
+    fn eth_device(id: &str) -> QemuDevice {
+        QemuDevice {
+            id: id.to_string(),
+            name: id.to_string(),
+            architecture: "ARM_CORTEX_M7".to_string(),
+            device_type: "MCU".to_string(),
+            mcu_type: McuType::Stm32F746gDisco,
+            status: QemuDeviceStatus::Stopped,
+            process_id: None,
+            endpoint: "127.0.0.1:3000".to_string(),
+            gateway_endpoint: Some("192.168.1.1:30443".to_string()),
+            wasm_runtime: None,
+        }
+    }
+
+    #[test]
+    fn test_tap_and_mac_are_unique_per_device() {
+        let ids = ["device-1", "device-2", "device-3"];
+        let taps: Vec<String> = ids.iter().map(|i| device_tap_name(i)).collect();
+        let macs: Vec<String> = ids.iter().map(|i| device_mac_address(i)).collect();
+
+        for i in 0..ids.len() {
+            for j in (i + 1)..ids.len() {
+                assert_ne!(taps[i], taps[j], "TAP names must differ per device");
+                assert_ne!(macs[i], macs[j], "MAC addresses must differ per device");
+            }
+            // Linux interface names are limited to 15 characters.
+            assert!(taps[i].len() <= 15, "TAP name too long: {}", taps[i]);
+            // Locally administered, unicast MAC.
+            let first_octet = u8::from_str_radix(&macs[i][..2], 16).unwrap();
+            assert_eq!(first_octet & 0x03, 0x02, "MAC must be locally administered and unicast");
+        }
+
+        // Derivation is stable across calls (the host setup script derives the same names).
+        assert_eq!(taps[0], device_tap_name(ids[0]));
+        assert_eq!(macs[0], device_mac_address(ids[0]));
+    }
+
+    /// The host setup script (scripts/setup-renode-net.sh) derives TAP names and
+    /// MACs independently, in shell. These literals are the values produced by
+    /// `tap_name`/`mac_addr` there: if either side drifts, the emulated device
+    /// attaches to an interface the host never bridged.
+    #[test]
+    fn test_derivation_matches_setup_script() {
+        assert_eq!(device_tap_name("fleet-device-1"), "wtap-295b324f");
+        assert_eq!(device_mac_address("fleet-device-1"), "02:29:5b:32:4f:cd");
+        assert_eq!(device_tap_name("fleet-device-2"), "wtap-7069c9c3");
+        assert_eq!(device_mac_address("fleet-device-2"), "02:70:69:c9:c3:25");
+        assert_eq!(device_tap_name("fleet-device-3"), "wtap-4d0b302b");
+        assert_eq!(device_mac_address("fleet-device-3"), "02:4d:0b:30:2b:66");
+    }
+
+    #[test]
+    fn test_renode_write_blob_encoding() {
+        // "AB" -> length 2 at base, bytes packed little-endian at base+4.
+        let blob = renode_write_blob(0x2000_2000, b"AB");
+        assert_eq!(
+            blob,
+            "sysbus WriteDoubleWord 0x20002000 0x00000002\n\
+             sysbus WriteDoubleWord 0x20002004 0x00004241"
+        );
+    }
+
+    #[test]
+    fn test_resc_scripts_isolate_devices() {
+        let manager = RenodeManager::new("renode".to_string(), 30000);
+        let ids = ["fleet-device-1", "fleet-device-2", "fleet-device-3"];
+
+        let scripts: Vec<String> = ids
+            .iter()
+            .map(|id| {
+                manager
+                    .build_resc_script(&eth_device(id), id, "192.168.1.1:30443", "/firmware/zephyr.elf")
+                    .expect("resc script")
+            })
+            .collect();
+
+        for (i, script) in scripts.iter().enumerate() {
+            // Each device gets its own TAP interface and MAC...
+            assert!(script.contains(&format!("emulation CreateTap \"{}\"", device_tap_name(ids[i]))), "{script}");
+            assert!(script.contains(&format!("sysbus.ethernet MAC \"{}\"", device_mac_address(ids[i]))), "{script}");
+            // ...and no longer the shared tap0 / fixed MAC that collapsed the fleet.
+            assert!(!script.contains("\"tap0\""), "{script}");
+            assert!(!script.contains("00:11:22:33:44:55"), "{script}");
+            // The public key is injected at DEVICE_KEY_ADDR, so the firmware never
+            // falls back to the shared static test key.
+            assert!(script.contains("sysbus WriteDoubleWord 0x20002000"), "{script}");
+        }
+
+        // The injected key blob differs per device.
+        let key_lines: Vec<String> = scripts
+            .iter()
+            .map(|s| {
+                s.lines()
+                    .filter(|l| l.contains("WriteDoubleWord 0x2000200") || l.contains("WriteDoubleWord 0x2000201"))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })
+            .collect();
+        assert_ne!(key_lines[0], key_lines[1]);
+        assert_ne!(key_lines[1], key_lines[2]);
+        assert_ne!(key_lines[0], key_lines[2]);
+    }
+
+    #[test]
+    fn test_derived_key_is_32_bytes_and_unique() {
+        // Without a reachable cluster this exercises the fallback path.
+        let (k1, from_crd1) = device_public_key_bytes("fleet-device-1");
+        let (k2, _) = device_public_key_bytes("fleet-device-2");
+        if !from_crd1 {
+            assert_eq!(k1.len(), DEVICE_KEY_LEN);
+        }
+        assert_ne!(k1, k2, "each device must enroll with a distinct public key");
+    }
 
     #[tokio::test]
     async fn test_create_device() {
