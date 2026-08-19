@@ -157,9 +157,17 @@ done
 [ "$leases" -ge "$N" ] && ok "indirizzi IP distinti sul bridge: $leases/$N" \
                         || ko "indirizzi IP distinti sul bridge: $leases/$N (MAC attesi: $(for d in "${DEVICES[@]}"; do printf '%s ' "$(mac_addr "$d")"; done))"
 
+# Il firmware manda un heartbeat ogni 25 s: dopo la connessione va atteso,
+# altrimenti si misura zero solo perché il primo non è ancora arrivato.
 hb=0
-for d in "${DEVICES[@]}"; do
-  [ -n "$(kubectl get device "$d" -n "$NAMESPACE" -o jsonpath='{.status.last_heartbeat}' 2>/dev/null)" ] && hb=$((hb+1))
+hb_deadline=$((SECONDS + ${HEARTBEAT_TIMEOUT:-70}))
+while [ $SECONDS -lt $hb_deadline ]; do
+  hb=0
+  for d in "${DEVICES[@]}"; do
+    [ -n "$(kubectl get device "$d" -n "$NAMESPACE" -o jsonpath='{.status.last_heartbeat}' 2>/dev/null)" ] && hb=$((hb+1))
+  done
+  [ "$hb" -ge "$N" ] && break
+  sleep 10
 done
 [ "$hb" -ge "$N" ] && ok "device con heartbeat: $hb/$N" || ko "device con heartbeat: $hb/$N"
 

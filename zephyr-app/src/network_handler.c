@@ -28,6 +28,43 @@ static bool network_initialized = false;
 static int socket_fd = -1;
 static struct net_if *net_iface = NULL;
 
+/* Memory address where Renode writes this device's MAC address
+ * (4-byte LE length, then the address bytes), mirroring the gateway endpoint
+ * and public key injections in wasmbed_protocol.c. */
+#define DEVICE_MAC_ADDR 0x20002100
+
+/* Program the injected MAC before DHCP runs.
+ * The Ethernet driver otherwise keeps its built-in address, which is identical
+ * in every emulated instance: the whole fleet then asks for -- and shares -- one
+ * DHCP lease, so return traffic follows whichever device last answered ARP. */
+static void apply_injected_mac(struct net_if *iface)
+{
+    volatile uint32_t *len_ptr = (volatile uint32_t *)DEVICE_MAC_ADDR;
+    uint32_t len = *len_ptr;
+    uint8_t mac[6];
+
+    if (len != sizeof(mac)) {
+        LOG_WRN("No MAC injected (len=%u), keeping the driver default", len);
+        return;
+    }
+
+    volatile uint8_t *mac_ptr = (volatile uint8_t *)(DEVICE_MAC_ADDR + 4);
+    for (uint32_t i = 0; i < sizeof(mac); i++) {
+        mac[i] = mac_ptr[i];
+    }
+
+    /* The link address can only be changed while the interface is down. */
+    net_if_down(iface);
+    if (net_if_set_link_addr(iface, mac, sizeof(mac), NET_LINK_ETHERNET) != 0) {
+        LOG_ERR("Cannot set injected MAC %02x:%02x:%02x:%02x:%02x:%02x",
+                mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        return;
+    }
+
+    LOG_INF("Using injected MAC %02x:%02x:%02x:%02x:%02x:%02x",
+            mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+}
+
 static int configure_static_ipv4_fallback(void)
 {
     struct in_addr addr;
@@ -85,6 +122,9 @@ int network_init(void)
         LOG_WRN("Continuing without network interface");
         return -1;
     }
+
+    /* Give this instance its own link-layer identity before anything uses it */
+    apply_injected_mac(net_iface);
 
     /* Bring interface up */
     if (!net_if_is_up(net_iface)) {

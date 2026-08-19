@@ -176,6 +176,9 @@ const DEVICE_ENDPOINT_ADDR: u32 = 0x2000_1000;
 const DEVICE_KEY_ADDR: u32 = 0x2000_2000;
 /// Ed25519 public key size, and the buffer size the firmware expects.
 const DEVICE_KEY_LEN: usize = 32;
+/// Memory address where the device MAC is injected (read by the firmware before
+/// DHCP, see `DEVICE_MAC_ADDR` in `zephyr-app/src/network_handler.c`).
+const DEVICE_MAC_ADDR: u32 = 0x2000_2100;
 
 /// SHA-256 of the device id, used to derive all per-device identifiers.
 fn device_digest(device_id: &str) -> [u8; 32] {
@@ -198,6 +201,15 @@ pub fn device_tap_name(device_id: &str) -> String {
 pub fn device_mac_address(device_id: &str) -> String {
     let d = device_digest(device_id);
     format!("02:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}", d[0], d[1], d[2], d[3], d[4])
+}
+
+/// The device MAC as raw bytes, matching [`device_mac_address`].
+/// Renode programs the emulated NIC with it, but the Zephyr driver keeps its own
+/// built-in address unless the firmware is told otherwise, so the same bytes are
+/// also injected into memory for the firmware to apply.
+fn device_mac_bytes(device_id: &str) -> [u8; 6] {
+    let d = device_digest(device_id);
+    [0x02, d[0], d[1], d[2], d[3], d[4]]
 }
 
 /// Build Renode `sysbus WriteDoubleWord` commands placing a length-prefixed blob
@@ -1600,7 +1612,8 @@ impl RenodeManager {
         let endpoint_write = renode_write_blob(DEVICE_ENDPOINT_ADDR, gateway_endpoint_str.as_bytes());
         let (key_bytes, _from_crd) = device_public_key_bytes(device_id);
         let key_write = renode_write_blob(DEVICE_KEY_ADDR, &key_bytes);
-        Ok(format!("{}\n{}\n{}", renode_commands, endpoint_write, key_write))
+        let mac_write = renode_write_blob(DEVICE_MAC_ADDR, &device_mac_bytes(device_id));
+        Ok(format!("{}\n{}\n{}\n{}", renode_commands, endpoint_write, key_write, mac_write))
     }
 
     /// Test-only wrapper around [`RenodeManager::build_resc_script`], so integration
@@ -1653,6 +1666,7 @@ impl RenodeManager {
             if from_crd { "Device CRD" } else { "derived from device id" }
         );
         let key_write = renode_write_blob(DEVICE_KEY_ADDR, &key_bytes);
+        let mac_write = renode_write_blob(DEVICE_MAC_ADDR, &device_mac_bytes(device_id));
 
         let mut script = format!(
             "using sysbus\n\
@@ -1674,6 +1688,8 @@ impl RenodeManager {
         script.push_str(&endpoint_write);
         script.push('\n');
         script.push_str(&key_write);
+        script.push('\n');
+        script.push_str(&mac_write);
         script.push('\n');
         script.push_str(pc_sp);
         script.push_str("logLevel 3\n");
@@ -1966,6 +1982,7 @@ impl RenodeManager {
             if from_crd { "Device CRD" } else { "derived from device id" }
         );
         endpoint_write_commands.push_str(&format!("\n{}", renode_write_blob(DEVICE_KEY_ADDR, &key_bytes)));
+        endpoint_write_commands.push_str(&format!("\n{}", renode_write_blob(DEVICE_MAC_ADDR, &device_mac_bytes(device_id))));
         
         // Append endpoint configuration to Renode commands
         let renode_commands_with_endpoint = format!("{}{}", renode_commands, endpoint_write_commands);
@@ -2282,6 +2299,15 @@ mod tests {
             // The public key is injected at DEVICE_KEY_ADDR, so the firmware never
             // falls back to the shared static test key.
             assert!(script.contains("sysbus WriteDoubleWord 0x20002000"), "{script}");
+            // Il firmware deve programmare lo stesso MAC che Renode dà al NIC:
+            // altrimenti il driver tiene il suo default e l'intera fleet condivide un lease DHCP.
+            assert!(script.contains("sysbus WriteDoubleWord 0x20002100"), "{script}");
+            let mac_bytes = device_mac_bytes(ids[i]);
+            let expected_mac = format!(
+                "02:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
+                mac_bytes[1], mac_bytes[2], mac_bytes[3], mac_bytes[4], mac_bytes[5]
+            );
+            assert_eq!(expected_mac, device_mac_address(ids[i]));
         }
 
         // The injected key blob differs per device.
