@@ -147,12 +147,15 @@ try:
 except Exception:
     print(0); sys.exit()
 
-def opened_after(d):
-    ts = (d.get("connected_since") or {}).get("secs_since_epoch")
-    return ts is not None and ts >= since
+def live(d):
+    # Freshness comes from the last heartbeat (firmware sends one every 25 s, the
+    # gateway expires devices after 90 s): "connected" alone stays true even for
+    # dead sessions left over from previous runs.
+    hb = (d.get("last_heartbeat") or {}).get("secs_since_epoch")
+    return hb is not None and hb >= since
 
 print(sum(1 for d in devices
-          if d.get("device_id") in names and d.get("connected") and opened_after(d)))
+          if d.get("device_id") in names and d.get("connected") and live(d)))
 ' "$RUN_START_EPOCH" "${DEVICES[@]}"
 }
 

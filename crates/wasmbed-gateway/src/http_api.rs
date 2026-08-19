@@ -337,6 +337,9 @@ impl HttpApiServer {
             if let Some(conn) = connections.get_mut(&device_id) {
                 conn.tls_sender = Some(Arc::new(sender));
                 conn.tls_connected = true;
+                // A new TLS session starts now: without this the runtime view keeps
+                // reporting the age of the first session the device ever opened.
+                conn.connected_since = SystemTime::now();
                 info!("TLS sender set for device {}", device_id);
             }
         } else {
