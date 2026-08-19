@@ -392,6 +392,10 @@ impl HttpApiServer {
             if let Some(conn) = connections.get_mut(device_id) {
                 conn.tls_sender = Some(Arc::new(sender));
                 conn.tls_connected = true;
+                // Devices that identify themselves through CBOR enrollment reach the
+                // runtime view here, not through set_device_tls_sender: without this
+                // their reported session age stays that of the first session ever.
+                conn.connected_since = SystemTime::now();
                 info!("TLS sender activated for device {}", device_id);
             }
         } else {
