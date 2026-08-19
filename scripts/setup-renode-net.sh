@@ -36,7 +36,13 @@ DHCP_RANGE_END="${DHCP_RANGE_END:-192.168.1.200}"
 K3S_IFACE="${K3S_IFACE:-cni0}"     # bridge k3s (pod network 10.42.0.0/16)
 WAN_IFACE="${WAN_IFACE:-ens18}"    # interfaccia fisica
 GATEWAY_TLS_PORT="${GATEWAY_TLS_PORT:-30443}"
-GATEWAY_TLS_DST="${GATEWAY_TLS_DST:-127.0.0.1:30443}"
+# Destinazione del DNAT: di default il pod del gateway, il cui IP è instradabile
+# dall'host via cni0. Il fallback storico (un kubectl port-forward su 127.0.0.1)
+# non regge più sessioni TLS lunghe e concorrenti: le connessioni dei device
+# cadono e si riconnettono, e un deploy che arriva in quel momento trova la
+# sessione assente. Il port-forward resta utile per curl/kubectl, non come
+# percorso dati dei device.
+GATEWAY_TLS_DST="${GATEWAY_TLS_DST:-}"
 CLUSTER_DNS="${CLUSTER_DNS:-10.43.0.10}"
 NAMESPACE="${NAMESPACE:-wasmbed}"
 DNSMASQ_CONF="/etc/dnsmasq.d/wasmbed-tap.conf"
@@ -61,6 +67,19 @@ if [ "${1:-}" = "--down" ]; then
 fi
 
 echo "=== Wasmbed network setup (multi-device) ==="
+
+# --- Destinazione del gateway TLS -------------------------------------------
+if [ -z "$GATEWAY_TLS_DST" ]; then
+  GW_POD_IP=$(kubectl get pods -n "$NAMESPACE" -l app=wasmbed-gateway \
+    --field-selector=status.phase=Running -o jsonpath='{.items[0].status.podIP}' 2>/dev/null)
+  if [ -n "$GW_POD_IP" ]; then
+    GATEWAY_TLS_DST="${GW_POD_IP}:8443"
+    echo "Gateway TLS: pod ${GATEWAY_TLS_DST}"
+  else
+    GATEWAY_TLS_DST="127.0.0.1:30443"
+    echo "Gateway TLS: pod non trovato, uso il port-forward ${GATEWAY_TLS_DST} (meno stabile)"
+  fi
+fi
 
 # --- 1. Elenco dei device ---------------------------------------------------
 DEVICES=("$@")
@@ -114,8 +133,14 @@ iptables -t nat -C POSTROUTING -s "$DEVICE_SUBNET" -o "$WAN_IFACE" -j MASQUERADE
 echo "✅ NAT masquerade: $DEVICE_SUBNET → $WAN_IFACE"
 
 # DNAT: traffico TLS dei device verso il port-forward locale del gateway.
-iptables -t nat -C PREROUTING -d "$BRIDGE_IP" -p tcp --dport "$GATEWAY_TLS_PORT" -j DNAT --to-destination "$GATEWAY_TLS_DST" 2>/dev/null || \
-  iptables -t nat -A PREROUTING -d "$BRIDGE_IP" -p tcp --dport "$GATEWAY_TLS_PORT" -j DNAT --to-destination "$GATEWAY_TLS_DST"
+# L'IP del pod cambia a ogni riavvio del gateway: le regole precedenti vanno
+# rimosse, altrimenti la prima (obsoleta) continua a vincere.
+while read -r rule_num; do
+  [ -n "$rule_num" ] && iptables -t nat -D PREROUTING "$rule_num" 2>/dev/null || true
+done < <(iptables -t nat -L PREROUTING --line-numbers -n 2>/dev/null \
+  | awk -v ip="$BRIDGE_IP" -v port="$GATEWAY_TLS_PORT" \
+      '$0 ~ /DNAT/ && $0 ~ ip && $0 ~ ("dpt:" port) { print $1 }' | sort -rn)
+iptables -t nat -A PREROUTING -d "$BRIDGE_IP" -p tcp --dport "$GATEWAY_TLS_PORT" -j DNAT --to-destination "$GATEWAY_TLS_DST"
 # Il DNAT verso 127.0.0.1 richiede route_localnet sul bridge.
 sysctl -qw "net.ipv4.conf.${BRIDGE}.route_localnet=1" 2>/dev/null || true
 echo "✅ DNAT: ${BRIDGE_IP}:${GATEWAY_TLS_PORT} → ${GATEWAY_TLS_DST}"
