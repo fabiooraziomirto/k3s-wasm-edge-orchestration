@@ -112,22 +112,55 @@ done
 
 # --- 4. Sessioni TLS distinte (il cuore del test) ---------------------------
 step "4) Sessioni TLS distinte nel gateway (timeout ${CONNECT_TIMEOUT}s)"
-deadline=$((SECONDS + CONNECT_TIMEOUT)); connected=0
+# Tutti i conteggi sono limitati ai NOSTRI device: il namespace contiene anche
+# device di run precedenti, che altrimenti gonfiano i numeri (es. 4/3).
+count_phase_connected() {
+  local n=0
+  for d in "${DEVICES[@]}"; do
+    [ "$(kubectl get device "$d" -n "$NAMESPACE" -o jsonpath='{.status.phase}' 2>/dev/null)" = "Connected" ] && n=$((n+1))
+  done
+  echo "$n"
+}
+
+# Sessioni TLS realmente attive nel gateway. Il payload espone "connected"
+# (non "tls_connected") e va filtrato per device_id: se i device condividono
+# un'identità, il gateway ne mostra uno solo — che era esattamente il bug.
+count_gateway_sessions() {
+  curl -s "$GATEWAY_HTTP/api/v1/devices" 2>/dev/null | python3 -c '
+import json, sys
+names = set(sys.argv[1:])
+try:
+    devices = json.load(sys.stdin).get("devices", [])
+except Exception:
+    print(0); sys.exit()
+print(sum(1 for d in devices if d.get("device_id") in names and d.get("connected")))
+' "${DEVICES[@]}"
+}
+
+deadline=$((SECONDS + CONNECT_TIMEOUT)); connected=0; gw_connected=0
 while [ $SECONDS -lt $deadline ]; do
-  connected=$(kubectl get devices -n "$NAMESPACE" -o jsonpath='{range .items[*]}{.status.phase}{"\n"}{end}' 2>/dev/null | grep -c '^Connected$')
-  [ "$connected" -ge "$N" ] && break
+  connected=$(count_phase_connected)
+  gw_connected=$(count_gateway_sessions)
+  [ "${gw_connected:-0}" -ge "$N" ] && [ "$connected" -ge "$N" ] && break
   sleep 5
 done
 [ "$connected" -ge "$N" ] && ok "device in phase Connected: $connected/$N" || ko "device in phase Connected: $connected/$N"
+[ "${gw_connected:-0}" -ge "$N" ] && ok "sessioni TLS attive nel gateway: $gw_connected/$N" \
+                                   || ko "sessioni TLS attive nel gateway: $gw_connected/$N (era il bug: 1)"
 
-gw_connected=$(curl -s "$GATEWAY_HTTP/api/v1/devices" | grep -o '"tls_connected":true' | wc -l)
-[ "$gw_connected" -ge "$N" ] && ok "sessioni TLS attive nel gateway: $gw_connected/$N" \
-                              || ko "sessioni TLS attive nel gateway: $gw_connected/$N (era il bug: 1)"
+# Un IP distinto per device: se i MAC coincidessero, il DHCP darebbe un solo lease.
+leases=0
+for d in "${DEVICES[@]}"; do
+  mac=$(mac_addr "$d")
+  ip neigh show dev "${BRIDGE:-wasmbr0}" 2>/dev/null | grep -qi "$mac" && leases=$((leases+1))
+done
+[ "$leases" -ge "$N" ] && ok "indirizzi IP distinti sul bridge: $leases/$N" \
+                        || ko "indirizzi IP distinti sul bridge: $leases/$N (MAC attesi: $(for d in "${DEVICES[@]}"; do printf '%s ' "$(mac_addr "$d")"; done))"
 
-leases=$(ip neigh show dev "${BRIDGE:-wasmbr0}" 2>/dev/null | awk '{print $1}' | sort -u | wc -l)
-[ "$leases" -ge "$N" ] && ok "indirizzi IP distinti sul bridge: $leases" || ko "indirizzi IP distinti sul bridge: $leases (attesi $N)"
-
-hb=$(kubectl get devices -n "$NAMESPACE" -o jsonpath='{range .items[*]}{.status.last_heartbeat}{"\n"}{end}' 2>/dev/null | grep -c '[0-9]')
+hb=0
+for d in "${DEVICES[@]}"; do
+  [ -n "$(kubectl get device "$d" -n "$NAMESPACE" -o jsonpath='{.status.last_heartbeat}' 2>/dev/null)" ] && hb=$((hb+1))
+done
 [ "$hb" -ge "$N" ] && ok "device con heartbeat: $hb/$N" || ko "device con heartbeat: $hb/$N"
 
 # --- 5. Deploy WASM su tutta la fleet ---------------------------------------

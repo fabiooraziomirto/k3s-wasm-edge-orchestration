@@ -25,6 +25,15 @@ LOG_MODULE_REGISTER(wasmbed_protocol, LOG_LEVEL_INF);
 
 static bool protocol_initialized = false;
 static char gateway_endpoint[64] = {0};
+/* Device public key, copied out of DEVICE_KEY_ADDR during init. It cannot be
+ * read lazily at enrollment time: that RAM is reused by the firmware once it
+ * starts running, so by then it holds garbage and enrollment silently fell back
+ * to the shared static test key -- which made every emulated device present the
+ * same identity to the gateway. */
+static uint8_t device_public_key[32] = {0};
+static uint32_t device_public_key_len = 0U;
+
+static void read_device_public_key(void);
 static bool gateway_connected = false;
 static uint32_t last_heartbeat_uptime_ms = 0U;
 
@@ -144,25 +153,12 @@ static int do_enrollment(void)
     }
     LOG_INF("Enrollment accepted by gateway");
 
-    /* Step 3: Read 32-byte device public key from 0x20002000 (set by Renode).
-     * Format: 4-byte LE length, then key bytes.
-     * Fall back to a static test key if not set. */
-    uint8_t pub_key[32];
-    uint32_t key_len;
-    {
-        volatile uint32_t *klen_ptr = (volatile uint32_t *)DEVICE_KEY_ADDR;
-        key_len = *klen_ptr;
-        if (key_len == 0 || key_len > sizeof(pub_key)) {
-            LOG_WRN("No device key in memory (len=%u), using static test key", key_len);
-            memset(pub_key, 0xAB, sizeof(pub_key));
-            key_len = sizeof(pub_key);
-        } else {
-            volatile uint8_t *kdata_ptr = (volatile uint8_t *)(DEVICE_KEY_ADDR + 4);
-            for (uint32_t i = 0; i < key_len; i++) {
-                pub_key[i] = kdata_ptr[i];
-            }
-        }
+    /* Step 3: Use the device public key cached during init. */
+    if (device_public_key_len == 0U) {
+        read_device_public_key();
     }
+    const uint8_t *pub_key = device_public_key;
+    uint32_t key_len = device_public_key_len;
 
     /* Step 4: Build and send PublicKey message.
      * CBOR: array(2) uint(2) bytes(32) = 82 02 58 20 <32 bytes> = 36 CBOR bytes
@@ -241,6 +237,29 @@ static int read_gateway_endpoint(void)
     return 0;
 }
 
+/* Read the device public key written by Renode at DEVICE_KEY_ADDR
+ * (4-byte LE length, then the key bytes). Must run during init, while that
+ * memory still holds what Renode wrote. Falls back to a static test key. */
+static void read_device_public_key(void)
+{
+    volatile uint32_t *klen_ptr = (volatile uint32_t *)DEVICE_KEY_ADDR;
+    uint32_t key_len = *klen_ptr;
+
+    if (key_len == 0 || key_len > sizeof(device_public_key)) {
+        LOG_WRN("No device key in memory (len=%u), using static test key", key_len);
+        memset(device_public_key, 0xAB, sizeof(device_public_key));
+        device_public_key_len = sizeof(device_public_key);
+        return;
+    }
+
+    volatile uint8_t *kdata_ptr = (volatile uint8_t *)(DEVICE_KEY_ADDR + 4);
+    for (uint32_t i = 0; i < key_len; i++) {
+        device_public_key[i] = kdata_ptr[i];
+    }
+    device_public_key_len = key_len;
+    LOG_INF("Read device public key from memory (%u bytes)", key_len);
+}
+
 /* Parse endpoint string (format: "host:port") */
 static int parse_endpoint(const char *endpoint, char *host, size_t host_len, uint16_t *port)
 {
@@ -292,6 +311,9 @@ int wasmbed_protocol_init(void)
         LOG_WRN("Using default endpoint: %s", gateway_endpoint);
     }
     
+    /* Read the device identity before anything else can overwrite that RAM */
+    read_device_public_key();
+
     /* Parse endpoint and connect to gateway with TLS */
     char host[64];
     uint16_t port;
