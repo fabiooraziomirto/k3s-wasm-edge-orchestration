@@ -14,6 +14,8 @@
 #include <zephyr/net/socket.h>
 #include <zephyr/net/net_event.h>
 #include <zephyr/net/dhcpv4.h>
+#include <zephyr/net/ethernet.h>
+#include <zephyr/net/ethernet_mgmt.h>
 #include <zephyr/kernel.h>
 #include <string.h>
 #include <errno.h>
@@ -53,11 +55,22 @@ static void apply_injected_mac(struct net_if *iface)
         mac[i] = mac_ptr[i];
     }
 
-    /* The link address can only be changed while the interface is down. */
+    /* Go through the Ethernet management API, not net_if_set_link_addr(): the
+     * latter only changes what the IP stack believes, while the driver keeps
+     * programming the controller's address filter with its own built-in MAC.
+     * Frames addressed to the new MAC would then be dropped by the NIC and DHCP
+     * would never complete. The interface must be down for the change. */
+    struct ethernet_req_params params = {0};
+    memcpy(params.mac_address.addr, mac, sizeof(mac));
+
     net_if_down(iface);
-    if (net_if_set_link_addr(iface, mac, sizeof(mac), NET_LINK_ETHERNET) != 0) {
-        LOG_ERR("Cannot set injected MAC %02x:%02x:%02x:%02x:%02x:%02x",
-                mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    int ret = net_mgmt(NET_REQUEST_ETHERNET_SET_MAC_ADDRESS, iface,
+                       &params, sizeof(params));
+    if (ret != 0) {
+        LOG_ERR("Cannot set injected MAC %02x:%02x:%02x:%02x:%02x:%02x (err %d)",
+                mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], ret);
+        /* Fall back to the stack-level address: better than the shared default. */
+        (void)net_if_set_link_addr(iface, mac, sizeof(mac), NET_LINK_ETHERNET);
         return;
     }
 
