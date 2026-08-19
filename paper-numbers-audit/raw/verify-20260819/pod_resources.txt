@@ -1,0 +1,35 @@
+=== sample 1 2026-08-19T15:09:52+00:00 ===
+gateway-1-deployment-c58b566f6-cvvjk             3m     5Mi    
+wasmbed-api-server-76b98c69f9-fjwb7              149m   43Mi   
+wasmbed-application-controller-c95d5d4c8-xwxq8   33m    12Mi   
+CGROUP gateway-1-deployment-c58b566f6-cvvjk current=5595136 anon=3817472 file=4096 usage_usec=3159523
+CGROUP wasmbed-api-server-76b98c69f9-fjwb7 current=32337920 anon=5922816 file=409600 usage_usec=638071133
+CGROUP wasmbed-application-controller-c95d5d4c8-xwxq8 current=13549568 anon=11436032 file=4096 usage_usec=238174577
+=== sample 2 2026-08-19T15:10:13+00:00 ===
+gateway-1-deployment-c58b566f6-cvvjk             3m     4Mi    
+wasmbed-api-server-76b98c69f9-fjwb7              175m   30Mi   
+wasmbed-application-controller-c95d5d4c8-xwxq8   40m    12Mi   
+CGROUP gateway-1-deployment-c58b566f6-cvvjk current=5599232 anon=3817472 file=4096 usage_usec=3198572
+CGROUP wasmbed-api-server-76b98c69f9-fjwb7 current=32481280 anon=5922816 file=409600 usage_usec=641400540
+CGROUP wasmbed-application-controller-c95d5d4c8-xwxq8 current=13283328 anon=11436032 file=4096 usage_usec=238985164
+=== sample 3 2026-08-19T15:10:34+00:00 ===
+gateway-1-deployment-c58b566f6-cvvjk             3m     4Mi    
+wasmbed-api-server-76b98c69f9-fjwb7              174m   30Mi   
+wasmbed-application-controller-c95d5d4c8-xwxq8   40m    12Mi   
+CGROUP gateway-1-deployment-c58b566f6-cvvjk current=5599232 anon=3817472 file=4096 usage_usec=3250376
+CGROUP wasmbed-api-server-76b98c69f9-fjwb7 current=32645120 anon=5922816 file=409600 usage_usec=644985647
+CGROUP wasmbed-application-controller-c95d5d4c8-xwxq8 current=13283328 anon=11436032 file=4096 usage_usec=239757845
+=== sample 4 2026-08-19T15:10:55+00:00 ===
+gateway-1-deployment-c58b566f6-cvvjk             3m     5Mi    
+wasmbed-api-server-76b98c69f9-fjwb7              168m   34Mi   
+wasmbed-application-controller-c95d5d4c8-xwxq8   34m    12Mi   
+CGROUP gateway-1-deployment-c58b566f6-cvvjk current=5599232 anon=3821568 file=4096 usage_usec=3292126
+CGROUP wasmbed-api-server-76b98c69f9-fjwb7 current=32780288 anon=5922816 file=409600 usage_usec=648135172
+CGROUP wasmbed-application-controller-c95d5d4c8-xwxq8 current=13283328 anon=11436032 file=4096 usage_usec=240564761
+=== sample 5 2026-08-19T15:11:15+00:00 ===
+gateway-1-deployment-c58b566f6-cvvjk             3m     4Mi    
+wasmbed-api-server-76b98c69f9-fjwb7              180m   30Mi   
+wasmbed-application-controller-c95d5d4c8-xwxq8   45m    12Mi   
+CGROUP gateway-1-deployment-c58b566f6-cvvjk current=5603328 anon=3821568 file=4096 usage_usec=3339745
+CGROUP wasmbed-api-server-76b98c69f9-fjwb7 current=32956416 anon=5922816 file=409600 usage_usec=652185192
+CGROUP wasmbed-application-controller-c95d5d4c8-xwxq8 current=13295616 anon=11448320 file=4096 usage_usec=241480745

@@ -121,6 +121,17 @@ di `kubectl top` contro RSS/page cache) e rifatto il campionamento con quella.
 
 ---
 
+## Seconda verifica (2026-08-19)
+
+Una campagna indipendente sullo stesso commit ha ripetuto latenze, successi,
+risorse dei pod, CPU-time per fase, footprint firmware e registro 50 board:
+[`verification-20260819.md`](verification-20260819.md). In sintesi: le due
+rimisurazioni concordano tra loro, la coda del deployment è confermata, il
+CPU-time per fase è stato rifatto (enrollment ora 5/5) e la RAM dei pod del
+paper non è riproducibile con nessuna delle due metriche candidate.
+
+---
+
 ## Da chiudere prima della submission
 
 1. **RAM dei pod** (§4): decidere la metrica e rimisurare — il valore è negli highlights.

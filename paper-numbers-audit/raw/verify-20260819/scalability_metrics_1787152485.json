@@ -1,0 +1,5614 @@
+{
+  "generated_at": "2026-08-19T15:14:45.435636+00:00",
+  "namespace": "wasmbed",
+  "api_base": "http://127.0.0.1:3001",
+  "gateway_http": "http://127.0.0.1:8080",
+  "measurement_scope": "host_shared_with_renode",
+  "energy_enabled": false,
+  "prometheus_base": null,
+  "energy_power_provenance": null,
+  "records": [
+    {
+      "experiment": "system_snapshot",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 0.0,
+      "details": {
+        "metrics": {
+          "error": "Error from server (Forbidden): pods.metrics.k8s.io is forbidden: User \"system:serviceaccount:wasmbed:wasmbed-api-server\" cannot list resource \"pods\" in API group \"metrics.k8s.io\" in the namespace \"wasmbed\"\n",
+          "metrics": []
+        },
+        "source": "pod-snapshot",
+        "pods": [
+          {
+            "name": "gateway-1-deployment-c58b566f6-cvvjk",
+            "phase": "Running",
+            "restarts": 0
+          },
+          {
+            "name": "wasmbed-api-server-76b98c69f9-fjwb7",
+            "phase": "Running",
+            "restarts": 0
+          },
+          {
+            "name": "wasmbed-application-controller-c95d5d4c8-xwxq8",
+            "phase": "Running",
+            "restarts": 0
+          }
+        ]
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 560.2660938166082,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:25.334654750Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 4.73354384303093,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 5.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 1126.467829104513,
+      "details": {
+        "application": "experiment-1-1787152053",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 2,
+      "success": true,
+      "duration_ms": 536.111265886575,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:25.334654750Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 2,
+      "success": true,
+      "duration_ms": 4.674071911722422,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 10.8
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 2,
+      "success": true,
+      "duration_ms": 1111.690601799637,
+      "details": {
+        "application": "experiment-2-1787152058",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 3,
+      "success": true,
+      "duration_ms": 587.4148001894355,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:25.334654750Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 3,
+      "success": true,
+      "duration_ms": 3.4453156404197216,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 15.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 3,
+      "success": true,
+      "duration_ms": 558.4619208239019,
+      "details": {
+        "application": "experiment-3-1787152062",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "last_heartbeat": "2026-08-19T15:07:43.409607692+00:00",
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 4,
+      "success": true,
+      "duration_ms": 577.0640387199819,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:25.334654750Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 4,
+      "success": true,
+      "duration_ms": 4.331578966230154,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 19.6
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 4,
+      "success": true,
+      "duration_ms": 845.9229818545282,
+      "details": {
+        "application": "experiment-4-1787152067",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 5,
+      "success": true,
+      "duration_ms": 560.9242026694119,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:25.334654750Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 5,
+      "success": true,
+      "duration_ms": 5.2903881296515465,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 23.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 5,
+      "success": true,
+      "duration_ms": 556.1928823590279,
+      "details": {
+        "application": "experiment-5-1787152071",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 6,
+      "success": true,
+      "duration_ms": 586.8236841633916,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:50.481213281Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 6,
+      "success": true,
+      "duration_ms": 4.646079149097204,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 3.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 6,
+      "success": true,
+      "duration_ms": 574.1440141573548,
+      "details": {
+        "application": "experiment-6-1787152075",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 7,
+      "success": true,
+      "duration_ms": 649.1882340051234,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:50.481213281Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 7,
+      "success": true,
+      "duration_ms": 4.028100054711103,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 7.1
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 7,
+      "success": true,
+      "duration_ms": 941.5329205803573,
+      "details": {
+        "application": "experiment-7-1787152079",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 8,
+      "success": true,
+      "duration_ms": 547.1449880860746,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:50.481213281Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 8,
+      "success": true,
+      "duration_ms": 4.234467167407274,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 11.8
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 8,
+      "success": true,
+      "duration_ms": 585.4968060739338,
+      "details": {
+        "application": "experiment-8-1787152084",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 9,
+      "success": true,
+      "duration_ms": 551.633186172694,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:50.481213281Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 9,
+      "success": true,
+      "duration_ms": 3.9091757498681545,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 15.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 9,
+      "success": true,
+      "duration_ms": 538.2997402921319,
+      "details": {
+        "application": "experiment-9-1787152088",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 10,
+      "success": true,
+      "duration_ms": 577.5954322889447,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:50.481213281Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 10,
+      "success": true,
+      "duration_ms": 4.078875295817852,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 20.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 10,
+      "success": true,
+      "duration_ms": 566.4118202403188,
+      "details": {
+        "application": "experiment-10-1787152092",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 11,
+      "success": true,
+      "duration_ms": 750.6420849822462,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:07:50.481213281Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 11,
+      "success": true,
+      "duration_ms": 3.8913520984351635,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 24.3
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 11,
+      "success": true,
+      "duration_ms": 584.0570372529328,
+      "details": {
+        "application": "experiment-11-1787152096",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 12,
+      "success": true,
+      "duration_ms": 587.1677817776799,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:15.562872633Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 12,
+      "success": true,
+      "duration_ms": 4.226971883326769,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 4.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 12,
+      "success": true,
+      "duration_ms": 582.0773672312498,
+      "details": {
+        "application": "experiment-12-1787152101",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 13,
+      "success": true,
+      "duration_ms": 497.1570251509547,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:15.562872633Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 13,
+      "success": true,
+      "duration_ms": 4.001419059932232,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 8.1
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 13,
+      "success": true,
+      "duration_ms": 540.9381897188723,
+      "details": {
+        "application": "experiment-13-1787152105",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 14,
+      "success": true,
+      "duration_ms": 888.6167309246957,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:15.562872633Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 14,
+      "success": true,
+      "duration_ms": 3.826290834695101,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 12.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 14,
+      "success": true,
+      "duration_ms": 577.1879088133574,
+      "details": {
+        "application": "experiment-14-1787152110",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "last_heartbeat": "2026-08-19T15:08:30.704601397+00:00",
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 15,
+      "success": true,
+      "duration_ms": 541.8338421732187,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:15.562872633Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 15,
+      "success": true,
+      "duration_ms": 3.8987561129033566,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 16.8
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 15,
+      "success": true,
+      "duration_ms": 525.5688070319593,
+      "details": {
+        "application": "experiment-15-1787152114",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 16,
+      "success": true,
+      "duration_ms": 582.4706261046231,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:15.562872633Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 16,
+      "success": true,
+      "duration_ms": 4.168051294982433,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 21.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 16,
+      "success": true,
+      "duration_ms": 775.8455281145871,
+      "details": {
+        "application": "experiment-16-1787152118",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 17,
+      "success": true,
+      "duration_ms": 717.7315820008516,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:15.562872633Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 17,
+      "success": true,
+      "duration_ms": 4.439821001142263,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 0.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 17,
+      "success": true,
+      "duration_ms": 493.7811163254082,
+      "details": {
+        "application": "experiment-17-1787152123",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 18,
+      "success": true,
+      "duration_ms": 546.0170186124742,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:40.721420851Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 18,
+      "success": true,
+      "duration_ms": 4.151621367782354,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 4.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 18,
+      "success": true,
+      "duration_ms": 583.5050316527486,
+      "details": {
+        "application": "experiment-18-1787152127",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 19,
+      "success": true,
+      "duration_ms": 593.406431376934,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:40.721420851Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 19,
+      "success": true,
+      "duration_ms": 3.9210389368236065,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 9.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 19,
+      "success": true,
+      "duration_ms": 897.4015559069812,
+      "details": {
+        "application": "experiment-19-1787152132",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 20,
+      "success": true,
+      "duration_ms": 556.1703802086413,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:40.721420851Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 20,
+      "success": true,
+      "duration_ms": 4.436555318534374,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 14.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 20,
+      "success": true,
+      "duration_ms": 573.7356278114021,
+      "details": {
+        "application": "experiment-20-1787152136",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 21,
+      "success": true,
+      "duration_ms": 582.2428180836141,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:40.721420851Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 21,
+      "success": true,
+      "duration_ms": 3.129351884126663,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 19.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 21,
+      "success": true,
+      "duration_ms": 563.0805580876768,
+      "details": {
+        "application": "experiment-21-1787152141",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 22,
+      "success": true,
+      "duration_ms": 556.42069876194,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:08:40.721420851Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 22,
+      "success": true,
+      "duration_ms": 5.142809823155403,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 23.1
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 22,
+      "success": true,
+      "duration_ms": 554.5946890488267,
+      "details": {
+        "application": "experiment-22-1787152145",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "last_heartbeat": "2026-08-19T15:09:05.956602804+00:00",
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 23,
+      "success": true,
+      "duration_ms": 787.8597462549806,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:05.753845443Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 23,
+      "success": true,
+      "duration_ms": 3.9830650202929974,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 2.3
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 23,
+      "success": true,
+      "duration_ms": 568.1202239356935,
+      "details": {
+        "application": "experiment-23-1787152149",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 24,
+      "success": true,
+      "duration_ms": 603.5910728387535,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:05.753845443Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 24,
+      "success": true,
+      "duration_ms": 3.7952610291540623,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 6.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 24,
+      "success": true,
+      "duration_ms": 514.7390430793166,
+      "details": {
+        "application": "experiment-24-1787152153",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 25,
+      "success": true,
+      "duration_ms": 575.7252592593431,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:05.753845443Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 25,
+      "success": true,
+      "duration_ms": 4.014060832560062,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 10.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 25,
+      "success": true,
+      "duration_ms": 521.7105792835355,
+      "details": {
+        "application": "experiment-25-1787152157",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 26,
+      "success": true,
+      "duration_ms": 791.7805216275156,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:05.753845443Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 26,
+      "success": true,
+      "duration_ms": 3.774602897465229,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 14.7
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 26,
+      "success": true,
+      "duration_ms": 573.9967771805823,
+      "details": {
+        "application": "experiment-26-1787152162",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 27,
+      "success": true,
+      "duration_ms": 564.6350281313062,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:05.753845443Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 27,
+      "success": true,
+      "duration_ms": 4.010155331343412,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 18.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 27,
+      "success": true,
+      "duration_ms": 543.9307251945138,
+      "details": {
+        "application": "experiment-27-1787152166",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 28,
+      "success": true,
+      "duration_ms": 575.8466511033475,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:05.753845443Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 28,
+      "success": true,
+      "duration_ms": 3.9639980532228947,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 22.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 28,
+      "success": true,
+      "duration_ms": 939.291519112885,
+      "details": {
+        "application": "experiment-28-1787152170",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 29,
+      "success": true,
+      "duration_ms": 775.404853746295,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:30.881693455Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 29,
+      "success": true,
+      "duration_ms": 3.8458858616650105,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 2.6
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 29,
+      "success": true,
+      "duration_ms": 580.3014319390059,
+      "details": {
+        "application": "experiment-29-1787152175",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 30,
+      "success": true,
+      "duration_ms": 568.9410641789436,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:30.881693455Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 30,
+      "success": true,
+      "duration_ms": 5.608903709799051,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 6.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 30,
+      "success": true,
+      "duration_ms": 536.6811971180141,
+      "details": {
+        "application": "experiment-30-1787152179",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 31,
+      "success": true,
+      "duration_ms": 650.6680427119136,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:30.881693455Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 31,
+      "success": true,
+      "duration_ms": 4.513740073889494,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 11.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 31,
+      "success": true,
+      "duration_ms": 744.9652897194028,
+      "details": {
+        "application": "experiment-31-1787152183",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 32,
+      "success": true,
+      "duration_ms": 826.7098627984524,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:30.881693455Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 32,
+      "success": true,
+      "duration_ms": 4.016485996544361,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 15.7
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 32,
+      "success": true,
+      "duration_ms": 588.1510558538139,
+      "details": {
+        "application": "experiment-32-1787152188",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 33,
+      "success": true,
+      "duration_ms": 571.7844138853252,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:30.881693455Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 33,
+      "success": true,
+      "duration_ms": 4.07313322648406,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 19.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 33,
+      "success": true,
+      "duration_ms": 3000.847906805575,
+      "details": {
+        "application": "experiment-33-1787152192",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Deploying"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 34,
+      "success": true,
+      "duration_ms": 607.9481840133667,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:56.037464637Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 34,
+      "success": true,
+      "duration_ms": 3.9673238061368465,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 0.6
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 34,
+      "success": true,
+      "duration_ms": 798.0855805799365,
+      "details": {
+        "application": "experiment-34-1787152198",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 35,
+      "success": true,
+      "duration_ms": 617.2881349921227,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:56.037464637Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 35,
+      "success": true,
+      "duration_ms": 4.868163727223873,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 5.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 35,
+      "success": true,
+      "duration_ms": 562.3442060314119,
+      "details": {
+        "application": "experiment-35-1787152203",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 36,
+      "success": true,
+      "duration_ms": 838.5134907439351,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:56.037464637Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 36,
+      "success": true,
+      "duration_ms": 4.1858539916574955,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 9.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 36,
+      "success": true,
+      "duration_ms": 545.4862099140882,
+      "details": {
+        "application": "experiment-36-1787152207",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "last_heartbeat": "2026-08-19T15:10:08.402981808+00:00",
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 37,
+      "success": true,
+      "duration_ms": 537.3992151580751,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:56.037464637Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 37,
+      "success": true,
+      "duration_ms": 3.7875561974942684,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 13.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 37,
+      "success": true,
+      "duration_ms": 938.0736784078181,
+      "details": {
+        "application": "experiment-37-1787152211",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 38,
+      "success": true,
+      "duration_ms": 548.032701946795,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:56.037464637Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 38,
+      "success": true,
+      "duration_ms": 4.1878181509673595,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 17.7
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 38,
+      "success": true,
+      "duration_ms": 524.5534852147102,
+      "details": {
+        "application": "experiment-38-1787152216",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 39,
+      "success": true,
+      "duration_ms": 544.4674990139902,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:09:56.037464637Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 39,
+      "success": true,
+      "duration_ms": 4.533716011792421,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 21.7
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 39,
+      "success": true,
+      "duration_ms": 583.030120935291,
+      "details": {
+        "application": "experiment-39-1787152220",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "last_heartbeat": "2026-08-19T15:10:20.740644039+00:00",
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 40,
+      "success": true,
+      "duration_ms": 562.2772122733295,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:21.151602056Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 40,
+      "success": true,
+      "duration_ms": 3.1934231519699097,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 0.8
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 40,
+      "success": true,
+      "duration_ms": 910.1596521213651,
+      "details": {
+        "application": "experiment-40-1787152224",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 41,
+      "success": true,
+      "duration_ms": 570.3983856365085,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:21.151602056Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 41,
+      "success": true,
+      "duration_ms": 4.325156100094318,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 5.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 41,
+      "success": true,
+      "duration_ms": 597.731308080256,
+      "details": {
+        "application": "experiment-41-1787152228",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 42,
+      "success": true,
+      "duration_ms": 555.4259880445898,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:21.151602056Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 42,
+      "success": true,
+      "duration_ms": 3.61025333404541,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 9.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 42,
+      "success": true,
+      "duration_ms": 603.2083099707961,
+      "details": {
+        "application": "experiment-42-1787152233",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 43,
+      "success": true,
+      "duration_ms": 560.9259428456426,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:21.151602056Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 43,
+      "success": true,
+      "duration_ms": 3.537168260663748,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 14.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 43,
+      "success": true,
+      "duration_ms": 1101.252949796617,
+      "details": {
+        "application": "experiment-43-1787152237",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 44,
+      "success": true,
+      "duration_ms": 557.9417790286243,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:21.151602056Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 44,
+      "success": true,
+      "duration_ms": 3.866555169224739,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 18.6
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 44,
+      "success": true,
+      "duration_ms": 573.751921299845,
+      "details": {
+        "application": "experiment-44-1787152242",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 45,
+      "success": true,
+      "duration_ms": 553.7002868950367,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:21.151602056Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 45,
+      "success": true,
+      "duration_ms": 3.5768719390034676,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 22.7
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 45,
+      "success": true,
+      "duration_ms": 597.4608608521521,
+      "details": {
+        "application": "experiment-45-1787152246",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "last_heartbeat": "2026-08-19T15:10:46.620639496+00:00",
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 46,
+      "success": true,
+      "duration_ms": 561.0684365965426,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:46.265201871Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 46,
+      "success": true,
+      "duration_ms": 4.1381740011274815,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 1.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 46,
+      "success": true,
+      "duration_ms": 811.3307780586183,
+      "details": {
+        "application": "experiment-46-1787152250",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 47,
+      "success": true,
+      "duration_ms": 1007.7986759133637,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:46.265201871Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 47,
+      "success": true,
+      "duration_ms": 4.739674273878336,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 6.7
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 47,
+      "success": true,
+      "duration_ms": 950.3089808858931,
+      "details": {
+        "application": "experiment-47-1787152256",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 48,
+      "success": true,
+      "duration_ms": 558.7773378938437,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:46.265201871Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 48,
+      "success": true,
+      "duration_ms": 3.829485271126032,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 12.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 48,
+      "success": true,
+      "duration_ms": 487.0694219134748,
+      "details": {
+        "application": "experiment-48-1787152261",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 49,
+      "success": true,
+      "duration_ms": 682.178006041795,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:46.265201871Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 49,
+      "success": true,
+      "duration_ms": 4.001498222351074,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 17.1
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 49,
+      "success": true,
+      "duration_ms": 567.3963017761707,
+      "details": {
+        "application": "experiment-49-1787152265",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 50,
+      "success": true,
+      "duration_ms": 540.5245129950345,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:46.265201871Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 50,
+      "success": true,
+      "duration_ms": 3.259324934333563,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 21.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 50,
+      "success": true,
+      "duration_ms": 532.5550679117441,
+      "details": {
+        "application": "experiment-50-1787152269",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 51,
+      "success": true,
+      "duration_ms": 562.7136109396815,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:10:46.265201871Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 51,
+      "success": true,
+      "duration_ms": 3.3244378864765167,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 25.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 51,
+      "success": true,
+      "duration_ms": 503.4955623559654,
+      "details": {
+        "application": "experiment-51-1787152273",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 52,
+      "success": true,
+      "duration_ms": 719.063478987664,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:11.341739656Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 52,
+      "success": true,
+      "duration_ms": 3.8789580576121807,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 4.3
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 52,
+      "success": true,
+      "duration_ms": 487.28918097913265,
+      "details": {
+        "application": "experiment-52-1787152277",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 53,
+      "success": true,
+      "duration_ms": 537.1141750365496,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:11.341739656Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 53,
+      "success": true,
+      "duration_ms": 3.7295683287084103,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 8.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 53,
+      "success": true,
+      "duration_ms": 713.2890159264207,
+      "details": {
+        "application": "experiment-53-1787152281",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 54,
+      "success": true,
+      "duration_ms": 552.5822918862104,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:11.341739656Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 54,
+      "success": true,
+      "duration_ms": 3.663014154881239,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 12.7
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 54,
+      "success": true,
+      "duration_ms": 543.8429629430175,
+      "details": {
+        "application": "experiment-54-1787152286",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 55,
+      "success": true,
+      "duration_ms": 564.4955621100962,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:11.341739656Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 55,
+      "success": true,
+      "duration_ms": 4.0169358253479,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 16.8
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 55,
+      "success": true,
+      "duration_ms": 497.7785819210112,
+      "details": {
+        "application": "experiment-55-1787152290",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "last_heartbeat": "2026-08-19T15:11:30.636107946+00:00",
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 56,
+      "success": true,
+      "duration_ms": 570.5859530717134,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:11.341739656Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 56,
+      "success": true,
+      "duration_ms": 4.341405816376209,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 20.7
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 56,
+      "success": true,
+      "duration_ms": 980.4237149655819,
+      "details": {
+        "application": "experiment-56-1787152294",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 57,
+      "success": true,
+      "duration_ms": 559.6686583012342,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:11.341739656Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 57,
+      "success": true,
+      "duration_ms": 4.082269966602325,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 25.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 57,
+      "success": true,
+      "duration_ms": 518.4775502420962,
+      "details": {
+        "application": "experiment-57-1787152298",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 58,
+      "success": true,
+      "duration_ms": 559.3676292337477,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:36.538520342Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 58,
+      "success": true,
+      "duration_ms": 4.173500929027796,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 4.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 58,
+      "success": true,
+      "duration_ms": 564.6740309894085,
+      "details": {
+        "application": "experiment-58-1787152302",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 59,
+      "success": true,
+      "duration_ms": 567.1881083399057,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:36.538520342Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 59,
+      "success": true,
+      "duration_ms": 3.8589308969676495,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 8.6
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 59,
+      "success": true,
+      "duration_ms": 761.3886930048466,
+      "details": {
+        "application": "experiment-59-1787152307",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 60,
+      "success": true,
+      "duration_ms": 800.2156671136618,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:36.538520342Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 60,
+      "success": true,
+      "duration_ms": 4.1113439947366714,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 13.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 60,
+      "success": true,
+      "duration_ms": 493.94965125247836,
+      "details": {
+        "application": "experiment-60-1787152311",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 61,
+      "success": true,
+      "duration_ms": 556.3422311097383,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:36.538520342Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 61,
+      "success": true,
+      "duration_ms": 3.9821807295084,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 18.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 61,
+      "success": true,
+      "duration_ms": 586.3574929535389,
+      "details": {
+        "application": "experiment-61-1787152316",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 62,
+      "success": true,
+      "duration_ms": 549.6914093382657,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:11:36.538520342Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 62,
+      "success": true,
+      "duration_ms": 3.615543246269226,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 22.1
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 62,
+      "success": true,
+      "duration_ms": 777.7615562081337,
+      "details": {
+        "application": "experiment-62-1787152321",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 63,
+      "success": true,
+      "duration_ms": 855.4853666573763,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:01.662500955Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 63,
+      "success": true,
+      "duration_ms": 3.6510303616523743,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 2.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 63,
+      "success": true,
+      "duration_ms": 555.0088370218873,
+      "details": {
+        "application": "experiment-63-1787152326",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 64,
+      "success": true,
+      "duration_ms": 557.6642886735499,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:01.662500955Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 64,
+      "success": true,
+      "duration_ms": 3.839764278382063,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 6.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 64,
+      "success": true,
+      "duration_ms": 500.9466749615967,
+      "details": {
+        "application": "experiment-64-1787152330",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "last_heartbeat": "2026-08-19T15:12:10.737398847+00:00",
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 65,
+      "success": true,
+      "duration_ms": 570.4592922702432,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:01.662500955Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 65,
+      "success": true,
+      "duration_ms": 4.974141716957092,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 10.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 65,
+      "success": true,
+      "duration_ms": 969.5220729336143,
+      "details": {
+        "application": "experiment-65-1787152334",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 66,
+      "success": true,
+      "duration_ms": 571.0993786342442,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:01.662500955Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 66,
+      "success": true,
+      "duration_ms": 4.29340498521924,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 15.8
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 66,
+      "success": true,
+      "duration_ms": 548.7858932465315,
+      "details": {
+        "application": "experiment-66-1787152339",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 67,
+      "success": true,
+      "duration_ms": 566.4364169351757,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:01.662500955Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 67,
+      "success": true,
+      "duration_ms": 3.6506489850580692,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 19.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 67,
+      "success": true,
+      "duration_ms": 570.8326906897128,
+      "details": {
+        "application": "experiment-67-1787152343",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 68,
+      "success": true,
+      "duration_ms": 464.0207467600703,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:01.662500955Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 68,
+      "success": true,
+      "duration_ms": 4.035089630633593,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 23.8
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 68,
+      "success": true,
+      "duration_ms": 899.7435700148344,
+      "details": {
+        "application": "experiment-68-1787152347",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 69,
+      "success": true,
+      "duration_ms": 597.451588138938,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:26.719955640Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 69,
+      "success": true,
+      "duration_ms": 3.928039688616991,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 3.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 69,
+      "success": true,
+      "duration_ms": 496.99406512081623,
+      "details": {
+        "application": "experiment-69-1787152351",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 70,
+      "success": true,
+      "duration_ms": 532.3357698507607,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:26.719955640Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 70,
+      "success": true,
+      "duration_ms": 3.746830392628908,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 7.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 70,
+      "success": true,
+      "duration_ms": 573.5476952977479,
+      "details": {
+        "application": "experiment-70-1787152355",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 71,
+      "success": true,
+      "duration_ms": 657.4667091481388,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:26.719955640Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 71,
+      "success": true,
+      "duration_ms": 4.039708990603685,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 11.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 71,
+      "success": true,
+      "duration_ms": 557.2153818793595,
+      "details": {
+        "application": "experiment-71-1787152359",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 72,
+      "success": true,
+      "duration_ms": 879.1800737380981,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:26.719955640Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 72,
+      "success": true,
+      "duration_ms": 4.599248059093952,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 15.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 72,
+      "success": true,
+      "duration_ms": 1023.9687589928508,
+      "details": {
+        "application": "experiment-72-1787152364",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 73,
+      "success": true,
+      "duration_ms": 564.4938917830586,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:26.719955640Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 73,
+      "success": true,
+      "duration_ms": 3.906009253114462,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 20.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 73,
+      "success": true,
+      "duration_ms": 552.3669379763305,
+      "details": {
+        "application": "experiment-73-1787152368",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 74,
+      "success": true,
+      "duration_ms": 572.0893479883671,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:26.719955640Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 74,
+      "success": true,
+      "duration_ms": 3.754192031919956,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 25.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 74,
+      "success": true,
+      "duration_ms": 813.4073419496417,
+      "details": {
+        "application": "experiment-74-1787152373",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 75,
+      "success": true,
+      "duration_ms": 541.3588508963585,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:51.741586876Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 75,
+      "success": true,
+      "duration_ms": 3.5055759362876415,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 4.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 75,
+      "success": true,
+      "duration_ms": 581.0738494619727,
+      "details": {
+        "application": "experiment-75-1787152377",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 76,
+      "success": true,
+      "duration_ms": 572.5759752094746,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:51.741586876Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 76,
+      "success": true,
+      "duration_ms": 4.465708043426275,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 8.8
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 76,
+      "success": true,
+      "duration_ms": 558.4088442847133,
+      "details": {
+        "application": "experiment-76-1787152382",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 77,
+      "success": true,
+      "duration_ms": 548.043757211417,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:51.741586876Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 77,
+      "success": true,
+      "duration_ms": 5.061144940555096,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 12.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 77,
+      "success": true,
+      "duration_ms": 953.760412055999,
+      "details": {
+        "application": "experiment-77-1787152386",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 78,
+      "success": true,
+      "duration_ms": 639.1084990464151,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:51.741586876Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 78,
+      "success": true,
+      "duration_ms": 3.668663091957569,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 17.6
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 78,
+      "success": true,
+      "duration_ms": 565.0056330487132,
+      "details": {
+        "application": "experiment-78-1787152391",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 79,
+      "success": true,
+      "duration_ms": 548.8540111109614,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:51.741586876Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 79,
+      "success": true,
+      "duration_ms": 3.4884652122855186,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 21.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 79,
+      "success": true,
+      "duration_ms": 544.9977251701057,
+      "details": {
+        "application": "experiment-79-1787152395",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 80,
+      "success": true,
+      "duration_ms": 603.4527090378106,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:12:51.741586876Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 80,
+      "success": true,
+      "duration_ms": 3.5564322024583817,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 1.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 80,
+      "success": true,
+      "duration_ms": 950.2148246392608,
+      "details": {
+        "application": "experiment-80-1787152399",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 81,
+      "success": true,
+      "duration_ms": 573.5569088719785,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:16.864927331Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 81,
+      "success": true,
+      "duration_ms": 4.086555913090706,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 5.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 81,
+      "success": true,
+      "duration_ms": 590.5367224477232,
+      "details": {
+        "application": "experiment-81-1787152403",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 82,
+      "success": true,
+      "duration_ms": 554.669831879437,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:16.864927331Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 82,
+      "success": true,
+      "duration_ms": 4.358526319265366,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 9.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 82,
+      "success": true,
+      "duration_ms": 559.5914139412344,
+      "details": {
+        "application": "experiment-82-1787152408",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 83,
+      "success": true,
+      "duration_ms": 560.5335906147957,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:16.864927331Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 83,
+      "success": true,
+      "duration_ms": 3.945362288504839,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 13.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 83,
+      "success": true,
+      "duration_ms": 965.2664763852954,
+      "details": {
+        "application": "experiment-83-1787152412",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 84,
+      "success": true,
+      "duration_ms": 539.6968368440866,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:16.864927331Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 84,
+      "success": true,
+      "duration_ms": 3.885740414261818,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 18.3
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 84,
+      "success": true,
+      "duration_ms": 521.9537583179772,
+      "details": {
+        "application": "experiment-84-1787152416",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 85,
+      "success": true,
+      "duration_ms": 556.7997987382114,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:16.864927331Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 85,
+      "success": true,
+      "duration_ms": 3.5280599258840084,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 22.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 85,
+      "success": true,
+      "duration_ms": 590.7108359970152,
+      "details": {
+        "application": "experiment-85-1787152421",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 86,
+      "success": true,
+      "duration_ms": 551.0755879804492,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:41.877156273Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 86,
+      "success": true,
+      "duration_ms": 3.810539375990629,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 1.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 86,
+      "success": true,
+      "duration_ms": 924.9857231043279,
+      "details": {
+        "application": "experiment-86-1787152425",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 87,
+      "success": true,
+      "duration_ms": 564.2557209357619,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:41.877156273Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 87,
+      "success": true,
+      "duration_ms": 4.030762240290642,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 6.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 87,
+      "success": true,
+      "duration_ms": 544.492653105408,
+      "details": {
+        "application": "experiment-87-1787152429",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 88,
+      "success": true,
+      "duration_ms": 649.9669249169528,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:41.877156273Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 88,
+      "success": true,
+      "duration_ms": 4.941330291330814,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 10.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 88,
+      "success": true,
+      "duration_ms": 587.0117470622063,
+      "details": {
+        "application": "experiment-88-1787152433",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 89,
+      "success": true,
+      "duration_ms": 553.2317543402314,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:41.877156273Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 89,
+      "success": true,
+      "duration_ms": 3.281376324594021,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 14.6
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 89,
+      "success": true,
+      "duration_ms": 792.757407296449,
+      "details": {
+        "application": "experiment-89-1787152437",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 90,
+      "success": true,
+      "duration_ms": 590.1323379948735,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:41.877156273Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 90,
+      "success": true,
+      "duration_ms": 4.055798053741455,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 19.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 90,
+      "success": true,
+      "duration_ms": 529.9099176190794,
+      "details": {
+        "application": "experiment-90-1787152442",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 91,
+      "success": true,
+      "duration_ms": 562.014406081289,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:13:41.877156273Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 91,
+      "success": true,
+      "duration_ms": 4.446772392839193,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 22.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 91,
+      "success": true,
+      "duration_ms": 585.7841959223151,
+      "details": {
+        "application": "experiment-91-1787152446",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 92,
+      "success": true,
+      "duration_ms": 583.3454290404916,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:14:07.010811265Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 92,
+      "success": true,
+      "duration_ms": 3.729485906660557,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 1.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 92,
+      "success": true,
+      "duration_ms": 853.5433900542557,
+      "details": {
+        "application": "experiment-92-1787152450",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 93,
+      "success": true,
+      "duration_ms": 535.0395739078522,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:14:07.010811265Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 93,
+      "success": true,
+      "duration_ms": 4.052252043038607,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 5.9
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 93,
+      "success": true,
+      "duration_ms": 556.0321952216327,
+      "details": {
+        "application": "experiment-93-1787152455",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 94,
+      "success": true,
+      "duration_ms": 757.074308115989,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:14:07.010811265Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 94,
+      "success": true,
+      "duration_ms": 4.580453038215637,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 10.3
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 94,
+      "success": true,
+      "duration_ms": 575.1522006466985,
+      "details": {
+        "application": "experiment-94-1787152459",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 95,
+      "success": true,
+      "duration_ms": 549.4036166928709,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:14:07.010811265Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 95,
+      "success": true,
+      "duration_ms": 4.53886529430747,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 14.3
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 95,
+      "success": true,
+      "duration_ms": 549.0065990015864,
+      "details": {
+        "application": "experiment-95-1787152463",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 96,
+      "success": true,
+      "duration_ms": 562.6528291031718,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:14:07.010811265Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 96,
+      "success": true,
+      "duration_ms": 4.401396960020065,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 18.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 96,
+      "success": true,
+      "duration_ms": 554.7859789803624,
+      "details": {
+        "application": "experiment-96-1787152467",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 97,
+      "success": true,
+      "duration_ms": 839.6670389920473,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:14:07.010811265Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 97,
+      "success": true,
+      "duration_ms": 3.8954070769250393,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 22.7
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 97,
+      "success": true,
+      "duration_ms": 533.827698789537,
+      "details": {
+        "application": "experiment-97-1787152472",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 98,
+      "success": true,
+      "duration_ms": 655.6257992051542,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:14:32.127145298Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 98,
+      "success": true,
+      "duration_ms": 4.86385403200984,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 2.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 98,
+      "success": true,
+      "duration_ms": 584.9661813117564,
+      "details": {
+        "application": "experiment-98-1787152476",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 99,
+      "success": true,
+      "duration_ms": 604.8039360903203,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:14:32.127145298Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 99,
+      "success": true,
+      "duration_ms": 3.9837639778852463,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 6.0
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 99,
+      "success": true,
+      "duration_ms": 561.6056346334517,
+      "details": {
+        "application": "experiment-99-1787152480",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 100,
+      "success": true,
+      "duration_ms": 835.7670209370553,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:14:32.127145298Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 100,
+      "success": true,
+      "duration_ms": 4.89060627296567,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 10.3
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    },
+    {
+      "experiment": "deployment",
+      "trial": 100,
+      "success": true,
+      "duration_ms": 588.9992308802903,
+      "details": {
+        "application": "experiment-100-1787152484",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": null
+    }
+  ],
+  "summary": {
+    "system_snapshot": {
+      "trials": 1,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.20654329147389294,
+          1.0
+        ],
+        "successes": 1,
+        "total": 1
+      },
+      "duration_ms": {
+        "count": 1,
+        "mean": 0.0,
+        "stdev": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "latency_ms": {
+        "count": 1,
+        "mean": 0.0,
+        "stdev": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "p90": 0.0,
+        "p99": 0.0,
+        "iqr": 0.0,
+        "cv": null
+      },
+      "failure_reasons": {},
+      "goodput_tps": null
+    },
+    "enrollment": {
+      "trials": 100,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.9630051925239981,
+          0.9999999999999999
+        ],
+        "successes": 100,
+        "total": 100
+      },
+      "duration_ms": {
+        "count": 100,
+        "mean": 609.5157395256683,
+        "stdev": 100.25041905298326,
+        "min": 464.0207467600703,
+        "max": 1007.7986759133637,
+        "median": 568.0645862594247,
+        "p95": 839.6093615796417,
+        "ci95": [
+          589.6260563855565,
+          629.4054226657802
+        ]
+      },
+      "latency_ms": {
+        "count": 100,
+        "mean": 609.5157395256683,
+        "stdev": 100.25041905298326,
+        "min": 464.0207467600703,
+        "max": 1007.7986759133637,
+        "median": 568.0645862594247,
+        "p95": 839.6093615796417,
+        "ci95": [
+          589.6260563855565,
+          629.4054226657802
+        ],
+        "p90": 788.2518237922341,
+        "p99": 889.808550374583,
+        "iqr": 50.353049067780375,
+        "cv": 0.16447552138850297
+      },
+      "failure_reasons": {},
+      "goodput_tps": 1.6406467219012437
+    },
+    "heartbeat": {
+      "trials": 100,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.9630051925239981,
+          0.9999999999999999
+        ],
+        "successes": 100,
+        "total": 100
+      },
+      "duration_ms": {
+        "count": 100,
+        "mean": 4.080620398744941,
+        "stdev": 0.46602333205167645,
+        "min": 3.129351884126663,
+        "max": 5.608903709799051,
+        "median": 4.012108081951737,
+        "p95": 4.972501145675778,
+        "ci95": [
+          3.988161369665888,
+          4.1730794278239935
+        ]
+      },
+      "latency_ms": {
+        "count": 100,
+        "mean": 4.080620398744941,
+        "stdev": 0.46602333205167645,
+        "min": 3.129351884126663,
+        "max": 5.608903709799051,
+        "median": 4.012108081951737,
+        "p95": 4.972501145675778,
+        "ci95": [
+          3.988161369665888,
+          4.1730794278239935
+        ],
+        "p90": 4.73415688611567,
+        "p99": 5.293573285453023,
+        "iqr": 0.5273158894851804,
+        "cv": 0.11420403921791139
+      },
+      "failure_reasons": {},
+      "goodput_tps": 245.06077563783336
+    },
+    "deployment": {
+      "trials": 100,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.9630051925239981,
+          0.9999999999999999
+        ],
+        "successes": 100,
+        "total": 100
+      },
+      "duration_ms": {
+        "count": 100,
+        "mean": 676.4837868046016,
+        "stdev": 289.2583502577454,
+        "min": 487.0694219134748,
+        "max": 3000.847906805575,
+        "median": 574.0703956689686,
+        "p95": 1021.7915067914873,
+        "ci95": [
+          619.0949301134649,
+          733.8726434957382
+        ]
+      },
+      "latency_ms": {
+        "count": 100,
+        "mean": 676.4837868046016,
+        "stdev": 289.2583502577454,
+        "min": 487.0694219134748,
+        "max": 3000.847906805575,
+        "median": 574.0703956689686,
+        "p95": 1021.7915067914873,
+        "ci95": [
+          619.0949301134649,
+          733.8726434957382
+        ],
+        "p90": 950.224240263924,
+        "p99": 1145.2116298815333,
+        "iqr": 228.36356272455305,
+        "cv": 0.4275909576843946
+      },
+      "failure_reasons": {},
+      "goodput_tps": 1.4782320278857537
+    },
+    "transactional": {
+      "trials": 100,
+      "all_stages_success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.9630051925239981,
+          0.9999999999999999
+        ],
+        "successes": 100,
+        "total": 100
+      },
+      "evidence_consistency_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.9630051925239981,
+          0.9999999999999999
+        ],
+        "successes": 100,
+        "total": 100
+      },
+      "end_to_end_latency_ms": {
+        "count": 100,
+        "mean": 1285.9995263302699,
+        "stdev": 300.28187040549534,
+        "min": 1038.095214869827,
+        "max": 3572.6323206909,
+        "median": 1168.687421362847,
+        "p95": 1661.4600413944572,
+        "ci95": [
+          1226.4236032418196,
+          1345.5754494187202
+        ],
+        "p90": 1527.218196820468,
+        "p99": 1974.2529034381814,
+        "iqr": 270.67247324157506,
+        "cv": 0.23350076283649973
+      }
+    }
+  }
+}

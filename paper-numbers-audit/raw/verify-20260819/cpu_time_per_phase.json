@@ -1,0 +1,429 @@
+{
+  "records": [
+    {
+      "stage": "enrollment",
+      "trial": 1,
+      "success": true,
+      "wall_ms": 741.791367996484,
+      "cpu_s": {
+        "gateway": 0.000317,
+        "api-server": 0.08649,
+        "application-controller": 0.030778
+      },
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:24:10.031507542Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "stage": "enrollment",
+      "trial": 2,
+      "success": true,
+      "wall_ms": 1016.2216182798147,
+      "cpu_s": {
+        "gateway": 0.000503,
+        "api-server": 0.384413,
+        "application-controller": 0.045817
+      },
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:24:10.031507542Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "stage": "enrollment",
+      "trial": 3,
+      "success": true,
+      "wall_ms": 792.5168480724096,
+      "cpu_s": {
+        "gateway": 0.000326,
+        "api-server": 0.080665,
+        "application-controller": 0.032096
+      },
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:24:10.031507542Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "stage": "enrollment",
+      "trial": 4,
+      "success": true,
+      "wall_ms": 721.3015058077872,
+      "cpu_s": {
+        "gateway": 0.000266,
+        "api-server": 0.082717,
+        "application-controller": 0.035557
+      },
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:24:10.031507542Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "stage": "enrollment",
+      "trial": 5,
+      "success": true,
+      "wall_ms": 820.1020648702979,
+      "cpu_s": {
+        "gateway": 0.00034,
+        "api-server": 0.083265,
+        "application-controller": 0.038875
+      },
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-19T15:24:10.031507542Z",
+        "board_registered": true,
+        "api_visible": true
+      }
+    },
+    {
+      "stage": "heartbeat",
+      "trial": 1,
+      "success": true,
+      "wall_ms": 232.48810274526477,
+      "cpu_s": {
+        "gateway": 0.000227,
+        "api-server": 0.102417,
+        "application-controller": 0.010905
+      },
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 10.7
+      }
+    },
+    {
+      "stage": "heartbeat",
+      "trial": 2,
+      "success": true,
+      "wall_ms": 203.42572405934334,
+      "cpu_s": {
+        "gateway": 0.000372,
+        "api-server": 0.0,
+        "application-controller": 0.010956
+      },
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 11.9
+      }
+    },
+    {
+      "stage": "heartbeat",
+      "trial": 3,
+      "success": true,
+      "wall_ms": 202.29636505246162,
+      "cpu_s": {
+        "gateway": 0.00039,
+        "api-server": 0.0,
+        "application-controller": 0.009301
+      },
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 13.1
+      }
+    },
+    {
+      "stage": "heartbeat",
+      "trial": 4,
+      "success": true,
+      "wall_ms": 200.63750259578228,
+      "cpu_s": {
+        "gateway": 0.000684,
+        "api-server": 0.0,
+        "application-controller": 0.01008
+      },
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 14.3
+      }
+    },
+    {
+      "stage": "heartbeat",
+      "trial": 5,
+      "success": true,
+      "wall_ms": 202.76866992935538,
+      "cpu_s": {
+        "gateway": 0.000392,
+        "api-server": 0.0,
+        "application-controller": 0.009197
+      },
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 15.5
+      }
+    },
+    {
+      "stage": "deployment",
+      "trial": 1,
+      "success": true,
+      "wall_ms": 3203.007481060922,
+      "cpu_s": {
+        "gateway": 0.008674,
+        "api-server": 0.465255,
+        "application-controller": 0.111654
+      },
+      "details": {
+        "application": "experiment-1-1787153068",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": null,
+        "api_status": "Running",
+        "api_running_devices": 0,
+        "api_failed_devices": 0,
+        "api_deployed_count": 0,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "stage": "deployment",
+      "trial": 2,
+      "success": true,
+      "wall_ms": 3054.0945767425,
+      "cpu_s": {
+        "gateway": 0.004599,
+        "api-server": 0.787334,
+        "application-controller": 0.020197
+      },
+      "details": {
+        "application": "experiment-2-1787153073",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "stage": "deployment",
+      "trial": 3,
+      "success": true,
+      "wall_ms": 3336.180971004069,
+      "cpu_s": {
+        "gateway": 0.006521,
+        "api-server": 0.437142,
+        "application-controller": 0.027365
+      },
+      "details": {
+        "application": "experiment-3-1787153077",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "stage": "deployment",
+      "trial": 4,
+      "success": true,
+      "wall_ms": 3198.952432256192,
+      "cpu_s": {
+        "gateway": 0.008111,
+        "api-server": 0.307216,
+        "application-controller": 0.109417
+      },
+      "details": {
+        "application": "experiment-4-1787153081",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    },
+    {
+      "stage": "deployment",
+      "trial": 5,
+      "success": true,
+      "wall_ms": 2997.572704218328,
+      "cpu_s": {
+        "gateway": 0.003787,
+        "api-server": 0.823915,
+        "application-controller": 0.019152
+      },
+      "details": {
+        "application": "experiment-5-1787153085",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      }
+    }
+  ],
+  "summary": {
+    "enrollment": {
+      "n": 5,
+      "successes": 5,
+      "wall_ms_mean": 818.3866810053587,
+      "pods": {
+        "gateway": {
+          "mean_cpu_s": 0.0003504,
+          "median_cpu_s": 0.000326,
+          "p95_cpu_s": 0.000503,
+          "max_cpu_s": 0.000503,
+          "ci95": [
+            0.00023896304752479995,
+            0.00046183695247520003
+          ]
+        },
+        "api-server": {
+          "mean_cpu_s": 0.14351,
+          "median_cpu_s": 0.083265,
+          "p95_cpu_s": 0.384413,
+          "max_cpu_s": 0.384413,
+          "ci95": [
+            -0.023696799851695705,
+            0.3107167998516957
+          ]
+        },
+        "application-controller": {
+          "mean_cpu_s": 0.0366246,
+          "median_cpu_s": 0.035557,
+          "p95_cpu_s": 0.045817,
+          "max_cpu_s": 0.045817,
+          "ci95": [
+            0.02913981113382299,
+            0.04410938886617701
+          ]
+        }
+      }
+    },
+    "heartbeat": {
+      "n": 5,
+      "successes": 5,
+      "wall_ms_mean": 208.32327287644148,
+      "pods": {
+        "gateway": {
+          "mean_cpu_s": 0.000413,
+          "median_cpu_s": 0.00039,
+          "p95_cpu_s": 0.000684,
+          "max_cpu_s": 0.000684,
+          "ci95": [
+            0.00020648351045400758,
+            0.0006195164895459925
+          ]
+        },
+        "api-server": {
+          "mean_cpu_s": 0.0204834,
+          "median_cpu_s": 0.0,
+          "p95_cpu_s": 0.102417,
+          "max_cpu_s": 0.102417,
+          "ci95": [
+            -0.0363785184,
+            0.0773453184
+          ]
+        },
+        "application-controller": {
+          "mean_cpu_s": 0.010087800000000001,
+          "median_cpu_s": 0.01008,
+          "p95_cpu_s": 0.010956,
+          "max_cpu_s": 0.010956,
+          "ci95": [
+            0.009042786829156763,
+            0.011132813170843239
+          ]
+        }
+      }
+    },
+    "deployment": {
+      "n": 5,
+      "successes": 5,
+      "wall_ms_mean": 3157.961633056402,
+      "pods": {
+        "gateway": {
+          "mean_cpu_s": 0.0063384,
+          "median_cpu_s": 0.006521,
+          "p95_cpu_s": 0.008674,
+          "max_cpu_s": 0.008674,
+          "ci95": [
+            0.0036927660305798617,
+            0.008984033969420139
+          ]
+        },
+        "api-server": {
+          "mean_cpu_s": 0.5641724,
+          "median_cpu_s": 0.465255,
+          "p95_cpu_s": 0.823915,
+          "max_cpu_s": 0.823915,
+          "ci95": [
+            0.28024901239988265,
+            0.8480957876001174
+          ]
+        },
+        "application-controller": {
+          "mean_cpu_s": 0.057557,
+          "median_cpu_s": 0.027365,
+          "p95_cpu_s": 0.111654,
+          "max_cpu_s": 0.111654,
+          "ci95": [
+            -0.0026195330978429007,
+            0.1177335330978429
+          ]
+        }
+      }
+    }
+  }
+}
