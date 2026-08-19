@@ -29,10 +29,16 @@ spec:
           value: "30"
         - name: LOAD_SECS
           value: "30"
+        # Loop bound of the WASM workload; the campaign sweeps it.
+        - name: BURN_N
+          value: "200000"
+        # Guaranteed QoS (requests = limits, 2 vCPU): at the earlier 1-vCPU
+        # limit the probe throttled itself (835/27,021 accounting periods),
+        # which showed up as variance in the CPU-time per invocation.
         resources:
           requests:
-            cpu: 100m
-            memory: 64Mi
+            cpu: "2"
+            memory: 256Mi
           limits:
-            cpu: "1"
+            cpu: "2"
             memory: 256Mi

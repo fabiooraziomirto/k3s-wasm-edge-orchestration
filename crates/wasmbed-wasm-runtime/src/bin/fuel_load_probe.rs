@@ -31,8 +31,11 @@ fn now_epoch_ms() -> u128 {
 // Real arithmetic work, not a no-op loop: sums 0..200_000 in a WASM local.
 // At Wasmtime's ~1-fuel-per-simple-instruction accounting this consumes a
 // few million fuel units per call -- a meaningful fraction of the MCU
-// profile's 5_000_000 fuel budget (config.rs) without exhausting it.
-const BURN_WAT: &str = r#"
+// profile's 5_000_000 fuel budget (config.rs) without exhausting it. N itself
+// comes from BURN_N so a campaign can sweep it.
+// The loop bound N is substituted at startup from BURN_N (default 200_000), so
+// the same image can sweep the workload-size curve without a rebuild per point.
+const BURN_WAT_TEMPLATE: &str = r#"
 (module
   (func (export "burn") (result i32)
     (local $i i32)
@@ -41,7 +44,7 @@ const BURN_WAT: &str = r#"
     (local.set $sum (i32.const 0))
     (block $done
       (loop $loop
-        (br_if $done (i32.ge_u (local.get $i) (i32.const 200000)))
+        (br_if $done (i32.ge_u (local.get $i) (i32.const {N})))
         (local.set $sum (i32.add (local.get $sum) (local.get $i)))
         (local.set $i (i32.add (local.get $i) (i32.const 1)))
         (br $loop)
@@ -63,18 +66,31 @@ fn env_u64(name: &str, default: u64) -> u64 {
 async fn main() -> anyhow::Result<()> {
     let idle_secs = env_u64("IDLE_SECS", 30);
     let load_secs = env_u64("LOAD_SECS", 30);
+    let burn_n = env_u64("BURN_N", 200_000);
 
-    let wasm_bytes = wat::parse_str(BURN_WAT)?;
+    let wasm_bytes = wat::parse_str(&BURN_WAT_TEMPLATE.replace("{N}", &burn_n.to_string()))?;
 
-    let config = RuntimeConfig::for_architecture(DeviceArchitecture::Mcu, "energy-probe".to_string());
+    // The MCU profile's 5,000,000-fuel budget is exhausted from N around a
+    // million upward: the call traps and the probe records only errors. Raise
+    // it through FUEL_BUDGET to sweep the larger workload sizes with fuel
+    // metering still on (0 turns metering off entirely).
+    let mut config = RuntimeConfig::for_architecture(DeviceArchitecture::Mcu, "energy-probe".to_string());
+    if let Ok(raw) = std::env::var("FUEL_BUDGET") {
+        if let Ok(budget) = raw.parse::<u64>() {
+            config.wasm_config.fuel_budget = if budget == 0 { None } else { Some(budget) };
+        }
+    }
+    let fuel_budget = config.wasm_config.fuel_budget;
     let mut runtime = WasmRuntime::new(config)?;
     runtime.load_module("burn-module", &wasm_bytes).await?;
 
     println!(
-        "{{\"event\":\"probe_start\",\"ts_ms\":{},\"idle_secs\":{},\"load_secs\":{}}}",
+        "{{\"event\":\"probe_start\",\"ts_ms\":{},\"idle_secs\":{},\"load_secs\":{},\"burn_n\":{},\"fuel_budget\":{:?}}}",
         now_epoch_ms(),
         idle_secs,
-        load_secs
+        load_secs,
+        burn_n,
+        fuel_budget
     );
 
     loop {

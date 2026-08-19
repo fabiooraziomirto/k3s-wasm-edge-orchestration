@@ -41,3 +41,13 @@ zephyr-workspace/
 wamr/
 
 experiments/scalability_metrics_*.json
+
+# LaTeX build artefacts (main.log is already covered by *.log above)
+*.aux
+*.abs
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
