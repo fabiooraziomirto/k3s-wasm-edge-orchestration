@@ -92,6 +92,13 @@ sync_image() {
   img=$(kubectl -n "$NAMESPACE" get deploy "$deploy" -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null)
   [ -n "$img" ] || { err "deployment $deploy non trovato"; return 1; }
 
+  # Dockerfile.api-server COPYs these directories from the build context; sono
+  # gitignorate, quindi su un clone pulito non esistono e la build fallisce.
+  # deploy-k3s.sh fa lo stesso prima di buildare.
+  mkdir -p zephyr-workspace/build/nrf52840dk/nrf52840/zephyr \
+           zephyr-workspace/build/stm32f4/zephyr \
+           zephyr-workspace/build/stm32f746g_disco/zephyr
+
   echo "  Build $img da $dockerfile (compila il Rust dentro l'immagine, richiede qualche minuto)..."
   docker build -q -t "$img" -f "$dockerfile" . >/dev/null || { err "docker build fallito per $img"; return 1; }
 
