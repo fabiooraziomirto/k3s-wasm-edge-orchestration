@@ -238,20 +238,27 @@ async fn do_connect_device(
     
     // Step 3: Start Renode emulation (TCP bridge is handled internally by RenodeManager)
     info!("Starting Renode emulation for device {} with bridge endpoint {}", device_id, bridge_endpoint);
-    match state.renode_manager.start_device(&device_id, Some(bridge_endpoint.clone())).await {
-        Ok(_) => {
-            info!("Renode started successfully for device {}", device_id);
-        }
-        Err(e) => {
-            warn!("Failed to start Renode for device {}: {}", device_id, e);
-        }
+    if let Err(e) = state.renode_manager.start_device(&device_id, Some(bridge_endpoint.clone())).await {
+        // Do not report success here: the caller (dashboard, test harness, experiment
+        // campaign) would record an attachment that never happened.
+        error!("Failed to start Renode for device {}: {}", device_id, e);
+        return Ok(Json(serde_json::json!({
+            "success": false,
+            "status": "Error",
+            "message": format!("Failed to start emulation for device {}: {}", device_id, e)
+        })));
     }
-    
-    // Step 5: Update device status in Kubernetes
+    info!("Renode started successfully for device {}", device_id);
+
+    // Step 5: Update device status in Kubernetes.
+    // Only the gateway may declare a device Connected, and only a real Heartbeat
+    // may set lastHeartbeat: those two fields are the evidence that the device
+    // actually attached. Writing them here would make the API server's own
+    // request the proof of its success. Emulation started, enrollment has not
+    // happened yet, so the phase is Enrolling.
     let patch = serde_json::json!({
         "status": {
-            "phase": "Connected",
-            "lastHeartbeat": chrono::Utc::now().to_rfc3339(),
+            "phase": "Enrolling",
             "gateway": {
                 "name": gateway_id,
                 "endpoint": format!("127.0.0.1:{}", 30450 + device_id.len() as u16),
@@ -444,36 +451,30 @@ async fn stop_qemu_device_handler(
 }
 
 async fn stop_emulation_handler(
-    State(_state): State<Arc<DashboardState>>,
+    State(state): State<Arc<DashboardState>>,
     Path(device_id): Path<String>,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     info!("Stopping emulation for device: {}", device_id);
-    
-    // Stop Docker container
-    let output = tokio::process::Command::new("docker")
-        .args(&["stop", &format!("renode-{}", device_id)])
-        .output()
-        .await;
-    
-    match output {
-        Ok(output) if output.status.success() => {
+
+    // Must go through RenodeManager: it owns both the real container name
+    // (wasmbed-renode-<id>, not renode-<id>) and the in-memory device state.
+    // Stopping the container behind its back leaves the device marked Running
+    // for ever, and every later start fails with "Device is already running"
+    // while this endpoint keeps answering success.
+    match state.renode_manager.stop_device(&device_id).await {
+        Ok(_) => {
             info!("Emulation stopped for device {}", device_id);
             Ok(Json(serde_json::json!({
                 "success": true,
                 "message": format!("Emulation stopped for device {}", device_id)
             })))
         }
-        Ok(output) => {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            warn!("Failed to stop emulation for device {}: {}", device_id, stderr);
-            Ok(Json(serde_json::json!({
-                "success": true,
-                "message": format!("Emulation stop attempted for device {} (may already be stopped)", device_id)
-            })))
-        }
         Err(e) => {
-            error!("Failed to execute docker stop for device {}: {}", device_id, e);
-            Err(StatusCode::INTERNAL_SERVER_ERROR)
+            warn!("Failed to stop emulation for device {}: {}", device_id, e);
+            Ok(Json(serde_json::json!({
+                "success": false,
+                "message": format!("Failed to stop emulation for device {}: {}", device_id, e)
+            })))
         }
     }
 }

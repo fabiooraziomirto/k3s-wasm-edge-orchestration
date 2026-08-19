@@ -33,6 +33,9 @@ ko()   { echo "  ❌ $*"; FAIL=$((FAIL+1)); }
 step() { echo ""; echo "--- $* ---"; }
 
 DEVICES=(); for i in $(seq 1 "$N"); do DEVICES+=("${PREFIX}-${i}"); done
+# Istante di inizio: serve a distinguere le sessioni di questo run da quelle
+# rimaste nella vista del gateway dai run precedenti.
+RUN_START_EPOCH=$(date +%s)
 echo "=== Fleet scalability test: ${#DEVICES[@]} device (${DEVICES[*]}) ==="
 
 tap_name() { echo "wtap-$(printf '%s' "$1" | sha256sum | cut -c1-8)"; }
@@ -93,8 +96,14 @@ for d in "${DEVICES[@]}"; do
   [ "$code" = "200" ] && ok "connect $d (HTTP $code)" || ko "connect $d (HTTP $code)"
 done
 
-running=$(docker ps --filter "name=wasmbed-renode-" --format '{{.Names}}' | wc -l)
-[ "$running" -ge "$N" ] && ok "container Renode attivi: $running" || ko "container Renode attivi: $running (attesi $N)"
+running=$(docker ps --filter "name=wasmbed-renode-${PREFIX}" --format '{{.Names}}' | wc -l)
+if [ "$running" -ge "$N" ]; then
+  ok "container Renode attivi: $running"
+else
+  ko "container Renode attivi: $running (attesi $N)"
+  echo "     Se il connect ha risposto 200 ma il container manca, l'api-server ha lo stato"
+  echo "     in memoria sporco: ./scripts/run-e2e-fleet.sh --cleanup -n $N, oppure riavvia il pod."
+fi
 
 # Ogni .resc generato deve puntare alla propria TAP e al proprio MAC.
 RESC_DIR="${ZEPHYR_WORKSPACE:-/home/ubuntu/retrospect/zephyr-workspace}/renode-scripts"
@@ -125,16 +134,26 @@ count_phase_connected() {
 # Sessioni TLS realmente attive nel gateway. Il payload espone "connected"
 # (non "tls_connected") e va filtrato per device_id: se i device condividono
 # un'identità, il gateway ne mostra uno solo — che era esattamente il bug.
+# Si contano solo le sessioni aperte DOPO l'inizio di questo run: il gateway
+# conserva le voci dei run precedenti, che altrimenti verrebbero contate come
+# successo anche se in questo giro non è partito nemmeno un container.
 count_gateway_sessions() {
   curl -s "$GATEWAY_HTTP/api/v1/devices" 2>/dev/null | python3 -c '
 import json, sys
-names = set(sys.argv[1:])
+since = int(sys.argv[1])
+names = set(sys.argv[2:])
 try:
     devices = json.load(sys.stdin).get("devices", [])
 except Exception:
     print(0); sys.exit()
-print(sum(1 for d in devices if d.get("device_id") in names and d.get("connected")))
-' "${DEVICES[@]}"
+
+def opened_after(d):
+    ts = (d.get("connected_since") or {}).get("secs_since_epoch")
+    return ts is not None and ts >= since
+
+print(sum(1 for d in devices
+          if d.get("device_id") in names and d.get("connected") and opened_after(d)))
+' "$RUN_START_EPOCH" "${DEVICES[@]}"
 }
 
 deadline=$((SECONDS + CONNECT_TIMEOUT)); connected=0; gw_connected=0
