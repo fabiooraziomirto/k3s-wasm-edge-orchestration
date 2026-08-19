@@ -20,12 +20,12 @@ kubectl get pods -n wasmbed
 | Script | Purpose |
 |--------|---------|
 | `ensure-experiment-runtime.sh` | Restart port-forwards (3001, 8080, 30443) |
-| `setup-renode-net.sh` | Configure TAP, DHCP, DNAT for emulated devices (sudo) |
+| `setup-renode-net.sh` | Bridge + one TAP per device, DHCP, NAT/DNAT (sudo). Run **before** starting emulation |
 
 ```bash
 ./scripts/ensure-experiment-runtime.sh
-curl -X POST http://127.0.0.1:3001/api/v1/devices/native-sim-1/renode/start -d '{}'
-sudo ./scripts/setup-renode-net.sh
+sudo ./scripts/setup-renode-net.sh native-sim-1     # bridge + per-device TAP
+curl -X POST http://127.0.0.1:3001/api/v1/devices/native-sim-1/renode/start -d '{}' 
 ```
 
 ## Validation
@@ -33,6 +33,8 @@ sudo ./scripts/setup-renode-net.sh
 | Script | Purpose |
 |--------|---------|
 | `verify-tls-and-deploy.sh` | TLS liveness + WASM deploy smoke test |
+| `test-fleet-scalability.sh` | N devices → N distinct TLS sessions + fleet deploy (`DRY_RUN=1` for static checks) |
+| `run-e2e-fleet.sh` | One-command E2E: preflight, build/deploy, port-forwards, network, fleet test, diagnostics |
 | `test_enrollment.py` | Direct gateway TLS/CBOR enrollment test |
 
 See [doc/RENODE_TLS_DEPLOY_VERIFICATION.md](../doc/RENODE_TLS_DEPLOY_VERIFICATION.md) and [doc/TLS_CONNECTION.md](../doc/TLS_CONNECTION.md).

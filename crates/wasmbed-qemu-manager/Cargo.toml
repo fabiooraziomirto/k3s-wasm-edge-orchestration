@@ -13,6 +13,7 @@ anyhow = "1.0"
 clap = { version = "4.4", features = ["derive"] }
 wasmbed-tcp-bridge = { path = "../wasmbed-tcp-bridge" }
 base64 = "0.21"
+sha2 = "0.10"
 reqwest = { version = "0.11", features = ["json"] }
 
 [dev-dependencies]

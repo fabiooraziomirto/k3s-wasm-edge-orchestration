@@ -143,3 +143,54 @@ Automated smoke: `./scripts/verify-tls-and-deploy.sh`
 - Gateway TLS and CRD updates: `wasmbed-gateway/src/main.rs`, `http_api.rs`.
 - CBOR protocol: `wasmbed-protocol/src/cbor.rs`.
 - TLS length-prefix send: `wasmbed-tls-utils/src/lib.rs`.
+
+---
+
+## 7. Multi-device fleet
+
+A fleet of N emulated devices only behaves as N devices if **three identifiers are unique
+per device**. Sharing any one of them makes N devices collapse onto a single gateway
+session (the failure previously observed with 3 Renode machines).
+
+| Identifier | Where it comes from | Why it must be unique |
+|------------|---------------------|------------------------|
+| **Public key** (`0x20002000`) | `spec.publicKey` of the Device CRD, injected into device memory by RenodeManager | The gateway resolves a TLS connection to a Device via `Device::find` (key → CRD) and indexes connections by device id (`public_key_to_device`). Identical keys ⇒ every connection overwrites the previous one ⇒ one TLS sender. |
+| **MAC address** | Derived from the device id: `02:` + `sha256(device_id)[0..5]` | Same MAC ⇒ same DHCP lease ⇒ same IP, plus L2 collisions on the shared segment. |
+| **TAP interface** | Derived from the device id: `wtap-` + `sha256(device_id)[0..4]` | Renode containers share the host network namespace (`--net=host`); a single `tap0` can only be attached by one of them. |
+
+The derivation lives in `wasmbed-qemu-manager/src/lib.rs` (`device_tap_name`,
+`device_mac_address`, `device_public_key_bytes`) and is mirrored in
+`scripts/setup-renode-net.sh` (`tap_name`, `mac_addr`). The unit test
+`test_derivation_matches_setup_script` fails if the two ever drift.
+
+If a device's `spec.publicKey` is missing or is not raw base64 (e.g. an `ssh-ed25519`
+string), the manager falls back to a key derived from the device id — still unique, but
+the gateway will not find a matching Device CRD unless pairing mode is enabled. The
+manager logs the derived key in base64 so it can be pasted into the CRD.
+
+### Procedure
+
+```bash
+# 1. Device CRDs with distinct spec.publicKey (url-safe base64, no padding, 32 raw bytes)
+openssl rand 32 | base64 | tr '+/' '-_' | tr -d '=\n'
+
+# 2. Host network: bridge + one persistent TAP per device (before starting Renode)
+sudo ./scripts/setup-renode-net.sh device-1 device-2 device-3
+
+# 3. Start emulation for each device
+for d in device-1 device-2 device-3; do
+  curl -s -X POST "http://127.0.0.1:3001/api/v1/devices/$d/connect" -d '{}'
+done
+```
+
+### Verification
+
+```bash
+kubectl get devices -n wasmbed -o wide                       # N devices in phase Connected
+curl -s http://127.0.0.1:9080/api/v1/devices | grep -c 'tls_connected":true'   # must be N
+ip neigh show dev wasmbr0                                    # N distinct IPs
+```
+
+Automated: `./scripts/test-fleet-scalability.sh 3` runs the whole sequence (CRDs, network,
+emulation, TLS session count, DHCP leases, heartbeats, fleet-wide WASM deploy) and exits
+non-zero if fewer than N sessions are established. `DRY_RUN=1` runs only the static checks.
