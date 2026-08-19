@@ -1,0 +1,155 @@
+\section{Protocol and Reconciliation}\label{sec:protocol}
+
+\subsection{Southbound Life-Cycle}
+The southbound protocol uses framed CBOR messages over TLS\@. It is compact enough for embedded-class clients, but still supports identity binding, acknowledgments, liveness evidence, and application deployment. The life-cycle has three phases: enrollment, heartbeat-based supervision, and resource-driven WASM deployment.
+
+Enrollment establishes the transition from a protected transport session to a platform-recognized device identity:
+\begin{enumerate}
+    \item The device opens a protected session with the gateway and requests enrollment.
+    \item The gateway validates the request before proceeding.
+    \item The device provides identity material that can be bound to a known platform resource.
+    \item The gateway compares that material with the identity registered in the control plane.
+    \item The device confirms that enrollment information has been received and that it is ready for managed operation.
+    \item The gateway stores the device\textendash{}session association and updates the corresponding resource status.
+\end{enumerate}
+
+After enrollment, periodic heartbeats maintain liveness visibility. At the communication layer, they show that the protected channel and device remain responsive. At the control-plane layer, they provide evidence used to refresh reported connectivity and device phase. Missing or delayed observations are interpreted conservatively, so transient gaps do not immediately become disconnection events.
+
+WASM deployment follows the same evidence-driven pattern, but starts from declarative intent rather than from device attachment:
+\begin{enumerate}
+    \item An operator or higher-level service declares that a target device should run a specific WASM workload.
+    \item The control plane observes the desired state and identifies the mediation path through the appropriate gateway.
+    \item The gateway translates the deployment intent into compact protected messages for the device.
+    \item The device firmware uses its embedded WASM runtime to load and start the workload.
+    \item The device returns execution evidence or an error indication to the gateway.
+    \item The gateway propagates the reported outcome back into the control-plane status visible to operators.
+\end{enumerate}
+
+\begin{figure}
+\centering
+\resizebox{0.82\columnwidth}{!}{%
+\begin{tikzpicture}[
+    box/.style={draw,rounded corners,align=center,minimum width=1.95cm,minimum height=0.58cm,font=\tiny},
+    flow/.style={-Latex,thick},
+    returnflow/.style={-Latex,thick,densely dashed},
+    feedback/.style={-Latex,thick,dashed,gray!70},
+    note/.style={font=\tiny,align=center,fill=white,inner sep=1pt}
+]
+\node[box,fill=blue!8] (intent) at (0,0) {Application CRD\\desired state};
+\node[box,fill=blue!8] (controller) at (0,-1.15) {Application\\controller};
+\node[box,fill=green!10] (gateway) at (0,-2.3) {Gateway\\orchestrator};
+\node[box,fill=orange!12] (device) at (0,-3.45) {Device + WAMR\\runtime};
+\node[box,fill=blue!8] (status) at (0,-4.6) {Application/Device\\reported state};
+
+\draw[flow] (intent) -- node[right,note]{Observe intent} (controller);
+\draw[flow] (controller) -- node[right,note]{Resolve target} (gateway);
+\draw[flow] ([xshift=-0.36cm]gateway.south) -- node[left,note]{TLS/CBOR\\deploy} ([xshift=-0.36cm]device.north);
+\draw[returnflow] ([xshift=0.36cm]device.north) -- node[right,note]{Ack/result} ([xshift=0.36cm]gateway.south);
+\draw[flow] ([xshift=0.58cm]gateway.south) -- ++(1.05,-1.0) |- node[pos=0.72,right,note]{Patch status\\and execution fields} (status.east);
+\draw[feedback] ([xshift=1.12cm]status.east) |- ++(0.58,3.75) -| node[pos=0.72,above,note]{Reconciliation loop} ([xshift=1.12cm]intent.east);
+\end{tikzpicture}%
+}
+\caption{Application deployment workflow and status-reconciliation loop.}%
+\label{fig:deployment-workflow}
+\end{figure}
+
+Figure~\ref{fig:deployment-workflow} summarizes the deployment loop: the controller resolves intent, the gateway mediates the southbound command, the device reports an outcome, and the control plane reconciles status. This preserves the declarative pattern and remains compatible with retry, staged rollout, and multi-gateway scheduling policies.
+
+\subsection{Protocol Sequences}
+Figures~\ref{fig:enrollment-sequence} and~\ref{fig:deployment-sequence} summarize the southbound protocol interactions evaluated in Section~\ref{sec:evaluation}. The diagrams emphasize role ownership: the device initiates attachment and emits runtime evidence, the gateway validates and translates protocol events, and the Kubernetes control plane stores desired and reported state.
+
+\begin{figure}
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    actor/.style={font=\scriptsize\bfseries,align=center},
+    lifeline/.style={densely dashed,gray!65},
+    msg/.style={-Latex,thick},
+    ret/.style={-Latex,thick,dashed},
+    note/.style={font=\tiny,align=center,fill=white,inner sep=1pt}
+]
+\node[actor] (device) at (0,0) {Device\\Zephyr/WAMR};
+\node[actor] (gateway) at (3.25,0) {Gateway\\TLS/CBOR};
+\node[actor] (control) at (6.5,0) {Kubernetes\\CRDs};
+
+\draw[lifeline] (device) -- (0,-5.6);
+\draw[lifeline] (gateway) -- (3.25,-5.6);
+\draw[lifeline] (control) -- (6.5,-5.6);
+
+\draw[msg] (0,-0.65) -- node[above,note]{EnrollmentRequest} (3.25,-0.65);
+\draw[ret] (3.25,-1.25) -- node[above,note]{EnrollmentAccepted} (0,-1.25);
+\draw[msg] (0,-1.85) -- node[above,note]{PublicKey / identity material} (3.25,-1.85);
+\draw[msg] (3.25,-2.45) -- node[above,note]{match expected identity} (6.5,-2.45);
+\draw[ret] (6.5,-3.05) -- node[above,note]{Device status context} (3.25,-3.05);
+\draw[ret] (3.25,-3.65) -- node[above,note]{EnrollmentCompleted} (0,-3.65);
+\draw[msg] (0,-4.35) -- node[above,note]{Heartbeat} (3.25,-4.35);
+\draw[msg] (3.25,-4.95) -- node[above,note]{patch phase / freshness} (6.5,-4.95);
+\draw[ret] (3.25,-5.45) -- node[above,note]{HeartbeatAck} (0,-5.45);
+\end{tikzpicture}%
+}
+\caption{Enrollment and heartbeat sequence. Device-originated evidence is validated by the gateway and reflected into Kubernetes status.}%
+\label{fig:enrollment-sequence}
+\end{figure}
+
+\begin{figure}
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    actor/.style={font=\scriptsize\bfseries,align=center},
+    lifeline/.style={densely dashed,gray!65},
+    msg/.style={-Latex,thick},
+    ret/.style={-Latex,thick,dashed},
+    note/.style={font=\tiny,align=center,fill=white,inner sep=1pt}
+]
+\node[actor] (operator) at (0,0) {Operator /\\API};
+\node[actor] (control) at (2.45,0) {Application\\Controller};
+\node[actor] (gateway) at (4.9,0) {Gateway\\orchestrator};
+\node[actor] (device) at (7.35,0) {Device\\WASM runtime};
+
+\draw[lifeline] (operator) -- (0,-5.0);
+\draw[lifeline] (control) -- (2.45,-5.0);
+\draw[lifeline] (gateway) -- (4.9,-5.0);
+\draw[lifeline] (device) -- (7.35,-5.0);
+
+\draw[msg] (0,-0.7) -- node[above,note]{Application CRD desired state} (2.45,-0.7);
+\draw[msg] (2.45,-1.35) -- node[above,note]{resolve target device / gateway} (4.9,-1.35);
+\draw[msg] (4.9,-2.0) -- node[above,note]{DeployApplication} (7.35,-2.0);
+\node[draw,rounded corners,fill=orange!8,font=\tiny,align=center,inner sep=2pt] at (7.35,-2.85) {load and start\\WASM module};
+\draw[ret] (7.35,-3.65) -- node[above,note]{DeployResult} (4.9,-3.65);
+\draw[msg] (4.9,-4.25) -- node[above,note]{patch deployment evidence} (2.45,-4.25);
+\draw[ret] (2.45,-4.85) -- node[above,note]{Application phase / outcome} (0,-4.85);
+\end{tikzpicture}%
+}
+\caption{WASM deployment sequence. Declarative application intent is translated by the gateway into device execution and reconciled as application status.}%
+\label{fig:deployment-sequence}
+\end{figure}
+
+During enrollment, the decisive event is not the opening of a protected transport session alone, but the successful association between the device-provided identity material and the \texttt{Device} resource expected by the control plane. Heartbeats then refresh the same association by producing liveness evidence that the gateway can interpret before patching Kubernetes status. Deployment follows the complementary direction: the \texttt{Application} resource records desired state, the controller resolves the mediation path, and the gateway converts intent into a southbound command. The returned \texttt{DeployResult} is treated as execution evidence, not merely as a transport acknowledgment, only after this evidence is propagated does application status converge to the reported outcome.
+
+\subsection{Reconciliation Policy}
+Protocol correctness becomes platform correctness only when message outcomes are interpreted consistently by the control plane. The framework therefore gives the gateway authority over protocol-derived observations and constrains controllers to reconcile those observations without overreacting to transient visibility gaps.
+
+Integration testing exercised short-lived differences between gateway observations and control-plane status, confirming that liveness should not be inferred from a single incomplete observation. The resulting policy preserves the latest valid gateway association, avoids immediate disconnection when heartbeat evidence and transport visibility briefly diverge, and waits for a subsequent reconciliation cycle before treating the condition as a real state transition. Reconciliation policy is therefore part of the architecture rather than an incidental implementation detail.
+
+\begingroup
+\color{red}
+\begin{table*}[pos=t]
+\centering
+\caption{Additive implementation-facing conventions for the validated gateway-mediated control path.}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{0.18\linewidth} p{0.36\linewidth} p{0.36\linewidth}}
+\toprule
+\textbf{Element} & \textbf{Minimum evidence carried or recorded} & \textbf{Status/reconciliation use} \\
+\midrule
+Enrollment & Device identifier, firmware/runtime descriptor, device public-key material or fingerprint, gateway identifier, and freshness context for the protected session & The gateway binds the transport session to the expected \texttt{Device} resource before reporting connectivity or phase updates. \\
+Heartbeat & Device identifier, gateway/session association, receive timestamp, and heartbeat freshness window & Controllers interpret heartbeat evidence conservatively: stale or missing observations do not overwrite the latest valid association until a subsequent reconciliation cycle confirms a state transition. \\
+Deployment & Application identifier, target device, WASM artifact reference or payload hash, desired execution state, result status, and error or exit evidence when available & \texttt{Application} status converges only after gateway-propagated execution evidence; desired state remains intact when deployment evidence is missing, stale, or inconsistent. \\
+Measurement record & Trial identifier, enrollment result, heartbeat-freshness check, deployment result, gateway runtime view, \texttt{Device} status, \texttt{Application} status, timeout outcome, and latency timestamps & A trial is counted as transactionally successful only when all evidence views agree; otherwise the trial is recorded as failed rather than inferred from a single eventually consistent field. \\
+\bottomrule
+\end{tabular}
+\end{table*}
+\endgroup
+
+For reproducibility, the protocol messages evaluated here should therefore be read as typed CBOR records with explicit identity, freshness, target, artifact, and outcome fields, even when the diagrams show only message names. The implementation-facing invariant is that a transport acknowledgment alone is insufficient for success: Kubernetes status is updated only after the gateway has matched the device identity, preserved the gateway association, and propagated fresh deployment or liveness evidence.
+{\color{red}In the evaluated configuration, heartbeat freshness is interpreted relative to the configured 25~s firmware heartbeat period: a newly observed heartbeat refreshes the gateway association, while stale or missing observations are treated conservatively and do not immediately erase the last valid association until reconciliation confirms the transition. The protocol specification is intentionally minimal in this manuscript; a replication package should expose the concrete CRD schemas, CBOR field names, status enum values, timeout constants, and error codes used by the implementation.}

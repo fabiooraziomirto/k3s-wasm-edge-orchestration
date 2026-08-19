@@ -1,0 +1,298 @@
+\section{Experimental Evaluation}\label{sec:evaluation}
+
+\subsection{Evaluation Design and Testbed}
+% Removed: The evaluation combines (i)~a functional validation campaign over the full enrollment-to-deployment path and (ii)~a sustainability-oriented measurement pass on the same test bed.
+{\color{red}The evaluation combines (i)~a functional validation campaign over the full enrollment-to-deployment path and (ii)~a sustainability-oriented measurement pass on the same testbed.} The functional study asks whether cloud intent, gateway mediation, and embedded WASM execution produce mutually consistent evidence under repeatable conditions. The sustainability pass quantifies southbound wire sizes, edge firmware footprint, and Kubernetes pod resource use. Neither pass claims measured joules or carbon reductions; they establish baselines relevant to green-experimentation follow-up.
+
+Experiments run on a single-node K3s cluster with API server, gateway, application controller, and CRDs active. The southbound endpoint is a Renode-emulated STM32F746 running Zephyr firmware with WAMR and connects over TAP-based networking with DNAT to the gateway TLS port. Table~\ref{tab:testbed} summarizes the host and software stack.
+
+\begin{table}[pos=t]
+\centering
+\caption{Experimental testbed and software configuration.}%
+\label{tab:testbed}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{0.30\linewidth} p{0.62\linewidth}}
+\toprule
+\textbf{Item} & \textbf{Configuration} \\
+\midrule
+Host OS & Ubuntu 24.04 LTS (kernel 6.8.0), x86\_64 KVM guest \\
+Host resources & 32 vCPUs, 62~GiB RAM, 293~GiB SSD \\
+Orchestrator & K3s v1.35.4+k3s1, single control-plane node \\
+Southbound emulation & Renode \texttt{antmicro/renode:nightly}, board \texttt{Stm32F746gDisco} \\
+Firmware stack & Zephyr RTOS 3.5.0, WAMR 2.4.1, minimal WASM test module (33~B) \\
+Device networking & Bridge \texttt{wasmbr0} at 192.168.1.1/24, one TAP per device, DHCP, DNAT to the gateway pod's TLS port \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Removed: After one warm-up run, the campaign executes $n{=}100$ independent trials.
+{\color{red}After one warm-up run, the campaign executes $n{=}100$ repeated enrollment-to-deployment trials started from a known logical state.} Each trial performs enrollment verification, heartbeat supervision, and deployment of the minimal WASM module to the same emulated device. {\color{red}The campaign should therefore be interpreted as repeated logical validation of the same emulated device, gateway path, and control-plane workflow, rather than as evidence from independent physical devices or independent network environments.} A trial is \emph{transactionally} successful only if all three stages succeed and deployment evidence is consistent across the gateway runtime view and the Application CRD (\texttt{phase=Running}, device connected, fresh heartbeat). Continuous latencies use monotonic client-side timers; we report mean, standard deviation, median, p95, p99, IQR, CV, and 95\% CI of the mean ($\bar{x} \pm t_{0.975,n-1}\,s/\sqrt{n}$, with $t_{0.975,99}{=}1.984$). {\color{red}These intervals summarize the repeated-trial campaign and are not intended to estimate variability across heterogeneous devices, gateways, or physical network conditions.} For binary outcomes we use Wilson score intervals; with 100/100 successes the 95\% lower bound is 96.3\%.
+
+\revC{Two caveats govern how these summaries should be read. First, consecutive trials
+share the same host, the same warmed page cache, the same already-compiled runtime and the
+same long-lived control-plane processes, so they are repetitions rather than independent
+draws, and any residual serial dependence they carry would distort an interval computed
+under an i.i.d.\ assumption. We therefore report the $t$-based intervals as descriptive
+dispersion summaries of this campaign rather than as inferential statements about a wider
+population of deployments, and we check the assumption directly on the trial series
+(Figure~\ref{fig:latency-trial-scatter}). The end-to-end series shows no accumulation and
+no drift: the lag-1 autocorrelation is $-0.09$, the Spearman rank correlation between
+latency and trial index is $-0.14$ ($t{=}{-}1.42$, not significant at $n{=}100$), and the
+first and second halves of the campaign have means of 1212.1~ms and 1159.5~ms with
+standard deviations of 184.7~ms and 142.2~ms, i.e.\ a difference well inside one standard
+deviation. The campaign is thus stationary after the discarded warm-up run, with no
+thermal or cache-warming regime and no positive correlation between neighbouring trials.
+Second, the campaign induces no faults: no packet loss, no gateway restart, no key
+mismatch, no contention from co-located tenants. Under those conditions a deterministic
+pipeline is expected \emph{a priori} to succeed in every trial, so 100/100 confirms that
+the cross-layer evidence-convergence criterion of Table~\ref{tab:trial-semantics} holds
+whenever the underlying mechanism is exercised without induced failure; it does not
+estimate reliability under adverse conditions. The Wilson lower bound of 96.3\% should
+accordingly be read as the arithmetic consequence of observing 100 successes out of 100
+attempts under a fault-free protocol, and not as an availability figure for a production
+fleet, whose failure modes this campaign does not sample.}
+
+\begingroup
+\color{red}
+\subsection{Trial Procedure and Evidence Semantics}
+% Removed: Each trial is treated as an independent execution of the enrollment-to-deployment workflow, not as evidence about independent physical devices or independent network environments.
+{\color{red}Each trial is treated as a repeated logical execution of the enrollment-to-deployment workflow, not as evidence about independent physical devices or independent network environments.} The harness starts from a known logical state, observes the device enrollment path, waits for heartbeat evidence to become visible through the gateway, creates or updates the Application intent, and then checks whether the gateway runtime view and Kubernetes status converge to the same deployment outcome. This definition is deliberately stricter than checking for a successful southbound message: a deployment command that reaches the device but is not reflected in Application status is counted as a failed transaction.
+
+The measurement record separates four kinds of evidence. First, protocol evidence comes from enrollment, heartbeat, and deployment records exchanged over the TLS/CBOR channel. Second, gateway evidence comes from the runtime association between a device identifier and an active session. Third, Kubernetes evidence comes from Device and Application status fields after reconciliation. Fourth, timing evidence comes from the client-side harness using monotonic timestamps around the evaluated stages. A trial succeeds only when these evidence sources agree before the configured timeout. This convention reduces the risk of reporting success from a single eventually consistent field or from a transport acknowledgment that never becomes durable control-plane state.
+
+Latency measurements follow the same separation. Enrollment latency measures the interval needed to complete the identity-binding path and expose the enrolled device to the control plane. Deployment latency measures the path from declared Application intent to reported execution outcome. End-to-end latency is the sum of enrollment and deployment for the evaluated transaction. Heartbeat observability is reported separately because it measures how quickly the harness can observe a fresh heartbeat after it is available through the gateway; it is not the firmware heartbeat period and should not be interpreted as a liveness interval.
+
+\begin{table}[pos=t]
+\centering
+\caption{Trial-level success and failure interpretation.}
+\label{tab:trial-semantics}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{0.28\linewidth} p{0.62\linewidth}}
+\toprule
+\textbf{Condition} & \textbf{Trial interpretation} \\
+\midrule
+Enrollment accepted but identity not matched to the expected Device resource & Failure, because a protected channel alone is not a platform-level attachment. \\
+Heartbeat received by the gateway but not reflected as fresh liveness evidence & Failure for the transaction, because the control plane cannot rely on the observation. \\
+Deploy command acknowledged but Application status does not converge & Failure, because command dispatch is not equivalent to verifiable execution. \\
+Application status reports success while gateway or Device evidence is inconsistent & Failure, because cross-layer evidence does not agree. \\
+Enrollment, heartbeat freshness, gateway association, and Application outcome agree & Transactional success. \\
+\bottomrule
+\end{tabular}
+\end{table}
+\endgroup
+
+
+\subsection{Functional Validation Results}\label{sec:functional-results}
+All 100 transactional trials completed successfully: enrollment, heartbeat supervision, deployment, and cross-layer evidence checks never failed. \revC{These trials exercise the enrollment path in which the Device resource reaches \texttt{phase}\,=\,\texttt{Connected} from gateway-observed session evidence, which is the path described in Section~\ref{sec:protocol} and the one the framework uses in normal operation; Section~\ref{sec:energy-instrumentation} reports a separate, later instrumentation pass that provisions devices through the auxiliary HTTP registry endpoint instead, and the difference between the two is explained there.} Because {\color{red}every measured stage succeeded in all trials}, a per-stage success table would repeat identical Wilson bounds and is omitted; the meaningful variation lies in latency and its distribution.
+
+Table~\ref{tab:quantitative-latency} reports the latency profile. Mean end-to-end latency {\color{red}(enrollment plus deployment; heartbeat emission excluded and heartbeat observability reported separately)} is 1286.0~ms with 95\% CI [1226.4, 1345.6]~ms. Deployment carries a heavy upper tail (CV 0.43, maximum 3000.8~ms against a median of 574.1~ms) that the mean and the p95 both understate; it reproduces across independent campaigns on this testbed and is the dominant contribution to end-to-end variability. The heartbeat row reflects \emph{observability} latency, how quickly the measurement harness reads a fresh heartbeat from the gateway, not the 25~s firmware emission interval.
+
+\begin{table}[pos=t]
+\centering
+\caption{Latency profile ($n{=}100$ trials). All values in milliseconds.}%
+\label{tab:quantitative-latency}
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrrrr}
+\toprule
+\textbf{Stage} & \textbf{Mean} & \textbf{Median} & \textbf{p95} & \textbf{p99} & \textbf{IQR} & \textbf{CV} & \textbf{95\% CI of mean} \\
+\midrule
+Enrollment & 609.5 & 568.1 & 839.6 & 889.8 & 50.4 & 0.164 & [589.6, 629.4] \\
+Heartbeat obs. & 4.08 & 4.01 & 4.97 & 5.29 & 0.53 & 0.114 & [3.99, 4.17] \\
+Deployment & 676.5 & 574.1 & 1021.8 & 1145.2 & 228.4 & 0.428 & [619.1, 733.9] \\
+End-to-end & 1286.0 & 1168.7 & 1661.5 & 1974.3 & 270.7 & 0.234 & [1226.4, 1345.6] \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Figure~\ref{fig:latency-boxplot} compares stage latency distributions on a logarithmic scale. Heartbeat observability is two orders of magnitude faster than enrollment or deployment. Figure~\ref{fig:latency-cdf} shows that deployment contributes most of the tail mass: its p95 (1031.3~ms) and p99 (1295.7~ms) exceed enrollment's, so WASM orchestration, not TLS enrollment, dominates end-to-end variability (deployment CV\,=\,0.288 vs.\ enrollment CV\,=\,0.142).
+
+\begin{figure}[pos=t]
+\centering
+\includegraphics[width=\columnwidth]{figures/latency_boxplot.png}
+\caption{Distribution of trial-level stage latencies ($n{=}100$, log scale). Diamonds indicate sample means.}%
+\label{fig:latency-boxplot}
+\end{figure}
+
+\begin{figure}[pos=t]
+\centering
+\includegraphics[width=\columnwidth]{figures/latency_trial_scatter.png}
+\caption{\revC{End-to-end latency by trial index ($n{=}100$). The series is stationary: lag-1 autocorrelation $-0.09$, Spearman $\rho{=}{-}0.14$ against trial index (not significant), half-campaign means 1212.1~ms and 1159.5~ms.}}%
+\label{fig:latency-trial-scatter}
+\end{figure}
+
+\begin{figure}[pos=t]
+\centering
+\includegraphics[width=\columnwidth]{figures/latency_cdf.png}
+\caption{Empirical CDF of enrollment, deployment, and end-to-end latencies ($n{=}100$).}%
+\label{fig:latency-cdf}
+\end{figure}
+
+\subsection{Sustainability-Oriented Metrics}\label{sec:sustainability-metrics}
+
+\subsubsection{Southbound wire efficiency}
+Application messages use a 4-byte big-endian length prefix followed by CBOR payloads. Figure~\ref{fig:wire-sizes} summarizes measured wire sizes for representative messages. Heartbeat request and acknowledgment are 6~B each; a complete enrollment round trip totals 87~B of application payload; a minimal deploy round trip (33~B WASM module) totals 90~B. % Removed: At the configured 25~s heartbeat period, steady-state control traffic is $12 \times (3600/25) = 1728$~B/h per device (${\approx}$1.69~KiB/h), excluding TLS record overhead.
+{\color{red}At the configured 25~s heartbeat period, steady-state application-layer heartbeat traffic is $12 \times (3600/25) = 1728$~B/h per device (${\approx}$1.69~KiB/h), excluding TLS record overhead and lower-layer TCP/IP, Ethernet/TAP, and retransmission overhead.}
+
+\begin{figure}[pos=t]
+\centering
+\includegraphics[width=\columnwidth]{figures/wire_sizes_bar.png}
+\caption{Application-layer wire sizes (4-byte length prefix + CBOR) for representative protocol messages.}%
+\label{fig:wire-sizes}
+\end{figure}
+
+\subsubsection{Edge footprint}
+\begingroup
+\color{red}
+The evaluated Zephyr/WAMR/TLS/CBOR firmware fits the STM32F746NG internal-memory budget: the flash-resident \texttt{zephyr.bin} image is 406{,}568~B ($\approx$397~KiB), corresponding to text plus initialized data, and the static RAM allocation is 270{,}238~B ($\approx$264~KiB), corresponding to data (9{,}384~B) plus BSS (260{,}854~B). The larger \texttt{zephyr.elf} file is 8{,}095{,}176~B (7.72~MiB) only because it includes ELF metadata and debug symbols for the Renode \texttt{sysbus LoadELF} workflow; it is not the image written to device flash. The benchmark WASM module remains 33~B. The architectural point supported by these measurements is therefore that embedded endpoints run no kubelet, container runtime, or Linux userspace while retaining an embedded-class memory footprint.
+\endgroup
+
+
+\subsubsection{Concurrent devices}\label{sec:concurrent-devices}
+\begingroup
+\color{red}
+The trials above repeat one device through the full workflow, which measures the
+workflow but says nothing about concurrency. A separate pass therefore attaches three
+emulated STM32F746G devices at the same time. Each device carries its own enrollment
+key, its own link-layer identity and its own DHCP lease, so the gateway, the control
+plane and the network segment can all tell them apart; the identity a device presents
+during enrollment is the one recorded in its Device resource.
+
+All three attach and stay attached. The gateway runtime view lists three distinct
+sessions, each with a heartbeat fresher than the 25~s firmware emission interval,
+and the three Device resources independently reach \texttt{phase}\,=\,\texttt{Connected}
+with their own liveness evidence. A single Application targeting all three devices
+converges to \texttt{Running} on each of them: the gateway dispatches three separate
+\texttt{DeployApplication} messages, one per session, and receives three successful
+deployment acknowledgments. Because a deployment command travels only over the session
+that belongs to its target device, three acknowledged deployments are direct evidence
+of three independent southbound channels rather than of one channel reused.
+
+This establishes that concurrency is supported at the mechanism level, not that the
+design has been characterized at fleet scale. Three devices on a single emulation host
+exercise session multiplexing, per-device identity binding and per-device dispatch;
+they do not exercise gateway contention, multi-gateway placement, or the network
+conditions of a physical deployment.
+\endgroup
+
+\subsubsection{Control-plane resources}
+Figure~\ref{fig:pod-resources} reports mean Kubernetes pod usage ($n{=}5$ samples, one TLS-connected device, sampled while the trial campaign was running). {\color{red}The metric is the container working set reported by \texttt{metrics-server}, cross-checked against cgroup~v2 \texttt{memory.current} and the anonymous resident set in \texttt{memory.stat}, which agree with it to within a few hundred kilobytes.} The gateway averaged 3.0~millicores CPU and 4.4~MiB RAM (\texttt{memory.current} 5.60~MB, anonymous 3.82~MB), the API server averaged 169.2~millicores and 33.4~MiB under campaign load (\texttt{memory.current} 32.3--33.0~MB), and the application controller averaged 38.4~millicores and 12.0~MiB (\texttt{memory.current} 13.3~MB). Registering 50 synthetic boards through the gateway HTTP registry left gateway resident memory unchanged (\texttt{memory.current} identical before and after), indicating lightweight per-device mediation state at the fog layer.
+
+\begin{figure}[pos=t]
+\centering
+\includegraphics[width=\columnwidth]{figures/pod_resources_bar.png}
+\caption{Mean CPU (millicores) and RAM (MiB) for control-plane pods during the sustainability measurement pass.}%
+\label{fig:pod-resources}
+\end{figure}
+
+\begingroup
+\color{blue}
+\subsubsection{Computational energy instrumentation \revC{(measured CPU-time; derived energy and carbon as illustrative proxies)}}\label{sec:energy-instrumentation}
+Beyond control-plane pod resources, we instrument a representative WASM computational workload directly. A Kubernetes pod running the fuel-metered Wasmtime runtime (\texttt{wasmbed-wasm-runtime}) repeatedly creates an isolated instance and executes a bounded arithmetic-loop WASM function (summing $0$ to $N$), cycling 30~s idle and 30~s active phases. This instruments a control-plane/fog-layer WASM execution path as a computational-energy proxy; 
+%it does not measure the Renode-emulated STM32F746G/Zephyr/WAMR device evaluated elsewhere in this paper, since the embedded target is not directly instrumentable for energy in the present testbed. 
+The pod runs under Guaranteed QoS (\texttt{requests}\,=\,\texttt{limits}, 2 vCPU) to remove self-induced CFS-throttling variance observed at the original 1-vCPU limit (835/27{,}021 accounting periods throttled under load, a scheduling artifact of the container's own quota, not of co-located tenants).
+
+Two independent signals are collected. First, cgroup CPU time (\texttt{cpu.stat} \texttt{usage\_usec}) is an exact kernel accounting figure, not an estimate: at $N{=}200{,}000$, across $n{=}39$ paired cycles, the pod consumed $29.9289\pm0.0189$~CPU-s during each 30~s active window versus $0.000116\pm0.000053$~CPU-s during each equal-length idle window (paired difference 95\% CI $[29.9230, 29.9354]$~s, excluding zero). Second, we deploy Kepler~\cite{kepler} as a DaemonSet and query \texttt{kepler\_container\_joules\_total\{mode="dynamic"\}} scoped to the probe pod's own \texttt{pod\_name} label, isolating it from co-located wasmbed pods in the same namespace. 
+Because the host is a virtualized guest without exposed RAPL counters, Kepler's output is a regression-based power estimate rather than a direct hardware measurement; with that caveat, it shows a clear and physically plausible increase under load: it attributes no dynamic power to the pod during the idle windows and $3.952$~W during the active ones (Figure~\ref{fig:energy-idle-active}). {\color{red}That the idle attribution is exactly zero rather than a small positive value is itself a property of the estimator, not a measurement of the pod drawing no power, and is a further reason to treat the wattage as secondary to the cgroup CPU-time.} We treat the exact cgroup CPU-time as the primary, reproducible quantity throughout, and the Kepler wattage as a secondary, model-based signal consistent with it.
+
+\begin{figure}[pos=t]
+\centering
+\includegraphics[width=\columnwidth]{figures/energy_idle_active_kepler.png}
+\caption{Kepler-estimated power, idle vs.\ active phase ($n{=}38$ paired 30~s cycles with a power reading, $N{=}200{,}000$). Model-based estimate (no RAPL on this host), not a hardware measurement; the estimator attributes exactly zero dynamic power to the idle windows.}%
+\label{fig:energy-idle-active}
+\end{figure}
+
+Repeating the same idle/active protocol while varying the workload size $N \in \{50{,}000,\, 200{,}000,\, 1{,}000{,}000,\, 5{,}000{,}000\}$ ($n{\geq}10$ cycles per size) isolates CPU-time per WASM invocation from the fixed 30~s window: it grows from $95.9\,\mu$s at $N{=}50{,}000$ to $9.36$~ms at $N{=}5{,}000{,}000$. {\color{red}The two largest sizes exceed the MCU profile's default Wasmtime fuel budget of $5\times10^{6}$ units, which traps the call; they are measured with the budget raised (fuel metering still enabled), a change that alters no other aspect of the workload.} Plotted against an $O(N)$ reference line of slope~1 anchored at the smallest measured point (Figure~\ref{fig:energy-workload-curve}), the four measurements track it closely across two orders of magnitude in $N$, consistent with the loop's linear time complexity rather than merely connecting four samples (Table~\ref{tab:workload-cpu-time}; 95\% CIs per point are narrower than the marker at this scale, $n{\geq}10$ cycles each).
+
+\begin{figure}[pos=t]
+\centering
+\includegraphics[width=\columnwidth]{figures/energy_workload_size_curve.png}
+\caption{Measured CPU-time per WASM invocation vs.\ workload size $N$ (log--log; cgroup \texttt{cpu.stat}, exact), against an $O(N)$ reference line of slope 1.}%
+\label{fig:energy-workload-curve}
+\end{figure}
+
+\begin{table}[pos=t]
+\centering
+\caption{Workload size vs.\ measured CPU-time per invocation. \revC{CPU-s/call is exact kernel accounting; J/call is an \emph{illustrative range}, never a measurement, spanning the two candidate per-vCPU full-load coefficients (4.72~W measured on the same part by a third party~\cite{epyc7313power}, 4.84~W from the manufacturer TDP~\cite{amd_epyc7313p}). The range does not bound the error of the linear power model itself (see text), so it is given to two significant digits and read as an order of magnitude.}}%
+\label{tab:workload-cpu-time}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{rrrr}
+\toprule
+\textbf{$N$} & \textbf{$n$} & \textbf{CPU-s/call} & \revC{\textbf{J/call (illustrative)}} \\
+\midrule
+50{,}000 & 10 & $9.59\times10^{-5}$ & \revC{$4.5$--$4.6\times10^{-4}$} \\
+200{,}000 & 39 & $3.77\times10^{-4}$ & \revC{$1.8\times10^{-3}$} \\
+1{,}000{,}000 & 10 & $1.87\times10^{-3}$ & \revC{$8.8$--$9.0\times10^{-3}$} \\
+5{,}000{,}000 & 10 & $9.36\times10^{-3}$ & \revC{$4.4$--$4.5\times10^{-2}$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Converting CPU-seconds into Joules requires a hardware-specific power coefficient, and this is the one step of the pipeline that is not measured on this platform. We therefore state its provenance explicitly. The primary reference is the manufacturer specification for the deployed processor, the AMD EPYC 7313P: 16 cores / 32 threads with a default TDP of 155~W and a configurable TDP of 155--180~W~\cite{amd_epyc7313p}, giving 4.84~W per vCPU at the default TDP. TDP is a thermal design limit rather than an instantaneous power draw, so it bounds rather than predicts consumption; as secondary corroboration, a third-party RAPL/\texttt{turbostat} measurement of the same single-socket part reports 35~W idle and 151~W full load across 32 threads~\cite{epyc7313power}, i.e.\ 1.09~W and 4.72~W per vCPU, within 3\% of the specification-derived value. Neither figure is a measurement of this workload on this hardware, and a platform-specific coefficient would come from a documented energy benchmark such as SPECpower\_ssj2008~\cite{specpower} or the per-family coefficient table of the Cloud Carbon Footprint project~\cite{ccf}. \revC{The conversion also rests on a deliberately simple model: power proportional to
+allocated vCPU-time at full load, which ignores the idle baseline, DVFS and turbo
+behaviour, shared uncore, memory and I/O power attributable to no single vCPU, and the
+known non-linearity of power against utilization. Each effect can move the result by tens
+of percent in either direction, which is why every derived figure below is given to at
+most two significant digits. Removing the assumption requires anchoring the pipeline on a
+host exposing RAPL counters, so that at least one workload size yields a directly measured
+Joule figure; that run is the immediate next step and is not claimed here.}
+Applying the Cloud Carbon Footprint average-wattage formula~\cite{ccf} to the measured utilization yields \revC{${\approx}119$}~J attributable to the active window above its idle baseline (\revC{${\approx}1.5$}~mJ per WASM invocation over ${\approx}$79{,}300 invocations per window). Carbon follows from that energy and a grid emission factor, and is reported here parametrically for the same reason: at an intensity $I$, the active window accounts for \revC{${\approx}33\,I$}~$\mu$gCO\textsubscript{2}eq with $I$ in gCO\textsubscript{2}eq/kWh. We take $I$ from the institutional source for Italy, the ISPRA national consumption-mix emission factor, 199.61~gCO\textsubscript{2}eq/kWh for 2025 (preliminary estimate)~\cite{ispra_settore_elettrico}, which puts the active window at \revC{${\approx}6.6$~mgCO\textsubscript{2}eq (of order $0.1$~$\mu$gCO\textsubscript{2}eq per invocation)}. Production- and consumption-mix factors differ and the choice must be stated with the value; the European Environment Agency indicator~\cite{eea_grid_intensity} provides the corresponding cross-country basis. \revC{The measured claims of this subsection are therefore the CPU-time quantities alone --- the idle/active separation, the per-invocation CPU-time, and its linear growth with $N$; everything in Joules or grams of CO\textsubscript{2}eq is a proxy computed from them with an external coefficient, evidence that the pipeline is measurement-ready rather than a validated energy or carbon claim, and no conclusion of this paper depends on its absolute value.}
+
+\paragraph{Per-phase, per-pod CPU-time (control-plane trials).} As a minimal, additive instrumentation point layered on the trial harness behind Table~\ref{tab:quantitative-latency} (no change to gateway, controller, or reconciler logic), each of the enrollment, heartbeat, and deployment stages is separately bracketed by a \texttt{cpu.stat} \texttt{usage\_usec} snapshot for the gateway, API-server, and application-controller pods, giving CPU-seconds consumed by each pod during exactly that stage's wall-clock window. The measurement runs against the full live stack: a Zephyr~3.5.0/WAMR firmware image for the emulated STM32F746G target, connected to the gateway over TLS through the Renode TAP bridge. Table~\ref{tab:cpu-time-per-phase} reports a $n{=}5$-trial pass: all three stages succeed 5/5, with real, reproducible CPU-time per stage per pod, and the enrollment row covers the full protocol exchange (TLS handshake, CBOR EnrollmentRequest/PublicKey/DeviceUuid, gateway-side connection established) up to the Device CRD reaching \texttt{status.phase}\,=\,\texttt{Connected}.
+
+Given $n{=}5$, this table demonstrates the instrumentation working end-to-end on real infrastructure rather than providing a statistically powered per-stage estimate; a $n{=}100$ run aligned with Table~\ref{tab:quantitative-latency} is future work.
+
+\begin{table}[pos=t]
+\centering
+\caption{CPU-seconds per phase per pod ($n{=}5$ trials, \revC{provisioned through the auxiliary HTTP registry endpoint}; all three stages succeeded 5/5). Exact cgroup \texttt{cpu.stat}, not an estimate.}%
+\label{tab:cpu-time-per-phase}
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrrr}
+\toprule
+\textbf{Stage} & \textbf{Pod} & \textbf{Mean} & \textbf{Median} & \textbf{p95} & \textbf{95\% CI of mean} \\
+\midrule
+Enrollment & gateway & 0.000350 & 0.000326 & 0.000503 & [0.000239, 0.000462] \\
+Enrollment & api-server & 0.143510 & 0.083265 & 0.384413 & [$-$0.023697, 0.310717] \\
+Enrollment & app-controller & 0.036625 & 0.035557 & 0.045817 & [0.029140, 0.044109] \\
+Heartbeat & gateway & 0.000413 & 0.000390 & 0.000684 & [0.000206, 0.000620] \\
+Heartbeat & api-server & 0.020483 & 0.000000 & 0.102417 & [$-$0.036379, 0.077345] \\
+Heartbeat & app-controller & 0.010088 & 0.010080 & 0.010956 & [0.009043, 0.011133] \\
+Deployment & gateway & 0.006338 & 0.006521 & 0.008674 & [0.003693, 0.008984] \\
+Deployment & api-server & 0.564172 & 0.465255 & 0.823915 & [0.280249, 0.848096] \\
+Deployment & app-controller & 0.057557 & 0.027365 & 0.111654 & [$-$0.002620, 0.117734] \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+\endgroup
+
+\subsubsection{Architectural comparison}
+Table~\ref{tab:arch-compare} contrasts gateway-mediated WASM orchestration with treating each constrained device as a Kubernetes worker. % Removed: Edge Kubernetes deployments commonly require tens to hundreds of MiB of resident memory per worker for kubelet and container runtime before user workloads~\cite{kubernetes}.
+{\color{red}Edge Kubernetes deployments require a Linux-capable node with a kubelet, container runtime, and supporting operating-system services before user workloads, whereas the evaluated endpoint keeps those cluster agents off the device.} Our design concentrates orchestration in a shared gateway (under 5~MiB measured) while keeping cluster agents off the device.
+
+\begin{table}[pos=t]
+\centering
+\caption{Orchestration model comparison.}%
+\label{tab:arch-compare}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{0.22\linewidth} p{0.34\linewidth} p{0.34\linewidth}}
+\toprule
+\textbf{Aspect} & \textbf{Device as K8s worker} & \textbf{Gateway-mediated WASM edge} \\
+\midrule
+Edge runtime & kubelet + container runtime + OS & Zephyr + WAMR ({\color{red}394~KiB flash, 264~KiB RAM}) \\
+% Removed: Edge cluster agent RAM & 100--350~MiB per node (literature) & none on device \\
+{\color{red}Edge cluster agent footprint} & {\color{red}kubelet + container runtime + OS services required} & none on device \\
+% Removed: Steady control traffic & CRI/container probes & 1728~B/h per device \\
+{\color{red}Steady heartbeat traffic} & CRI/container probes & {\color{red}1728~B/h per device at application layer, excluding TLS/lower layers} \\
+Fog mediation RAM & per-node agent & ${<}5$~MiB shared gateway \\
+\bottomrule
+\end{tabular}
+\end{table}

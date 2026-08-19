@@ -1,0 +1,44 @@
+\section{Implementation}\label{sec:implementation}
+
+The implementation combines Rust control-plane services with Zephyr-based device firmware and WAMR execution. The API server, gateway, and controllers are implemented in Rust, using its memory-safety guarantees and asynchronous networking support. Resource interaction follows Kubernetes controller and status-patching practices~\cite{kubernetes,kubernetes_operators}, allowing embedded endpoints to be managed as first-class resources without treating them as cluster nodes. On the device side, Zephyr provides the embedded networking and TLS substrate~\cite{zephyr}, while WAMR provides lightweight WASM execution on constrained targets~\cite{wamr}.
+
+The reference deployment runs on K3s~\cite{k3s}. {\color{red}In the presented framework, K3s denotes the concrete lightweight Kubernetes distribution used for the experiments, whereas K8s/Kubernetes denotes the generic API, manifests, CRDs, and controller model implemented by the framework and reflected in the repository naming.} It uses namespace-scoped resources and locally built images, preserving real Kubernetes API and reconciliation semantics while remaining accessible on a single-node Linux environment for development, experimentation, and repeatable evaluation. The deployment includes the API services, dashboard, gateway/controller components, CRDs, and supporting services needed to exercise enrollment, deployment, and status propagation.
+
+Responsibilities are distributed across specialized controllers rather than concentrated in a single service. Device-oriented reconciliation manages attachment state and gateway resolution. Application-oriented reconciliation interprets deployment intent and maps it to gateway actions. Gateway-oriented reconciliation maintains metadata needed for path resolution and status interpretation. This decomposition follows the CRD model and reduces the risk that unrelated concerns become coupled inside one control loop.
+
+\begingroup
+\color{red}
+\subsection{Control-Plane Components}
+The control-plane implementation is organized around a narrow API layer and a set of reconciliation workers. The API server is responsible for user-facing operations, validation of high-level requests, and creation or update of Kubernetes resources. It does not maintain authoritative device-session state. That responsibility is delegated to the gateway and reflected through CRD status fields, so that the Kubernetes API remains the persistent source of desired state and the gateway remains the source of southbound observations. This split prevents the dashboard or API server from becoming a hidden second control plane.
+
+The Device controller watches Device resources and interprets gateway-reported attachment evidence. Its primary task is not to open device connections directly, but to maintain a consistent platform view: the selected gateway, the latest known connectivity phase, heartbeat freshness, and the last valid association between device identity and gateway session. The Application controller watches Application resources and turns a desired deployment into a gateway action only when the target device and mediation path can be resolved. The Gateway controller maintains gateway metadata and makes the mapping between cloud-side resources and fog-layer endpoints explicit. Table~\ref{tab:implementation-components} summarizes these responsibilities.
+
+\begin{table*}[pos=t]
+\centering
+\caption{Implementation responsibilities across the validated stack.}
+\label{tab:implementation-components}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{0.18\linewidth} p{0.32\linewidth} p{0.25\linewidth} p{0.17\linewidth}}
+\toprule
+\textbf{Component} & \textbf{Main responsibility} & \textbf{State written or observed} & \textbf{Failure containment} \\
+\midrule
+Dashboard and API server & Accept operator requests, validate high-level parameters, and create or update CRD objects. & Application desired state, Device metadata, and Gateway references. & No direct southbound session ownership. \\
+Device controller & Interpret attachment, phase, heartbeat freshness, and gateway association. & Device status fields and gateway-derived evidence. & Avoids replacing valid status from one transient missing observation. \\
+Application controller & Resolve target device and gateway, dispatch deployment intent, and reconcile execution result. & Application status, deployment phase, and outcome evidence. & Keeps desired state intact if execution evidence is absent or inconsistent. \\
+Gateway runtime & Terminate TLS sessions, decode CBOR frames, bind device identities, and forward deployment commands. & Runtime session map and protocol-derived status patches. & Isolates protocol errors from Kubernetes controllers and firmware. \\
+Zephyr/WAMR firmware & Maintain the protected channel, emit liveness evidence, load the WASM module, and report execution result. & Heartbeat messages, deployment acknowledgments, and runtime result fields. & Does not write Kubernetes resources or store cluster credentials. \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Gateway Runtime State}
+The gateway runtime maintains the small amount of mutable state that cannot naturally live inside Kubernetes alone: active TLS sessions, decoded device identifiers, freshness information for recently received heartbeats, and pending deployment operations. This state is intentionally treated as a cache of protocol reality rather than as a replacement for Kubernetes status. When a device enrolls, the gateway creates a session-to-device binding only after the enrollment material is compatible with the expected Device resource. When a heartbeat arrives, the gateway refreshes liveness evidence and exposes the new observation to the control plane. When an Application deployment is requested, the gateway checks that the target device is currently reachable through a known session before emitting the southbound command.
+
+This organization gives the framework a precise failure boundary. If the firmware disconnects, the gateway loses the active transport session but the Device resource still retains the latest desired configuration and the latest valid reported association until reconciliation determines that the condition is stale. If the Kubernetes API is temporarily unavailable, the gateway can still preserve the immediate transport view, but durable convergence waits until status patches are accepted. If the gateway restarts, the cloud-side desired state survives and devices must re-establish session-bound evidence. These cases are not hidden behind a best-effort transport acknowledgment; they are reflected as missing, stale, or inconsistent evidence that controllers can interpret conservatively.
+
+\subsection{Embedded Execution Path}
+On the embedded side, the firmware implements only the southbound protocol roles required by the orchestration model. It establishes the protected channel, sends enrollment and heartbeat records, receives deployment commands, passes the WASM payload to WAMR, and returns a structured result. It does not embed Kubernetes client logic, service-account credentials, resource watches, or container-image management. The edge endpoint is therefore closer to a managed execution target than to a miniature cluster node. This is a deliberate implementation constraint: the more Kubernetes behavior is pushed into the firmware, the harder it becomes to keep the device portable, auditable, and suitable for constrained deployments.
+
+The WASM payload used in the evaluation is intentionally minimal so that the measurement focuses on orchestration overhead rather than application computation. This choice separates two questions that are often conflated in edge experiments: whether a runtime can execute a non-trivial application efficiently, and whether an orchestration path can reliably deliver, start, and observe a workload. The present implementation addresses the second question. Larger WASM modules, richer WASI support, and application-specific input/output channels can be added above the same deployment and evidence path without changing the control ownership model.
+\endgroup

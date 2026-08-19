@@ -1,0 +1,18 @@
+\section*{Data Availability Statement}
+The data supporting the findings of this study consist of deployment logs, Kubernetes resource states, controller and gateway traces, and protocol evidence from controlled experiments. % Removed: Anonymized records, validation workflows, and accompanying documentation are available from the corresponding author upon reasonable request, subject to institutional policies and applicable confidentiality constraints.
+\revC{The source repository provides the public deployment assets needed to inspect the framework. The measurement artifacts underlying every number reported in Section~\ref{sec:evaluation} --- the per-trial latency and success records of the $n{=}100$ campaign, the paired idle/active and workload-size energy records, the per-phase \texttt{cpu.stat} records, the pod-resource samples, and the analysis and figure-generation scripts that turn them into the tables and figures of this paper --- are deposited as a single versioned archive on Zenodo under DOI \texttt{10.5281/zenodo.XXXXXXX} (release \texttt{v1.0}, CC~BY~4.0), and the corresponding source tree is archived in Software Heritage under identifier \texttt{swh:1:rev:XXXXXXXX}. The deposit is immutable and citable; the GitHub repository below is its development mirror and may advance beyond the archived release. Records not included in the deposit are limited to raw operational logs that carry institutional infrastructure identifiers; these are available from the corresponding author upon reasonable request, subject to institutional policies and applicable confidentiality constraints.}
+
+\section*{Code Availability Statement}
+The source code and deployment assets associated with the framework are maintained in the public project repository \href{https://github.com/lucadagati/k3s-wasm-edge-orchestration}{\nolinkurl{lucadagati/k3s-wasm-edge-orchestration}}. \revC{The exact revision evaluated in this paper is tagged \texttt{v1.0} and archived, together with the measurement artifacts and analysis scripts, under the Zenodo DOI and Software Heritage identifier given in the Data Availability Statement, so that the results can be reproduced from a fixed, citable snapshot rather than from a moving branch.}
+
+% TODO before submission: mint the Zenodo DOI and the Software Heritage identifier for tag v1.0
+% and replace the XXXXXXX placeholders above and in the Data Availability Statement.
+
+\section*{Funding}
+This research received no external funding.
+
+\section*{Conflict of Interest}
+The authors declare that they have no conflict of interest related to this work.
+
+\section*{Author Contributions}
+Conceptualization: Giovanni Merlino, with input from Francesco Longo. Methodology: Luca D'Agati, Giuseppe Tricomi, Fabio Orazio Mirto, and Giovanni Merlino. Software: Luca D'Agati, with contributions from Giuseppe Tricomi and Fabio Orazio Mirto. Validation: Luca D'Agati, Giuseppe Tricomi, and Fabio Orazio Mirto. Investigation and data curation: Luca D'Agati, Giuseppe Tricomi, and Fabio Orazio Mirto. Writing---original draft: Luca D'Agati, with writing support from Giuseppe Tricomi and Fabio Orazio Mirto. Writing---review and editing: Luca D'Agati, Giuseppe Tricomi and Fabio Orazio Mirto. Supervision: Giovanni Merlino, with support from Francesco Longo.

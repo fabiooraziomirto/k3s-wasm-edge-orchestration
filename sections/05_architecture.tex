@@ -1,0 +1,78 @@
+\section{Architecture}\label{sec:architecture}
+
+\subsection{Layered View}
+The framework is organized around the Cloud\textendash{}Fog\textendash{}Edge continuum. The \textbf{cloud layer} hosts the API server, dashboard, controllers, CRDs, and supporting services on Kubernetes; it stores desired state and persists reported execution state. The \textbf{fog layer} hosts the Rust-based gateway and emulation support services; it translates orchestration events into southbound TLS/CBOR messages, validates device identity, and propagates status updates back to the cloud. The \textbf{edge layer} contains Zephyr firmware, the WAMR execution environment, and deployed WASM modules; it executes the intended behavior and emits heartbeat and runtime evidence.
+
+This decomposition localizes complexity where it is most affordable: Kubernetes retains declarative control, the gateway absorbs protocol and identity mediation, and the device remains lightweight. Figure~\ref{fig:architecture} summarizes this path: declarative intent flows from the cloud toward the edge, while runtime evidence returns through the gateway into Kubernetes status fields.
+
+\begin{figure*}[pos=t]
+\centering
+\begin{tikzpicture}[
+  node distance=0.8cm and 0.8cm,
+  box/.style={draw,rounded corners,align=center,minimum width=2.6cm,minimum height=0.9cm,font=\footnotesize},
+  arr/.style={-Latex,thick}
+]
+
+\node[box,fill=blue!8] (dash) {Dashboard\\(Web user interface, UI)};
+\node[box,fill=blue!8,right=of dash] (api) {API Server\\(Rust)};
+\node[box,fill=blue!8,right=of api] (ctrl) {Controllers\\Device/App/Gateway};
+\node[box,fill=blue!8,right=of ctrl] (crd) {CRDs\\Device/Application/Gateway};
+
+\node[box,fill=green!10,below=1.3cm of api] (gw) {Gateway\\TLS + CBOR Hub};
+\node[box,fill=green!10,left=of gw] (ren) {Renode Manager};
+
+\node[box,fill=orange!10,below=1.3cm of gw] (zep) {Zephyr Firmware};
+\node[box,fill=orange!10,right=of zep] (wamr) {WAMR Runtime};
+\node[box,fill=orange!10,right=of wamr] (app) {WASM App};
+
+\draw[arr] (dash) -- (api);
+\draw[arr] (api) -- (ctrl);
+\draw[arr] (ctrl) -- (crd);
+\draw[arr] (api) -- (ren);
+\draw[arr] (ren) -- (zep);
+\draw[arr] (zep) -- (wamr);
+\draw[arr] (wamr) -- (app);
+\draw[arr] (zep) -- node[right,font=\scriptsize]{TLS + CBOR} (gw);
+\draw[arr] (gw) -- node[left,font=\scriptsize]{status/update} (crd);
+
+\node[draw,dashed,fit=(dash)(api)(ctrl)(crd),inner sep=6pt,label=above:{\small Cloud Layer}] {};
+\node[draw,dashed,fit=(ren)(gw),inner sep=6pt,label=left:{\small Fog Layer}] {};
+\node[draw,dashed,fit=(zep)(wamr)(app),inner sep=6pt,label=left:{\small Edge Layer}] {};
+
+\end{tikzpicture}
+\caption{High-level architecture of the proposed framework. Declarative cloud intent is mediated by the gateway and translated into verifiable embedded WASM execution.}%
+\label{fig:architecture}
+\end{figure*}
+
+\subsection{Gateway-Centric Control}
+Gateway-centric mediation is the main architectural choice. Devices do not manipulate Kubernetes resources or embed cluster-specific logic. Instead, the gateway terminates southbound TLS sessions, validates enrollment messages, binds transport sessions to device identities, dispatches application life-cycle commands, and reports execution and liveness evidence to the cloud side.
+
+This design keeps constrained devices small while concentrating protocol policy, identity checks, message normalization, and status propagation at a controllable boundary. It also gives the cloud side a stable integration surface if the device protocol evolves. Gateway correctness and availability are therefore explicit managed properties of the fog layer, rather than implicit assumptions distributed across constrained endpoints.
+
+\subsection{Resource Model}
+The framework relies on three primary CRDs, summarized in Table~\ref{tab:resource-model}. The \texttt{Device} resource stores identity, gateway preference, runtime attributes, expected public key, and reported connectivity state. The \texttt{Application} resource expresses the desired WASM deployment for a target device and records execution outcomes in status fields. The \texttt{Gateway} resource describes endpoint metadata, capabilities, and the information needed to resolve the mediation path.
+
+\begin{table}
+\centering
+\caption{Primary CRDs and control/evidence ownership.}%
+\label{tab:resource-model}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{p{0.20\linewidth} p{0.35\linewidth} p{0.35\linewidth}}
+\toprule
+\textbf{Resource} & \textbf{Desired or configured state} & \textbf{Reported evidence} \\
+\midrule
+\texttt{Device} & Platform identity, expected key, gateway preference, runtime attributes & Gateway association, phase, connectivity, heartbeat freshness \\
+% Removed: Application & Target device, WASM artifact, desired execution state & Deployment phase, start outcome, execution result or error evidence \\
+\texttt{Application} & Target device, WASM artifact, desired execution state & Deployment phase, start outcome, execution result or error evidence \\
+\texttt{Gateway} & Endpoint metadata, capabilities, namespace-scoped mediation path & Availability metadata, resolved devices, status propagation context \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+The resource model separates desired state from reported state. This preserves deployment intent when devices are offline, unreachable, or in transition, and it helps operators compare requested state with the latest evidence observed by the gateway and controllers.
+
+\subsection{Control and Observability Boundaries}
+The architecture distinguishes control ownership from evidence ownership. Operators and higher-level services change desired state through Kubernetes resources; the gateway turns protocol-level observations into platform-level status updates; and controllers enforce reconciliation and consistency. This separation reduces ambiguous responsibility and limits conflicting status writes. The validation campaign specifically exercises this boundary by checking that transient visibility gaps do not overwrite fresh gateway evidence or produce false disconnection state.
