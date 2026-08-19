@@ -202,8 +202,15 @@ WASM_B64=$(printf '\x00\x61\x73\x6d\x01\x00\x00\x00' | base64 | tr -d '\n')
 curl -s -X POST "$API_BASE/api/v1/applications" -H 'Content-Type: application/json' \
   -d "{\"name\":\"$APP\",\"description\":\"fleet scalability test\",\"wasmBytes\":\"$WASM_B64\",\"targetDevices\":{\"deviceNames\":$DEV_JSON}}" >/dev/null
 curl -s -X POST "$API_BASE/api/v1/applications/$APP/deploy" -H 'Content-Type: application/json' -d '{}' >/dev/null
-sleep 20
-deployed=$(kubectl get application "$APP" -n "$NAMESPACE" -o jsonpath='{.status.deviceStatuses}' 2>/dev/null | grep -o 'Running' | wc -l)
+# Il deploy attraversa api-server, gateway, sessione TLS, WAMR sul device e
+# DeployAck di ritorno: con un'attesa fissa si misura la fortuna, non l'esito.
+deployed=0
+deploy_deadline=$((SECONDS + ${DEPLOY_TIMEOUT:-120}))
+while [ $SECONDS -lt $deploy_deadline ]; do
+  deployed=$(kubectl get application "$APP" -n "$NAMESPACE" -o jsonpath='{.status.deviceStatuses}' 2>/dev/null | grep -o 'Running' | wc -l)
+  [ "$deployed" -ge "$N" ] && break
+  sleep 5
+done
 [ "$deployed" -ge "$N" ] && ok "deploy Running su $deployed/$N device" || ko "deploy Running su $deployed/$N device"
 
 # --- Riepilogo --------------------------------------------------------------
