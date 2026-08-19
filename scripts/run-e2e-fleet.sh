@@ -75,6 +75,40 @@ FIRMWARE_ELF="${FIRMWARE_ELF:-$ZEPHYR_WORKSPACE/build/$MCU_BUILD/zephyr/zephyr.e
 
 DEVICES=(); for i in $(seq 1 "$N"); do DEVICES+=("${PREFIX}-${i}"); done
 
+# --- Immagini e deployment --------------------------------------------------
+# Repliche disponibili di un deployment (0 se non esiste).
+deploy_available() {
+  local n
+  n=$(kubectl -n "$NAMESPACE" get deploy "$1" -o jsonpath='{.status.availableReplicas}' 2>/dev/null)
+  echo "${n:-0}"
+}
+
+# Ricostruisce l'immagine di un deployment e la rende visibile al cluster.
+# Il tag viene letto dal deployment stesso: su questo cluster i tag sono stati
+# fissati a mano (es. gateway:fixhb2) e imagePullPolicy è Never, quindi ricostruire
+# ":latest" non aggiornerebbe nulla.
+sync_image() {
+  local deploy="$1" dockerfile="$2" img
+  img=$(kubectl -n "$NAMESPACE" get deploy "$deploy" -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null)
+  [ -n "$img" ] || { err "deployment $deploy non trovato"; return 1; }
+
+  echo "  Build $img da $dockerfile (compila il Rust dentro l'immagine, richiede qualche minuto)..."
+  docker build -q -t "$img" -f "$dockerfile" . >/dev/null || { err "docker build fallito per $img"; return 1; }
+
+  # Il registry locale è best-effort: con imagePullPolicy Never non viene comunque usato.
+  docker push "$img" >/dev/null 2>&1 && ok "$img pushata nel registry" || warn "push nel registry non riuscita (ignorabile)"
+
+  # k3s usa containerd, non il daemon Docker: senza import il pod non vede la nuova immagine.
+  if command -v k3s >/dev/null 2>&1; then
+    docker save "$img" | k3s ctr images import - >/dev/null 2>&1 \
+      && ok "$img importata in containerd" || warn "import in containerd non riuscito"
+  fi
+
+  kubectl -n "$NAMESPACE" rollout restart "deploy/$deploy" >/dev/null || { err "rollout restart di $deploy fallito"; return 1; }
+  kubectl -n "$NAMESPACE" rollout status "deploy/$deploy" --timeout=300s >/dev/null || { err "$deploy non è tornato pronto"; return 1; }
+  ok "$deploy aggiornato e pronto"
+}
+
 # --- Teardown ---------------------------------------------------------------
 cleanup() {
   phase "Teardown"
@@ -154,17 +188,21 @@ elif [ "$FULL_DEPLOY" = "1" ] || ! kubectl get deploy wasmbed-api-server -n "$NA
 else
   # La fix vive in wasmbed-qemu-manager, che gira dentro l'api-server:
   # ricostruire quell'immagine è obbligatorio, un restart del pod non basta.
-  echo "  Rebuild dell'immagine api-server (contiene la fix multi-device)..."
-  cargo build --workspace 2>&1 | tail -3 | sed 's/^/  /' || die "cargo build fallito"
-  docker build -q -t "$REGISTRY/wasmbed/api-server:latest" -f Dockerfile.api-server . | sed 's/^/  /' || die "docker build fallito"
-  docker push "$REGISTRY/wasmbed/api-server:latest" 2>&1 | tail -1 | sed 's/^/  /' || die "docker push fallito"
-  kubectl -n "$NAMESPACE" rollout restart deploy/wasmbed-api-server >/dev/null || die "rollout restart fallito"
-  kubectl -n "$NAMESPACE" rollout status deploy/wasmbed-api-server --timeout=180s | sed 's/^/  /' || die "api-server non pronto"
-  ok "api-server aggiornato"
+  # Il codice Rust viene compilato DENTRO l'immagine (i Dockerfile usano rust:1.88),
+  # quindi non serve una toolchain aggiornata sull'host.
+  sync_image wasmbed-api-server Dockerfile.api-server || die "aggiornamento api-server fallito"
+
+  # Il deployment del gateway è creato dal gateway-controller, non da un manifest:
+  # se non è disponibile, ricostruiscilo con lo stesso tag che il deployment richiede.
+  if [ "$(deploy_available gateway-1-deployment)" -lt 1 ]; then
+    warn "gateway non disponibile: ricostruisco anche la sua immagine"
+    sync_image gateway-1-deployment Dockerfile.gateway || warn "aggiornamento gateway fallito"
+  fi
 fi
 
-not_running=$(kubectl get pods -n "$NAMESPACE" --no-headers 2>/dev/null | grep -vc "Running")
-[ "${not_running:-1}" -eq 0 ] && ok "tutti i pod Running" || warn "$not_running pod non Running (kubectl get pods -n $NAMESPACE)"
+for d in wasmbed-api-server gateway-1-deployment; do
+  if [ "$(deploy_available "$d")" -ge 1 ]; then ok "$d disponibile"; else err "$d NON disponibile"; fi
+done
 
 # --- Fase 3: port-forward ---------------------------------------------------
 phase "3/6 Port-forward"
