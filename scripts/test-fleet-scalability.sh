@@ -71,8 +71,6 @@ metadata:
   namespace: $NAMESPACE
 spec:
   publicKey: "$key"
-  deviceType: MCU
-  architecture: ARM_CORTEX_M7
   mcuType: $MCU_TYPE
 CRD
   if [ $? -eq 0 ]; then ok "$d creato (publicKey ${key:0:12}…)"; else ko "$d non creato"; fi
