@@ -120,6 +120,11 @@ sync_image() {
 cleanup() {
   phase "Teardown"
   for d in "${DEVICES[@]}"; do
+    # L'api-server tiene il proprio stato in memoria: senza stop esplicito resta
+    # convinto che il device sia in esecuzione e al giro dopo rifiuta di riavviarlo
+    # ("Device is already running"), pur rispondendo 200 al connect.
+    curl -s -o /dev/null -X POST "$API_BASE/api/v1/devices/$d/emulation/stop" -d '{}' 2>/dev/null
+    curl -s -o /dev/null -X POST "$API_BASE/api/v1/devices/$d/disconnect" -d '{}' 2>/dev/null
     docker rm -f "wasmbed-renode-${d:0:16}" >/dev/null 2>&1 && ok "container di $d rimosso"
     kubectl delete device "$d" -n "$NAMESPACE" >/dev/null 2>&1 && ok "Device CRD $d rimosso"
   done
@@ -220,6 +225,10 @@ curl -sf -o /dev/null "$GATEWAY_HTTP/api/v1/devices" && ok "gateway risponde ($G
 # --- Fase 4: stato pulito ---------------------------------------------------
 phase "4/6 Pulizia stato precedente"
 for d in "${DEVICES[@]}"; do
+  # Stesso motivo del teardown: prima si ferma l'emulazione lato api-server,
+  # poi si rimuove il container, altrimenti il suo stato in memoria resta sporco.
+  curl -s -o /dev/null -X POST "$API_BASE/api/v1/devices/$d/emulation/stop" -d '{}' 2>/dev/null
+  curl -s -o /dev/null -X POST "$API_BASE/api/v1/devices/$d/disconnect" -d '{}' 2>/dev/null
   docker rm -f "wasmbed-renode-${d:0:16}" >/dev/null 2>&1 || true
   kubectl delete device "$d" -n "$NAMESPACE" >/dev/null 2>&1 || true
 done
