@@ -82,8 +82,10 @@ fi
 ip addr flush dev "$BRIDGE" 2>/dev/null || true
 ip addr add "${BRIDGE_IP}/24" dev "$BRIDGE"
 ip link set "$BRIDGE" up
-# Il traffico fra device sullo stesso bridge non deve passare da iptables/netfilter.
-sysctl -qw net.bridge.bridge-nf-call-iptables=0 2>/dev/null || true
+# NB: non toccare net.bridge.bridge-nf-call-iptables. È un sysctl GLOBALE, non
+# per-bridge: metterlo a 0 disattiva iptables sul traffico bridged di TUTTO
+# l'host, quindi anche su cni0, e kube-proxy smette di NATtare le ClusterIP.
+# Sintomo osservato: i pod perdono DNS e connettività verso i Service.
 echo "✅ bridge $BRIDGE: ${BRIDGE_IP}/24"
 
 # --- 3. Una TAP per device --------------------------------------------------
