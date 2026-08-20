@@ -3,8 +3,9 @@
 
 Covers the five figures whose values changed in the 2026-08-19 re-measurement:
 the three latency figures, the control-plane pod resources bar chart, and the
-two energy figures. `wire_sizes_bar.png` is not regenerated -- the CBOR wire
-format did not change, so that figure still matches.
+two energy figures. `wire_sizes_bar.png` is regenerated separately, by
+generate_wire_sizes_figure.py: the CBOR wire format did change when the
+challenge exchange was added, and that figure no longer matched.
 
 Usage:
   generate_paper_figures.py --latency <scalability_metrics.json>

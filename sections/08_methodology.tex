@@ -144,7 +144,7 @@ exchange itself whereas deployment is timed on a subsequent status query.}
 \subsection{Sustainability-Oriented Metrics}\label{sec:sustainability-metrics}
 
 \subsubsection{Southbound wire efficiency}
-Application messages use a 4-byte big-endian length prefix followed by CBOR payloads. Figure~\ref{fig:wire-sizes} summarizes measured wire sizes for representative messages. Heartbeat request and acknowledgment are 6~B each; a complete enrollment round trip totals 87~B of application payload; a minimal deploy round trip (33~B WASM module) totals 90~B. % Removed: At the configured 25~s heartbeat period, steady-state control traffic is $12 \times (3600/25) = 1728$~B/h per device (${\approx}$1.69~KiB/h), excluding TLS record overhead.
+Application messages use a 4-byte big-endian length prefix followed by CBOR payloads. Figure~\ref{fig:wire-sizes} summarizes measured wire sizes for representative messages. Heartbeat request and acknowledgment are 6~B each; a complete enrollment round trip totals 265~B of application payload; a minimal deploy round trip (33~B WASM module) totals 124~B. % Removed: At the configured 25~s heartbeat period, steady-state control traffic is $12 \times (3600/25) = 1728$~B/h per device (${\approx}$1.69~KiB/h), excluding TLS record overhead.
 {\color{red}At the configured 25~s heartbeat period, steady-state application-layer heartbeat traffic is $12 \times (3600/25) = 1728$~B/h per device (${\approx}$1.69~KiB/h), excluding TLS record overhead and lower-layer TCP/IP, Ethernet/TAP, and retransmission overhead.}
 
 \revD{That exclusion spans more than an order of magnitude. Under the TLS~1.2 AES-128-GCM
@@ -154,9 +154,10 @@ cipher suite each record adds 5~B of header, an 8~B explicit nonce and a 16~B ta
 300~B per exchange and of order 40~KB/h per device, some $25\times$ the application-layer
 figure. Session establishment is excluded from both and is paid again on every
 reconnection, so a frequently reconnecting device is dominated by handshake cost rather
-than by heartbeats. The gateway pins TLS~1.2 to match the cipher suites enabled in the
-Zephyr mbedTLS build; TLS~1.3 would drop the explicit nonce and save 8~B per record, a
-change worth making but small against the framing cost itself.}
+than by heartbeats, and client authentication widens that gap: the payload grew from 87
+to 265~B and the handshake carries a certificate each way. The gateway pins TLS~1.2 to the
+cipher suites in the Zephyr mbedTLS build; TLS~1.3 would drop the explicit nonce, small
+against the framing cost itself.}
 
 \begin{figure}[pos=t]
 \centering
@@ -168,7 +169,7 @@ change worth making but small against the framing cost itself.}
 \subsubsection{Edge footprint}
 \begingroup
 \color{red}
-The evaluated Zephyr/WAMR/TLS/CBOR firmware fits the STM32F746NG internal-memory budget: the flash-resident \texttt{zephyr.bin} image is 406{,}568~B ($\approx$397~KiB), corresponding to text plus initialized data, and the static RAM allocation is 270{,}238~B ($\approx$264~KiB), corresponding to data (9{,}384~B) plus BSS (260{,}854~B).\footnote{The \texttt{zephyr.elf} file is 8{,}095{,}176~B (7.72~MiB), but only because it carries ELF metadata and debug symbols for the Renode \texttt{sysbus LoadELF} workflow; it is not the image written to device flash.} The benchmark WASM module remains 33~B. The architectural point supported by these measurements is therefore that embedded endpoints run no kubelet, container runtime, or Linux userspace while retaining an embedded-class memory footprint.
+The evaluated Zephyr/WAMR/TLS/CBOR firmware fits the STM32F746NG internal-memory budget: the flash-resident \texttt{zephyr.bin} image is 411{,}272~B ($\approx$402~KiB), corresponding to text plus initialized data, and the static RAM allocation is 273{,}503~B ($\approx$267~KiB), corresponding to data (9{,}384~B) plus BSS (264{,}119~B). \revD{Mutual authentication costs 4{,}704~B of flash and 3{,}265~B of RAM -- the curve and X.509 code was already linked in for the anonymous handshake -- taking RAM to 99.3\% of the 256~KiB region.}\footnote{The \texttt{zephyr.elf} file is 8{,}095{,}176~B (7.72~MiB), but only because it carries ELF metadata and debug symbols for the Renode \texttt{sysbus LoadELF} workflow; it is not the image written to device flash.} The benchmark WASM module remains 33~B. The architectural point supported by these measurements is therefore that embedded endpoints run no kubelet, container runtime, or Linux userspace while retaining an embedded-class memory footprint.
 \endgroup
 
 
@@ -341,7 +342,7 @@ which gateway mediation overtakes per-device agents is not determined here.}
 \toprule
 \textbf{Aspect} & \textbf{Device as K8s worker} & \textbf{Gateway-mediated WASM edge} \\
 \midrule
-Edge runtime & kubelet + container runtime + OS & Zephyr + WAMR ({\color{red}397~KiB flash, 264~KiB RAM}) \\
+Edge runtime & kubelet + container runtime + OS & Zephyr + WAMR ({\color{red}402~KiB flash, 267~KiB RAM}) \\
 % Removed: Edge cluster agent RAM & 100--350~MiB per node (literature) & none on device \\
 {\color{red}Edge cluster agent footprint} & {\color{red}kubelet + container runtime + OS services required} & none on device \\
 % Removed: Steady control traffic & CRI/container probes & 1728~B/h per device \\
