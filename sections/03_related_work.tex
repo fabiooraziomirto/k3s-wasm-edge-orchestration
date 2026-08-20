@@ -9,6 +9,23 @@ Several systems extend Kubernetes semantics toward the edge. KubeEdge moves part
 
 IoT middleware and industrial edge platforms provide additional context. EdgeX Foundry, FIWARE, oneM2M, OMA Lightweight M2M, and OPC UA address aspects of device modeling, interoperability, telemetry, and industrial communication~\cite{edgex,fiware,onem2m,lwm2m,opcua}. These frameworks are broader than a single orchestration mechanism and often emphasize interoperability or application enablement rather than Kubernetes-native desired-state reconciliation. The contribution is therefore not another general IoT middleware layer, but a focused integration that links cloud-style intent, gateway-mediated secure control, and embedded WASM execution through explicit resource ownership.
 
+\revD{The closest prior art is not an orchestrator at all but the device twin, or shadow,
+pattern: a cloud-resident document holding desired and reported state for a device that is
+too constrained or too intermittently connected to be queried directly, reconciled by a
+managed service as the device reconnects. AWS IoT Greengrass~\cite{aws_greengrass} and
+Azure IoT Edge~\cite{azure_iot_edge} have offered this in production for a decade, and
+LwM2M~\cite{lwm2m} provides a standardized object model with comparable semantics. The
+evidence model used here is deliberately the same pattern, and we claim no novelty in the
+idea of separating desired from reported state. What differs is where the reconciliation
+point lives. In twin-based platforms the authoritative state sits in a proprietary managed
+service, and integration with cluster tooling happens afterwards through bridges or
+exports. Here desired and reported state are Kubernetes resources from the outset, so
+status ownership, admission control, RBAC, watches, and the controller pattern apply to
+constrained devices without a translation layer, and a placement or sustainability policy
+can be written as an ordinary controller against the same objects. That is an
+integration-level claim about where the boundary is drawn, not a new reconciliation
+mechanism.}
+
 \subsection{Constrained Execution and Secure Communication}
 Embedded and IoT operating systems provide the substrate on which constrained devices communicate and execute application logic. Zephyr, FreeRTOS, RIOT, and Contiki-NG represent different points in the design space for real-time behavior, connectivity, portability, and resource footprint~\cite{zephyr,freertos,riot,contiki}; TinyOS established the long-standing importance of event-driven and resource-aware design in sensor-network systems~\cite{tinyos}. These operating systems make embedded applications feasible, but they do not by themselves provide a cloud-side mechanism for expressing intent, binding identity, reconciling state, and verifying deployment outcomes.
 

@@ -131,11 +131,27 @@ Protocol correctness becomes platform correctness only when message outcomes are
 
 Integration testing exercised short-lived differences between gateway observations and control-plane status, confirming that liveness should not be inferred from a single incomplete observation. The resulting policy preserves the latest valid gateway association, avoids immediate disconnection when heartbeat evidence and transport visibility briefly diverge, and waits for a subsequent reconciliation cycle before treating the condition as a real state transition. Reconciliation policy is therefore part of the architecture rather than an incidental implementation detail.
 
+\revD{The policy is governed by four constants, reported here so that its behaviour can be
+reproduced and its stability checked. The firmware emits a heartbeat every 25~s. The
+gateway treats an association as stale only after 90~s without one, and evaluates that
+condition on a 30~s sweep. Device and Application controllers requeue every 30~s, which
+bounds how long a corrected status can remain unobserved. The staleness threshold is thus
+$3.6\times$ the emission period, so at least three consecutive heartbeats must be lost
+before a device leaves \texttt{Connected} for \texttt{Unreachable}, and the sweep period
+sets the $\pm30$~s granularity with which that transition is detected. Oscillation is
+avoided by construction rather than by damping: the timeout transition is one-directional,
+and only the arrival of a fresh heartbeat returns a device to \texttt{Connected}, so a
+single delayed observation cannot produce a disconnect--reconnect cycle. These values are
+deliberately conservative for an emulated single-gateway deployment; a deployment with
+tighter liveness requirements would lower the threshold at the cost of a higher false-disconnect
+rate under transient loss.}
+
 \begingroup
 \color{red}
 \begin{table*}[pos=t]
 \centering
-\caption{Additive implementation-facing conventions for the validated gateway-mediated control path.}
+%Removed (minore): \caption{Additive implementation-facing conventions for the validated gateway-mediated control path.}
+\caption{\revD{Implementation-facing conventions for the validated gateway-mediated control path.}}
 \footnotesize
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{p{0.18\linewidth} p{0.36\linewidth} p{0.36\linewidth}}

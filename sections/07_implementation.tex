@@ -37,6 +37,27 @@ The gateway runtime maintains the small amount of mutable state that cannot natu
 
 This organization gives the framework a precise failure boundary. If the firmware disconnects, the gateway loses the active transport session but the Device resource still retains the latest desired configuration and the latest valid reported association until reconciliation determines that the condition is stale. If the Kubernetes API is temporarily unavailable, the gateway can still preserve the immediate transport view, but durable convergence waits until status patches are accepted. If the gateway restarts, the cloud-side desired state survives and devices must re-establish session-bound evidence. These cases are not hidden behind a best-effort transport acknowledgment; they are reflected as missing, stale, or inconsistent evidence that controllers can interpret conservatively.
 
+\revD{The security scope of the evaluated prototype should be stated explicitly, because
+the architecture and the measured configuration do not yet coincide. The design assumes a
+mutually authenticated southbound channel, in which the gateway verifies a device
+certificate issued by the platform authority and the device verifies the gateway. The
+prototype measured here does not implement that assumption: the gateway terminates TLS 1.2
+without requesting a client certificate, and the firmware does not verify the gateway
+certificate, so the session protects confidentiality and integrity against a passive
+observer but authenticates neither endpoint against an active on-path attacker. Identity
+binding is therefore established one layer higher, and is the property the evaluation
+actually exercises: the gateway compares the public-key material carried in the enrollment
+record against the key registered in the \texttt{Device} resource and refuses the
+association when the two disagree. Three further limits follow. The expected key is
+provisioned out of band when the \texttt{Device} resource is created, so first contact is
+trust-on-first-configuration rather than attested. Heartbeats carry no nonce or counter,
+so replay is prevented by the TLS record layer within a session but not across sessions.
+The dispatched WASM module is accepted on the authority of the control plane, without an
+artifact-level integrity check on the device. Closing these gaps is the first hardening
+step for the platform rather than a research question: workload identity
+attestation~\cite{spiffe}, signed artifact metadata~\cite{tuf}, and the update-security
+architecture of RFC~9019~\cite{rfc9019} provide established building blocks.}
+
 \subsection{Embedded Execution Path}
 On the embedded side, the firmware implements only the southbound protocol roles required by the orchestration model. It establishes the protected channel, sends enrollment and heartbeat records, receives deployment commands, passes the WASM payload to WAMR, and returns a structured result. It does not embed Kubernetes client logic, service-account credentials, resource watches, or container-image management. The edge endpoint is therefore closer to a managed execution target than to a miniature cluster node. This is a deliberate implementation constraint: the more Kubernetes behavior is pushed into the firmware, the harder it becomes to keep the device portable, auditable, and suitable for constrained deployments.
 

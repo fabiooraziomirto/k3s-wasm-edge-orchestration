@@ -8,7 +8,9 @@ The platform addresses the following problem:
 Cloud orchestrators normally assume Linux-capable workers with container runtimes, cluster agents, and rich networking support. Embedded devices instead provide limited compute, memory, and network functionality, but they still need comparable guarantees for identity, observability, and life-cycle accountability. The framework therefore treats orchestration as an end-to-end translation problem between cloud intent, gateway-mediated protocol control, and edge-side WASM execution.
 
 \subsection{Design Pillars}
-The problem management is structured on three pillars, standing on the three level in which framework acts: 
+%Removed (minore): The problem management is structured on three pillars, standing on the three level in which framework acts: 
+\revD{The problem is structured around three pillars, corresponding to the three levels at which the framework acts:}
+
 \begin{itemize}
     \item At the resource-model level, Kubernetes assumes a declarative control plane with explicit status ownership, whereas embedded deployments often rely on imperative, device-local procedures that are opaque to the cloud.
     \item At the transport level, constrained devices need lightweight and secure communication paths, but the cloud side requires rich enough semantics to express enrollment, liveness, and application control.
@@ -17,7 +19,8 @@ The problem management is structured on three pillars, standing on the three lev
   
 
 \subsection{Design Requirements}
-These pillars lead to a compact set of requirements. Desired and observed state for devices, applications, and gateways must remain represented in Kubernetes resources. Enrollment must occur over a protected channel with auditable binding between transport-level identity and platform-level resource identity. The application life cycle must use a format usable across cloud, fog, and constrained edge targets, motivating WebAssembly as a common execution abstraction. Runtime evidence must confirm enrollment, heartbeat-based liveness, deployment status, and gateway association without manual inspection of device internals. For digital research infrastructures, the same evidence model should expose where workload placement, liveness, and execution outcomes can later be correlated with site-level power or carbon signals. Finally, the complete stack must deploy and test in a commodity research environment.
+These pillars lead to a compact set of requirements. Desired and observed state for devices, applications, and gateways must remain represented in Kubernetes resources. %Removed (M11): Enrollment must occur over a protected channel with auditable binding between transport-level identity and platform-level resource identity.
+\revD{Enrollment must occur over a protected channel, with an auditable binding between the identity material a device presents and the platform-level resource identity expected for it.} The application life cycle must use a format usable across cloud, fog, and constrained edge targets, motivating WebAssembly as a common execution abstraction. Runtime evidence must confirm enrollment, heartbeat-based liveness, deployment status, and gateway association without manual inspection of device internals. For digital research infrastructures, the same evidence model should expose where workload placement, liveness, and execution outcomes can later be correlated with site-level power or carbon signals. Finally, the complete stack must deploy and test in a commodity research environment.
 
 \begingroup
 \color{red}
