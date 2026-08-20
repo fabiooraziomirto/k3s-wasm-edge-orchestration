@@ -182,8 +182,9 @@ const DEVICE_KEY_LEN: usize = 128;
 /// DHCP, see `DEVICE_MAC_ADDR` in `zephyr-app/src/network_handler.c`).
 const DEVICE_MAC_ADDR: u32 = 0x2000_2100;
 /// Memory address where the device's TLS client certificate (DER) is injected,
-/// see `DEVICE_CERT_ADDR` in `zephyr-app/src/wasmbed_protocol.c`.
-const DEVICE_CERT_ADDR: u32 = 0x2000_3000;
+/// see `DEVICE_CERT_ADDR` in `zephyr-app/src/wasmbed_protocol.c`, which records
+/// why this sits at 0x2000_6000 rather than lower.
+const DEVICE_CERT_ADDR: u32 = 0x2000_6000;
 /// Memory address where the device's PKCS#8 private key (DER) is injected,
 /// see `DEVICE_PRIVKEY_ADDR` in `zephyr-app/src/wasmbed_protocol.c`.
 const DEVICE_PRIVKEY_ADDR: u32 = 0x2000_4000;

@@ -146,7 +146,7 @@ fn each_device_is_given_its_own_tls_credentials() {
     for (i, id) in ids.iter().enumerate() {
         let script = manager_build(&manager, id);
         // DEVICE_CERT_ADDR / DEVICE_PRIVKEY_ADDR in wasmbed_protocol.c
-        let cert = decode_blob(&script, 0x2000_3000);
+        let cert = decode_blob(&script, 0x2000_6000);
         let key = decode_blob(&script, 0x2000_4000);
 
         assert_eq!(cert, vec![0xC0 + i as u8; 64], "device {id} must get its own certificate");
@@ -170,7 +170,7 @@ fn each_device_is_given_its_own_tls_credentials() {
     // directory is selected by a process-wide environment variable, which
     // parallel tests would race on.
     let script = manager_build(&manager, "unprovisioned-device");
-    assert!(!script.contains("0x20003000"), "no certificate should be injected");
+    assert!(!script.contains("0x20006000"), "no certificate should be injected");
     assert!(!script.contains("0x20004000"), "no private key should be injected");
 }
 

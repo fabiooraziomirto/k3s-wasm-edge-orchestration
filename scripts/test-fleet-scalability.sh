@@ -118,7 +118,7 @@ for d in "${DEVICES[@]}"; do
       && ok "$d.resc usa TAP/MAC propri" || ko "$d.resc non usa TAP/MAC propri"
     grep -q "WriteDoubleWord 0x20002000" "$f" \
       && ok "$d.resc inietta la chiave pubblica" || ko "$d.resc non inietta la chiave pubblica"
-    grep -q "WriteDoubleWord 0x20003000" "$f" \
+    grep -q "WriteDoubleWord 0x20006000" "$f" \
       && ok "$d.resc inietta il certificato client" || ko "$d.resc non inietta il certificato client"
     grep -q "WriteDoubleWord 0x20004000" "$f" \
       && ok "$d.resc inietta la chiave privata" || ko "$d.resc non inietta la chiave privata"

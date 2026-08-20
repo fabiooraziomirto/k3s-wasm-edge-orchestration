@@ -155,7 +155,7 @@ session (the failure previously observed with 3 Renode machines).
 | Identifier | Where it comes from | Why it must be unique |
 |------------|---------------------|------------------------|
 | **Public key** (`0x20002000`) | `spec.publicKey` of the Device CRD: the SubjectPublicKeyInfo of the key pair issued by `scripts/provision-device-identity.sh`, injected into device memory by RenodeManager | The gateway resolves a TLS connection to a Device via `Device::find` (key → CRD) and indexes connections by device id (`public_key_to_device`). Identical keys ⇒ every connection overwrites the previous one ⇒ one TLS sender. |
-| **Client certificate + private key** (`0x20003000`, `0x20004000`) | Issued per device by `wasmbed-cert-tool issue-device`, read from `config/devices/<id>.{crt,key}` | The device authenticates the TLS handshake with the certificate and signs the gateway's enrollment challenge with the key. A shared key pair would let any board enroll as any other. |
+| **Client certificate + private key** (`0x20006000`, `0x20004000`) | Issued per device by `wasmbed-cert-tool issue-device`, read from `config/devices/<id>.{crt,key}` | The device authenticates the TLS handshake with the certificate and signs the gateway's enrollment challenge with the key. A shared key pair would let any board enroll as any other. |
 | **MAC address** | Derived from the device id: `02:` + `sha256(device_id)[0..5]` | Same MAC ⇒ same DHCP lease ⇒ same IP, plus L2 collisions on the shared segment. |
 | **TAP interface** | Derived from the device id: `wtap-` + `sha256(device_id)[0..4]` | Renode containers share the host network namespace (`--net=host`); a single `tap0` can only be attached by one of them. |
 

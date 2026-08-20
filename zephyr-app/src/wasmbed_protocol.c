@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <mbedtls/sha256.h>
 #include <mbedtls/pk.h>
+#include <mbedtls/x509_crt.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/ctr_drbg.h>
 
@@ -23,8 +24,15 @@ LOG_MODULE_REGISTER(wasmbed_protocol, LOG_LEVEL_INF);
 #define GATEWAY_ENDPOINT_ADDR 0x20001000
 /* Memory address where Renode writes the device public key (4-byte LE length + key bytes) */
 #define DEVICE_KEY_ADDR       0x20002000
-/* This device's TLS client certificate (DER) */
-#define DEVICE_CERT_ADDR      0x20003000
+/* This device's TLS client certificate (DER).
+ *
+ * 0x20006000 and not 0x20003000: on stm32f746g_disco the injected blobs live in
+ * DTCM (0x20000000, 64KB), whose allocated part ends at __DTCM_start =
+ * 0x20003100. A certificate placed at 0x20003000 had its first 12 bytes survive
+ * and everything after overwritten by firmware data, which mbedTLS reported only
+ * as MBEDTLS_ERR_X509_INVALID_SERIAL and Zephyr collapsed into EINVAL from
+ * connect(). Anything injected here must sit above that boundary. */
+#define DEVICE_CERT_ADDR      0x20006000
 /* This device's PKCS#8 private key (DER) */
 #define DEVICE_PRIVKEY_ADDR   0x20004000
 /* The fleet CA certificate the gateway is verified against (DER) */
@@ -386,6 +394,41 @@ static void read_device_credentials(void)
                        "fleet CA certificate");
 }
 
+/* Parse each injected credential the way Zephyr's TLS socket will, and report
+ * which one fails and why.
+ *
+ * Without this a bad credential surfaces only as EINVAL from zsock_connect,
+ * because sockets_tls.c collapses every mbedTLS parse error into that. */
+static void check_credentials(void)
+{
+    static mbedtls_x509_crt crt;
+    static mbedtls_pk_context pk;
+    int ret;
+
+    if (fleet_ca_cert_len > 0U) {
+        mbedtls_x509_crt_init(&crt);
+        ret = mbedtls_x509_crt_parse_der(&crt, fleet_ca_cert, fleet_ca_cert_len);
+        LOG_INF("Credential check: CA certificate parse -> %d (-0x%04x)", ret, (unsigned)-ret);
+        mbedtls_x509_crt_free(&crt);
+    }
+
+    if (device_client_cert_len > 0U) {
+        LOG_HEXDUMP_INF(device_client_cert, 24, "client cert head as read");
+        mbedtls_x509_crt_init(&crt);
+        ret = mbedtls_x509_crt_parse_der(&crt, device_client_cert, device_client_cert_len);
+        LOG_INF("Credential check: client certificate parse -> %d (-0x%04x)", ret, (unsigned)-ret);
+        mbedtls_x509_crt_free(&crt);
+    }
+
+    if (device_private_key_len > 0U) {
+        mbedtls_pk_init(&pk);
+        ret = mbedtls_pk_parse_key(&pk, device_private_key, device_private_key_len,
+                                   NULL, 0, NULL, NULL);
+        LOG_INF("Credential check: private key parse -> %d (-0x%04x)", ret, (unsigned)-ret);
+        mbedtls_pk_free(&pk);
+    }
+}
+
 /* Compute the transcript the gateway expects to see signed:
  * SHA-256("wasmbed-pop-v1" || nonce || spki). */
 static int pop_transcript(const uint8_t *nonce, uint32_t nonce_len, uint8_t out[32])
@@ -522,6 +565,7 @@ int wasmbed_protocol_init(void)
     /* Read the device identity before anything else can overwrite that RAM */
     read_device_public_key();
     read_device_credentials();
+    check_credentials();
 
     /* Register the credentials before connecting: the socket has to present the
      * client certificate during the handshake, and check the gateway's against
