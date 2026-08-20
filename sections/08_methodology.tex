@@ -46,7 +46,12 @@ not an availability figure for a fleet.}
 \subsection{Trial Procedure and Evidence Semantics}
 The harness starts from a known logical state, observes the device enrollment path, waits for heartbeat evidence to become visible through the gateway, creates or updates the Application intent, and then checks whether the gateway runtime view and Kubernetes status converge to the same deployment outcome.
 
-The measurement record separates four kinds of evidence. First, protocol evidence comes from enrollment, heartbeat, and deployment records exchanged over the TLS/CBOR channel. Second, gateway evidence comes from the runtime association between a device identifier and an active session. Third, Kubernetes evidence comes from Device and Application status fields after reconciliation. Fourth, timing evidence comes from the client-side harness using monotonic timestamps around the evaluated stages. A trial succeeds only when these evidence sources agree before the configured timeout. This convention reduces the risk of reporting success from a single eventually consistent field or from a transport acknowledgment that never becomes durable control-plane state.
+%Removed (ridondanza): The measurement record separates four kinds of evidence. First, protocol evidence comes from enrollment, heartbeat, and deployment records exchanged over the TLS/CBOR channel. Second, gateway evidence comes from the runtime association between a device identifier and an active session. Third, Kubernetes evidence comes from Device and Application status fields after reconciliation. Fourth, timing evidence comes from the client-side harness using monotonic timestamps around the evaluated stages. A trial succeeds only when these evidence sources agree before the configured timeout. This convention reduces the risk of reporting success from a single eventually consistent field or from a transport acknowledgment that never becomes durable control-plane state.
+\revD{The record separates protocol evidence from the TLS/CBOR channel, gateway evidence
+from the runtime session association, Kubernetes evidence from Device and Application
+status after reconciliation, and timing evidence from the harness's monotonic timestamps. A
+trial succeeds only when all four agree before the configured timeout, so success cannot be
+reported from a single eventually consistent field.}
 
 Latency measurements follow the same separation. Enrollment latency measures the interval needed to complete the identity-binding path and expose the enrolled device to the control plane. Deployment latency measures the path from declared Application intent to reported execution outcome. End-to-end latency is the sum of enrollment and deployment for the evaluated transaction. Heartbeat observability is reported separately because it measures how quickly the harness can observe a fresh heartbeat after it is available through the gateway; it is not the firmware heartbeat period and should not be interpreted as a liveness interval.
 
@@ -79,13 +84,14 @@ measured window.} %Removed (minore): Because {\color{red}every measured stage su
 \revD{Every measured stage succeeded in all trials, so the meaningful variation lies in latency and its distribution.}
 
 Table~\ref{tab:quantitative-latency} reports the latency profile. Mean end-to-end latency {\color{red}(enrollment plus deployment; heartbeat observability reported separately)} is 1286.0~ms with 95\% CI [1226.4, 1345.6]~ms. %Removed (M9): Deployment carries a heavy upper tail (CV 0.43, maximum 3000.8~ms against a median of 574.1~ms) that the mean and the p95 both understate; it reproduces across independent campaigns on this testbed and is the dominant contribution to end-to-end variability.
-\revD{Deployment carries a heavy upper tail (CV 0.43, maximum 3000.8~ms against a median of
-574.1~ms). The tail reflects how the harness observes completion rather than the
-orchestration path: it polls the Application resource on a fixed two-second cycle, so a
-trial whose evidence appears just after a poll is charged a full cycle. Seventy trials fall
-in a 487--598~ms band and twenty-eight more between 603 and 1112~ms; only two exceed that,
-the largest at 3000.8~ms, one polling cycle beyond the rest. Deployment latency is
-therefore an upper bound inclusive of observation granularity.}
+\revD{Deployment latency covers the synchronous deployment request followed by a status query,
+and the harness retries that query on a two-second cycle when the first one does not yet
+see a terminal phase. Ninety-nine trials resolve on the first query and span
+487--1126~ms with a coefficient of variation of 0.260; one does not, and pays a full
+retry interval, giving the 3000.8~ms maximum, 1.9~s clear of the next value. That single
+quantization event, rather than a heavy-tailed process, is what raises the reported
+coefficient of variation to 0.43 and separates the mean (676.5~ms) from the median
+(574.1~ms).}
 
 \begin{table}[pos=t]
 \centering
@@ -108,11 +114,11 @@ End-to-end & 1286.0 & 1168.7 & 1661.5 & 1974.3 & 270.7 & 0.234 & [1226.4, 1345.6
 \end{table}
 
 Figure~\ref{fig:latency-boxplot} compares stage latency distributions on a logarithmic scale. Heartbeat observability is two orders of magnitude faster than enrollment or deployment. %Removed (M9): Figure~\ref{fig:latency-cdf} shows that deployment contributes most of the tail mass: its p95 (1021.8~ms) and p99 (1145.2~ms) exceed enrollment's, so WASM orchestration, not TLS enrollment, dominates end-to-end variability (deployment CV\,=\,0.428 vs.\ enrollment CV\,=\,0.164).
-\revD{Figure~\ref{fig:latency-cdf} shows that deployment contributes most of the tail mass: its
-p95 (1021.8~ms) and p99 (1145.2~ms) exceed enrollment's, with a larger coefficient of
-variation (0.428 against 0.164). Given the polling granularity, this separates the stages
-by how they are observed: enrollment is timed on the protocol exchange, deployment on the
-first poll that sees converged status.}
+\revD{Figure~\ref{fig:latency-cdf} shows that deployment contributes most of the tail mass, with
+p95 1021.8~ms and p99 1145.2~ms against enrollment's. Excluding the single retried trial
+its dispersion is closer to enrollment's than the headline figures suggest (CV 0.260
+against 0.164), the residual difference reflecting that enrollment is timed on the protocol
+exchange itself whereas deployment is timed on a subsequent status query.}
 
 \begin{figure}[pos=t]
 \centering
@@ -148,7 +154,9 @@ cipher suite each record adds 5~B of header, an 8~B explicit nonce and a 16~B ta
 300~B per exchange and of order 40~KB/h per device, some $25\times$ the application-layer
 figure. Session establishment is excluded from both and is paid again on every
 reconnection, so a frequently reconnecting device is dominated by handshake cost rather
-than by heartbeats.}
+than by heartbeats. The gateway pins TLS~1.2 to match the cipher suites enabled in the
+Zephyr mbedTLS build; TLS~1.3 would drop the explicit nonce and save 8~B per record, a
+change worth making but small against the framing cost itself.}
 
 \begin{figure}[pos=t]
 \centering
@@ -205,7 +213,8 @@ memory unchanged, bounding the cost of registry state alone: those boards are
 \begingroup
 \color{blue}
 \subsubsection{Computational energy instrumentation \revC{(measured CPU-time; derived energy and carbon as illustrative proxies)}}\label{sec:energy-instrumentation}
-Beyond control-plane pod resources, we instrument a representative WASM computational workload directly. A Kubernetes pod running the fuel-metered Wasmtime runtime (\texttt{wasmbed-wasm-runtime}) repeatedly creates an isolated instance and executes a bounded arithmetic-loop WASM function (summing $0$ to $N$), cycling 30~s idle and 30~s active phases. This instruments a control-plane/fog-layer WASM execution path as a computational-energy proxy; 
+Beyond control-plane pod resources, we instrument a representative WASM computational workload directly. A Kubernetes pod running the fuel-metered Wasmtime runtime (\texttt{wasmbed-wasm-runtime}) repeatedly creates an isolated instance and executes a bounded arithmetic-loop WASM function (summing $0$ to $N$), cycling 30~s idle and 30~s active phases. %Removed (artefatto): This instruments a control-plane/fog-layer WASM execution path as a computational-energy proxy;
+\revD{This instruments a control-plane/fog-layer WASM execution path as a computational-energy proxy.}
 %it does not measure the Renode-emulated STM32F746G/Zephyr/WAMR device evaluated elsewhere in this paper, since the embedded target is not directly instrumentable for energy in the present testbed. 
 The pod runs under Guaranteed QoS (\texttt{requests}\,=\,\texttt{limits}, 2 vCPU) to remove self-induced CFS-throttling variance observed at the original 1-vCPU limit (835/27{,}021 accounting periods throttled under load, a scheduling artifact of the container's own quota, not of co-located tenants).
 
@@ -336,7 +345,7 @@ Edge runtime & kubelet + container runtime + OS & Zephyr + WAMR ({\color{red}397
 % Removed: Edge cluster agent RAM & 100--350~MiB per node (literature) & none on device \\
 {\color{red}Edge cluster agent footprint} & {\color{red}kubelet + container runtime + OS services required} & none on device \\
 % Removed: Steady control traffic & CRI/container probes & 1728~B/h per device \\
-{\color{red}Steady heartbeat traffic} & CRI/container probes & {\color{red}1728~B/h per device (application layer)} \\
+{\color{red}Steady heartbeat traffic} & CRI/container probes & {\color{red}1728~B/h per device (application layer)}\revD{, ${\approx}40$~KB/h on the wire} \\
 Fog mediation RAM & per-node agent & ${<}5$~MiB shared gateway \\
 \bottomrule
 \end{tabular}

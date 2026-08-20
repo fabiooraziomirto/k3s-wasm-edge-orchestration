@@ -11,7 +11,14 @@ Responsibilities are distributed across specialized controllers rather than conc
 \subsection{Control-Plane Components}
 The control-plane implementation is organized around a narrow API layer and a set of reconciliation workers. The API server is responsible for user-facing operations, validation of high-level requests, and creation or update of Kubernetes resources. It does not maintain authoritative device-session state. That responsibility is delegated to the gateway and reflected through CRD status fields, so that the Kubernetes API remains the persistent source of desired state and the gateway remains the source of southbound observations. This split prevents the dashboard or API server from becoming a hidden second control plane.
 
-The Device controller watches Device resources and interprets gateway-reported attachment evidence. Its primary task is not to open device connections directly, but to maintain a consistent platform view: the selected gateway, the latest known connectivity phase, heartbeat freshness, and the last valid association between device identity and gateway session. The Application controller watches Application resources and turns a desired deployment into a gateway action only when the target device and mediation path can be resolved. The Gateway controller maintains gateway metadata and makes the mapping between cloud-side resources and fog-layer endpoints explicit. Table~\ref{tab:implementation-components} summarizes these responsibilities.
+%Removed (ridondanza): The Device controller watches Device resources and interprets gateway-reported attachment evidence. Its primary task is not to open device connections directly, but to maintain a consistent platform view: the selected gateway, the latest known connectivity phase, heartbeat freshness, and the last valid association between device identity and gateway session. The Application controller watches Application resources and turns a desired deployment into a gateway action only when the target device and mediation path can be resolved. The Gateway controller maintains gateway metadata and makes the mapping between cloud-side resources and fog-layer endpoints explicit. Table~\ref{tab:implementation-components} summarizes these responsibilities.
+\revD{The Device controller interprets gateway-reported attachment evidence rather than
+opening connections itself, maintaining the selected gateway, the connectivity phase,
+heartbeat freshness and the last valid device--session association. The Application
+controller turns a desired deployment into a gateway action once target and mediation path
+resolve, and the Gateway controller keeps the mapping between cloud resources and fog
+endpoints explicit. Table~\ref{tab:implementation-components} summarizes these
+responsibilities.}
 
 \begin{table*}[pos=t]
 \centering
@@ -45,7 +52,11 @@ so the session resists a passive observer but authenticates neither endpoint aga
 active on-path attacker. Identity binding is established one layer higher, and is the
 property the evaluation exercises: the gateway compares the public-key material in the
 enrollment record against the key registered in the \texttt{Device} resource and refuses
-the association when they disagree. That key is provisioned out of band at resource
+the association when they disagree. A public key is not a secret, and nothing in the
+exchange demonstrates possession of the corresponding private key: the check establishes
+that the presented identifier is the expected one, not that the peer holds it. Adding a
+gateway nonce for the device to sign would close that gap within the existing enrollment
+exchange. That key is provisioned out of band at resource
 creation, heartbeats carry no nonce, and the dispatched module is accepted without an
 artifact-level integrity check on the device. Workload identity attestation~\cite{spiffe}
 and signed artifact metadata~\cite{tuf,rfc9019} are the established means of closing these
@@ -56,5 +67,13 @@ On the embedded side, the firmware implements only the southbound protocol roles
 
 The WASM payload used in the evaluation is intentionally minimal so that the measurement focuses on orchestration overhead rather than application computation.
 %This choice separates two questions that are often conflated in edge experiments: whether a runtime can execute a non-trivial application efficiently, and whether an orchestration path can reliably deliver, start, and observe a workload. The present implementation addresses the second question.
-Larger WASM modules, richer WASI support, and application-specific input/output channels can be added above the same deployment and evidence path without changing the control ownership model.
+%Removed (M7): Larger WASM modules, richer WASI support, and application-specific input/output channels can be added above the same deployment and evidence path without changing the control ownership model.
+\revD{Larger WASM modules, richer WASI support, and application-specific input/output
+channels sit above the same deployment and evidence path and leave the control ownership
+model unchanged. Their feasibility on this target is a separate question, and a tight one:
+against the 327{,}680~B of internal SRAM on the STM32F746NG, the 270{,}238~B static
+allocation reported in Section~\ref{sec:evaluation} leaves roughly 56~KiB for the WAMR
+heap, the stacks and the module itself. Establishing the largest module the path can carry,
+and whether the transfer needs chunking and an integrity check, requires measurement not
+attempted here.}
 \endgroup

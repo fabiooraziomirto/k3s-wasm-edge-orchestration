@@ -15,15 +15,12 @@ Enrollment establishes the transition from a protected transport session to a pl
 
 After enrollment, periodic heartbeats maintain liveness visibility. At the communication layer, they show that the protected channel and device remain responsive. At the control-plane layer, they provide evidence used to refresh reported connectivity and device phase. Missing or delayed observations are interpreted conservatively, so transient gaps do not immediately become disconnection events.
 
-WASM deployment follows the same evidence-driven pattern, but starts from declarative intent rather than from device attachment:
-\begin{enumerate}
-    \item An operator or higher-level service declares that a target device should run a specific WASM workload.
-    \item The control plane observes the desired state and identifies the mediation path through the appropriate gateway.
-    \item The gateway translates the deployment intent into compact protected messages for the device.
-    \item The device firmware uses its embedded WASM runtime to load and start the workload.
-    \item The device returns execution evidence or an error indication to the gateway.
-    \item The gateway propagates the reported outcome back into the control-plane status visible to operators.
-\end{enumerate}
+%Removed (ridondanza con Fig.~4): WASM deployment follows the same evidence-driven pattern, but starts from declarative intent rather than from device attachment: \begin{enumerate} \item An operator or higher-level service declares that a target device should run a specific WASM workload. \item The control plane observes the desired state and identifies the mediation path through the appropriate gateway. \item The gateway translates the deployment intent into compact protected messages for the device. \item The device firmware uses its embedded WASM runtime to load and start the workload. \item The device returns execution evidence or an error indication to the gateway. \item The gateway propagates the reported outcome back into the control-plane status visible to operators. \end{enumerate}
+\revD{WASM deployment follows the same evidence-driven pattern but starts from declarative
+intent: an operator declares that a target device should run a workload, the control plane
+resolves the mediation path, the gateway translates the intent into protected messages, the
+device loads the module through its embedded runtime and returns execution evidence, and the
+gateway propagates the outcome into control-plane status (Figure~\ref{fig:deployment-sequence}).}
 
 \begin{figure}
 \centering
@@ -124,7 +121,13 @@ Figures~\ref{fig:enrollment-sequence} and~\ref{fig:deployment-sequence} summariz
 \label{fig:deployment-sequence}
 \end{figure}
 
-During enrollment, the decisive event is not the opening of a protected transport session alone, but the successful association between the device-provided identity material and the \texttt{Device} resource expected by the control plane. Heartbeats then refresh the same association by producing liveness evidence that the gateway can interpret before patching Kubernetes status. Deployment follows the complementary direction: the \texttt{Application} resource records desired state, the controller resolves the mediation path, and the gateway converts intent into a southbound command. The returned \texttt{DeployResult} is treated as execution evidence, not merely as a transport acknowledgment, only after this evidence is propagated does application status converge to the reported outcome.
+%Removed (ridondanza): During enrollment, the decisive event is not the opening of a protected transport session alone, but the successful association between the device-provided identity material and the \texttt{Device} resource expected by the control plane. Heartbeats then refresh the same association by producing liveness evidence that the gateway can interpret before patching Kubernetes status. Deployment follows the complementary direction: the \texttt{Application} resource records desired state, the controller resolves the mediation path, and the gateway converts intent into a southbound command. The returned \texttt{DeployResult} is treated as execution evidence, not merely as a transport acknowledgment, only after this evidence is propagated does application status converge to the reported outcome.
+\revD{The decisive event in enrollment is not the opening of a protected session but the
+association between the device-provided identity material and the expected \texttt{Device}
+resource; heartbeats then refresh that association. Deployment runs the complementary
+direction, and the returned \texttt{DeployResult} is treated as execution evidence rather
+than as a transport acknowledgment: application status converges only once that evidence is
+propagated.}
 
 \subsection{Reconciliation Policy}
 Protocol correctness becomes platform correctness only when message outcomes are interpreted consistently by the control plane. The framework therefore gives the gateway authority over protocol-derived observations and constrains controllers to reconcile those observations without overreacting to transient visibility gaps.
