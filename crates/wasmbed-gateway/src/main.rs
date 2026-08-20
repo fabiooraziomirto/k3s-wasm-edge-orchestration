@@ -280,7 +280,8 @@ impl Callbacks {
                     Some(ClientMessage::EnrollmentRequest) => {
                         info!("Received enrollment request");
                         // Accept unconditionally here; the pairing-mode gate is applied
-                        // in the PublicKey handler when the device reveals its key.
+                        // in complete_enrollment, once the device has proved it holds
+                        // the key it claims.
                         let _ = ctx.reply(ServerMessage::EnrollmentAccepted);
                     },
                     Some(ClientMessage::PublicKey { key }) => {
