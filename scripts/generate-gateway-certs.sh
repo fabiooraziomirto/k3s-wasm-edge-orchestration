@@ -13,12 +13,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 OUT_DIR="${1:-$REPO_ROOT/config/certs}"
 shift || true
-SAN="DNS:localhost,IP:127.0.0.1"
+# Every address is listed twice, as IP and as DNS. The devices run mbedTLS,
+# whose name matching only looks at dNSName entries and ignores iPAddress ones,
+# and Zephyr sets the verified name to the empty string when none is configured
+# precisely so that verification cannot silently skip it. A device dialling an
+# IP literal therefore only accepts the certificate if that literal appears as a
+# dNSName. Browsers and OpenSSL use the IP entries.
+SAN="DNS:localhost,IP:127.0.0.1,DNS:127.0.0.1"
 # The gateway endpoint Renode writes into device memory (see
 # DEVICE_ENDPOINT_ADDR in wasmbed_protocol.c) defaults to this address.
-SAN="$SAN,IP:192.168.1.1"
+SAN="$SAN,IP:192.168.1.1,DNS:192.168.1.1"
 for extra in "$@"; do
   SAN="$SAN,$extra"
+  case "$extra" in
+    IP:*) SAN="$SAN,DNS:${extra#IP:}" ;;
+  esac
 done
 mkdir -p "$OUT_DIR"
 cd "$OUT_DIR"

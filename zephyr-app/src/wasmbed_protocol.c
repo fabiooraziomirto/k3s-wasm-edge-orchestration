@@ -442,6 +442,26 @@ static void check_credentials(void)
         mbedtls_x509_crt_free(&crt);
     }
 
+    /* Chain check: the client certificate is issued by the same CA the gateway's
+     * certificate is, so verifying one against the other exercises exactly the
+     * path the handshake uses and reports the flags the socket layer hides. */
+    if (fleet_ca_cert_len > 0U && device_client_cert_len > 0U) {
+        static mbedtls_x509_crt ca_chain;
+        static mbedtls_x509_crt leaf;
+        uint32_t flags = 0;
+
+        mbedtls_x509_crt_init(&ca_chain);
+        mbedtls_x509_crt_init(&leaf);
+        if (mbedtls_x509_crt_parse_der(&ca_chain, fleet_ca_cert, fleet_ca_cert_len) == 0 &&
+            mbedtls_x509_crt_parse_der(&leaf, device_client_cert, device_client_cert_len) == 0) {
+            ret = mbedtls_x509_crt_verify(&leaf, &ca_chain, NULL, NULL, &flags, NULL, NULL);
+            LOG_INF("Credential check: chain verify -> %d (-0x%04x), flags 0x%08x",
+                    ret, (unsigned)-ret, (unsigned)flags);
+        }
+        mbedtls_x509_crt_free(&leaf);
+        mbedtls_x509_crt_free(&ca_chain);
+    }
+
     if (device_private_key_len > 0U) {
         mbedtls_pk_init(&pk);
         ret = mbedtls_pk_parse_key(&pk, device_private_key, device_private_key_len,

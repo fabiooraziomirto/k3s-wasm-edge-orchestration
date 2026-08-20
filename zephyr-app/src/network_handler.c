@@ -385,25 +385,21 @@ int network_connect_tls(const char *host, uint16_t port)
         return -1;
     }
 
-    /* Only configure TLS_HOSTNAME for real hostnames.
-     * The gateway endpoint in Renode is an IP literal (192.168.1.1), and passing
-     * it as SNI is unnecessary. When we do set TLS_HOSTNAME, Zephyr expects the
-     * trailing NUL byte as in its own TLS clients.
+    /* Always name the peer we expect, including when the endpoint is an IP
+     * literal as it is under Renode.
      *
-     * Setting it for an IP literal is worse than unnecessary once the peer is
-     * actually verified: mbedTLS then matches the string against the
-     * certificate's dNSName entries and CN, and does not consider iPAddress
-     * SANs, so the handshake failed with MBEDTLS_ERR_X509_CERT_VERIFY_FAILED
-     * against a certificate that openssl verifies cleanly. An earlier
-     * unconditional TLS_HOSTNAME call above this block was harmless under
-     * TLS_PEER_VERIFY_NONE and is what made the failure appear only now.
+     * Leaving it unset does not mean "skip the name check": Zephyr sets the
+     * verified name to the empty string for clients that configured none
+     * (sockets_tls.c), so that verification cannot silently pass without one.
+     * Nothing matches the empty string, and the handshake fails with
+     * MBEDTLS_ERR_X509_CERT_VERIFY_FAILED against a certificate that verifies
+     * cleanly elsewhere.
      *
-     * With no hostname set, the gateway is authenticated by the fleet CA alone;
-     * its address is not checked. */
-    if (strchr(host, '.') == NULL || strspn(host, "0123456789.") != strlen(host)) {
-        if (zsock_setsockopt(socket_fd, SOL_TLS, TLS_HOSTNAME, host, strlen(host) + 1) < 0) {
-            LOG_WRN("Failed to set TLS_HOSTNAME (SNI): %d", errno);
-        }
+     * The gateway certificate carries each address as a dNSName as well as an
+     * iPAddress, because mbedTLS only matches dNSName entries. Zephyr expects
+     * the trailing NUL, as in its own TLS clients. */
+    if (zsock_setsockopt(socket_fd, SOL_TLS, TLS_HOSTNAME, host, strlen(host) + 1) < 0) {
+        LOG_WRN("Failed to set TLS_HOSTNAME: %d", errno);
     }
 
     /* Connect to server (TLS handshake happens during connect) */
