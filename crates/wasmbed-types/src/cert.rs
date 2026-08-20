@@ -106,3 +106,29 @@ impl<'de> serde::Deserialize<'de> for PublicKey<'_> {
         Ok(decoded.into())
     }
 }
+
+#[cfg(all(test, feature = "base64", feature = "alloc"))]
+mod tests {
+    use super::*;
+    use alloc::string::ToString;
+
+    /// Display is a debugging rendering, not the wire form. Comparing it
+    /// against `Device.spec.publicKey` silently never matches -- which is what
+    /// the gateway did while the code path was unreachable.
+    #[test]
+    fn display_wraps_the_base64_and_is_not_the_stored_form() {
+        let key = PublicKey::from([1u8, 2, 3, 4].as_slice());
+
+        assert_eq!(key.to_base64(), "AQIDBA");
+        assert_eq!(key.to_string(), "PublicKey(AQIDBA)");
+        assert_ne!(key.to_string(), key.to_base64());
+    }
+
+    #[test]
+    fn base64_round_trips() {
+        let raw = [0xDEu8, 0xAD, 0xBE, 0xEF, 0x00, 0x7F];
+        let key = PublicKey::from(raw.as_slice());
+
+        assert_eq!(PublicKey::from_base64(key.to_base64()).unwrap(), raw);
+    }
+}

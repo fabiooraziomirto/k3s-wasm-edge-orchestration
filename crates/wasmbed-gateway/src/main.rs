@@ -87,7 +87,13 @@ impl Callbacks {
                 match Device::find(api.clone(), public_key_obj.clone()).await {
                     Ok(Some(device)) => {
                         // Verify that the public key from the certificate matches the stored device public key
-                        if device.spec.public_key == public_key_obj.to_string() {
+                        // to_base64(), not to_string(): PublicKey's Display wraps the
+                        // key as "PublicKey(<base64>)", so comparing against it never
+                        // matched what Device.spec.publicKey holds. The mismatch was
+                        // invisible while the channel was anonymous and this branch
+                        // unreachable; with client authentication on it rejected every
+                        // correctly provisioned device.
+                        if device.spec.public_key == public_key_obj.to_base64() {
                             // Device exists and public key matches, mark as connected
                             info!("TLS client certificate verification successful: public key matches stored device {}", device.name_any());
                             
@@ -131,7 +137,7 @@ impl Callbacks {
                             AuthorizationResult::Authorized
                         } else {
                             error!("TLS client authentication failed: public key mismatch for device {}", device.name_any());
-                            error!("Expected: {}, Got: {}", device.spec.public_key, public_key_obj.to_string());
+                            error!("Expected: {}, Got: {}", device.spec.public_key, public_key_obj.to_base64());
                             AuthorizationResult::Unauthorized
                         }
                     },
