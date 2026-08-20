@@ -20,6 +20,7 @@ const CLIENT_APPLICATION_STATUS: u32 = 4;
 const CLIENT_APPLICATION_DEPLOY_ACK: u32 = 5;
 const CLIENT_APPLICATION_STOP_ACK: u32 = 6;
 const CLIENT_DEVICE_INFO: u32 = 7;
+const CLIENT_CHALLENGE_RESPONSE: u32 = 8;
 
 // Server message tags
 const SERVER_HEARTBEAT_ACK: u32 = 0;
@@ -31,6 +32,7 @@ const SERVER_DEPLOY_APPLICATION: u32 = 5;
 const SERVER_STOP_APPLICATION: u32 = 6;
 const SERVER_REQUEST_DEVICE_INFO: u32 = 7;
 const SERVER_REQUEST_APPLICATION_STATUS: u32 = 8;
+const SERVER_CHALLENGE: u32 = 9;
 
 #[derive(Debug, Display, Error)]
 enum MessageDecodeError {
@@ -71,6 +73,9 @@ impl Encode<()> for ClientMessage {
             },
             ClientMessage::EnrollmentAcknowledgment => {
                 e.array(1)?.u32(CLIENT_ENROLLMENT_ACKNOWLEDGMENT)?;
+            },
+            ClientMessage::ChallengeResponse { signature } => {
+                e.array(2)?.u32(CLIENT_CHALLENGE_RESPONSE)?.bytes(signature)?;
             },
             ClientMessage::ApplicationStatus { app_id, status, error, metrics } => {
                 e.array(5)?.u32(CLIENT_APPLICATION_STATUS)?.str(app_id)?.u32(*status as u32)?;
@@ -131,6 +136,10 @@ impl<'b> Decode<'b, ()> for ClientMessage {
                 Ok(ClientMessage::PublicKey { key })
             },
             (CLIENT_ENROLLMENT_ACKNOWLEDGMENT, 1) => Ok(ClientMessage::EnrollmentAcknowledgment),
+            (CLIENT_CHALLENGE_RESPONSE, 2) => {
+                let signature = d.bytes()?.to_vec();
+                Ok(ClientMessage::ChallengeResponse { signature })
+            },
             (CLIENT_APPLICATION_STATUS, 5) => {
                 let app_id = d.str()?.to_string();
                 let status_val = d.u32()?;
@@ -204,7 +213,7 @@ impl<'b> Decode<'b, ()> for ClientMessage {
                     },
                 ))
             },
-            (CLIENT_PUBLIC_KEY, _) => {
+            (CLIENT_PUBLIC_KEY, _) | (CLIENT_CHALLENGE_RESPONSE, _) => {
                 Err(DecodeError::custom(
                     MessageDecodeError::UnexpectedArrayLength {
                         expected: 2,
@@ -265,8 +274,12 @@ impl Encode<()> for ServerMessage {
             ServerMessage::EnrollmentCompleted => {
                 e.array(1)?.u32(SERVER_ENROLLMENT_COMPLETED)?;
             },
-            ServerMessage::DeployApplication { app_id, name, wasm_bytes, config } => {
-                e.array(5)?.u32(SERVER_DEPLOY_APPLICATION)?.str(app_id)?.str(name)?.bytes(wasm_bytes)?;
+            ServerMessage::Challenge { nonce } => {
+                e.array(2)?.u32(SERVER_CHALLENGE)?.bytes(nonce)?;
+            },
+            ServerMessage::DeployApplication { app_id, name, module_hash, wasm_bytes, config } => {
+                e.array(6)?.u32(SERVER_DEPLOY_APPLICATION)?.str(app_id)?.str(name)?
+                    .bytes(module_hash)?.bytes(wasm_bytes)?;
                 if let Some(cfg) = config {
                     e.u64(cfg.memory_limit)?.u64(cfg.cpu_time_limit)?;
                     e.map(cfg.env_vars.len() as u64)?;
@@ -331,9 +344,14 @@ impl<'b> Decode<'b, ()> for ServerMessage {
                 Ok(ServerMessage::DeviceUuid { uuid })
             },
             (SERVER_ENROLLMENT_COMPLETED, 1) => Ok(ServerMessage::EnrollmentCompleted),
-            (SERVER_DEPLOY_APPLICATION, 5) => {
+            (SERVER_CHALLENGE, 2) => {
+                let nonce = d.bytes()?.to_vec();
+                Ok(ServerMessage::Challenge { nonce })
+            },
+            (SERVER_DEPLOY_APPLICATION, 6) => {
                 let app_id = d.str()?.to_string();
                 let name = d.str()?.to_string();
+                let module_hash = d.bytes()?.to_vec();
                 let wasm_bytes = d.bytes()?.to_vec();
                 let config = if d.datatype()? == minicbor::data::Type::Null {
                     d.skip()?;
@@ -359,7 +377,7 @@ impl<'b> Decode<'b, ()> for ServerMessage {
                     }
                     Some(ApplicationConfig { memory_limit, cpu_time_limit, env_vars, args })
                 };
-                Ok(ServerMessage::DeployApplication { app_id, name, wasm_bytes, config })
+                Ok(ServerMessage::DeployApplication { app_id, name, module_hash, wasm_bytes, config })
             },
             (SERVER_STOP_APPLICATION, 2) => {
                 let app_id = d.str()?.to_string();
@@ -383,7 +401,7 @@ impl<'b> Decode<'b, ()> for ServerMessage {
                     },
                 ))
             },
-            (SERVER_ENROLLMENT_REJECTED, _) | (SERVER_DEVICE_UUID, _) => {
+            (SERVER_ENROLLMENT_REJECTED, _) | (SERVER_DEVICE_UUID, _) | (SERVER_CHALLENGE, _) => {
                 Err(DecodeError::custom(
                     MessageDecodeError::UnexpectedArrayLength {
                         expected: 2,
@@ -394,7 +412,7 @@ impl<'b> Decode<'b, ()> for ServerMessage {
             (SERVER_DEPLOY_APPLICATION, _) => {
                 Err(DecodeError::custom(
                     MessageDecodeError::UnexpectedArrayLength {
-                        expected: 5,
+                        expected: 6,
                         actual: array_len,
                     },
                 ))
@@ -443,5 +461,52 @@ mod test {
     #[test]
     fn test_server_message_heartbeat_ack() {
         assert_encode_decode(&ServerMessage::HeartbeatAck);
+    }
+
+    #[test]
+    fn test_server_message_challenge() {
+        assert_encode_decode(&ServerMessage::Challenge {
+            nonce: alloc::vec![0x5a; 32],
+        });
+    }
+
+    #[test]
+    fn test_client_message_challenge_response() {
+        assert_encode_decode(&ClientMessage::ChallengeResponse {
+            signature: alloc::vec![0x30, 0x44, 0x02, 0x20, 0x01],
+        });
+    }
+
+    #[test]
+    fn test_server_message_deploy_application_carries_module_hash() {
+        assert_encode_decode(&ServerMessage::DeployApplication {
+            app_id: "app-1".to_string(),
+            name: "demo".to_string(),
+            module_hash: alloc::vec![0xab; 32],
+            wasm_bytes: alloc::vec![0x00, 0x61, 0x73, 0x6d],
+            config: None,
+        });
+    }
+
+    /// The firmware parses DeployApplication positionally and stops right after
+    /// the module, so the digest has to sit between `name` and `wasm_bytes`.
+    /// Freeze that layout: array(6), tag 5, app_id, name, hash, module.
+    #[test]
+    fn test_deploy_application_wire_layout() {
+        let encoded = minicbor::to_vec(&ServerMessage::DeployApplication {
+            app_id: "a".to_string(),
+            name: "b".to_string(),
+            module_hash: alloc::vec![0xcd; 32],
+            wasm_bytes: alloc::vec![0x11, 0x22],
+            config: None,
+        })
+        .unwrap();
+
+        assert_eq!(encoded[0], 0x86, "array(6)");
+        assert_eq!(encoded[1], 0x05, "SERVER_DEPLOY_APPLICATION");
+        assert_eq!(&encoded[2..4], &[0x61, b'a'], "app_id");
+        assert_eq!(&encoded[4..6], &[0x61, b'b'], "name");
+        assert_eq!(&encoded[6..8], &[0x58, 0x20], "32-byte hash header");
+        assert_eq!(&encoded[40..43], &[0x42, 0x11, 0x22], "wasm_bytes");
     }
 }

@@ -369,6 +369,12 @@ impl Callbacks {
                             }
                         }
                     },
+                    Some(ClientMessage::ChallengeResponse { .. }) => {
+                        // No challenge is outstanding for this connection: the
+                        // proof-of-possession exchange has not been wired up yet,
+                        // so a response can only be unsolicited.
+                        warn!("Received ChallengeResponse with no challenge outstanding on connection {}", ctx.connection_id);
+                    },
                     Some(ClientMessage::EnrollmentAcknowledgment) => {
                         info!("Received enrollment acknowledgment");
                         

@@ -107,6 +107,17 @@ pub enum ClientMessage {
     
     /// Acknowledgment of enrollment completion
     EnrollmentAcknowledgment,
+
+    /// Proof of possession: signature over the gateway's challenge nonce.
+    ///
+    /// The device signs SHA-256("wasmbed-pop-v1" || nonce || spki) with the
+    /// private key matching the public key it announced in `PublicKey`, so that
+    /// announcing a public key (which is not a secret) is not by itself enough
+    /// to claim an identity.
+    ChallengeResponse {
+        /// ECDSA P-256 signature in ASN.1 DER form
+        signature: alloc::vec::Vec<u8>,
+    },
     
     /// Application deployment status update
     ApplicationStatus {
@@ -176,6 +187,12 @@ pub enum ServerMessage {
     
     /// Enrollment completed successfully
     EnrollmentCompleted,
+
+    /// Challenge nonce the device must sign to prove possession of its key
+    Challenge {
+        /// Freshly generated, single-use nonce
+        nonce: alloc::vec::Vec<u8>,
+    },
     
     /// Deploy application to device
     DeployApplication {
@@ -183,6 +200,10 @@ pub enum ServerMessage {
         app_id: alloc::string::String,
         /// Application name
         name: alloc::string::String,
+        /// SHA-256 of `wasm_bytes`, checked on the device before instantiation.
+        /// Encoded before the module so the firmware knows the expected digest
+        /// while it is still reading the payload.
+        module_hash: alloc::vec::Vec<u8>,
         /// WASM bytecode
         wasm_bytes: alloc::vec::Vec<u8>,
         /// Application configuration

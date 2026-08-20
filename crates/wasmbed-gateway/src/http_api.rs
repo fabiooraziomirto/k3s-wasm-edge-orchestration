@@ -488,9 +488,17 @@ impl HttpApiServer {
 
         if let Some(_connection) = connections.get(device_id) {
             // Create deployment message
+            // Integrity digest checked by the device before it hands the module
+            // to WAMR, so a module altered in transit is refused on the board
+            // rather than instantiated.
+            let module_hash = {
+                use sha2::{Digest, Sha256};
+                Sha256::digest(wasm_bytes).to_vec()
+            };
             let deployment_message = ServerMessage::DeployApplication {
                 app_id: app_id.to_string(),
                 name: app_id.to_string(),
+                module_hash,
                 wasm_bytes: wasm_bytes.to_vec(),
                 config,
             };

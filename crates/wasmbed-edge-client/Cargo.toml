@@ -20,6 +20,9 @@ workspace = true
 [dependencies]
 wasmbed-protocol = { path = "../wasmbed-protocol" }
 
+# Module integrity digest (DeployApplication.module_hash)
+sha2 = "0.10"
+
 # Async runtime
 tokio = { version = "1", features = ["full"] }
 

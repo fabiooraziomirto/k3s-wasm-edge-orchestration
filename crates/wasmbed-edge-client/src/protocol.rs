@@ -235,13 +235,34 @@ where
                 tracing::debug!("Heartbeat acknowledged");
             }
 
-            ServerMessage::DeployApplication { app_id, name, wasm_bytes, config } => {
+            // A challenge belongs to the enrollment handshake; reaching the
+            // steady-state loop means the gateway re-challenged us and this
+            // client cannot answer without re-enrolling.
+            ServerMessage::Challenge { .. } => {
+                tracing::warn!("Unexpected Challenge outside enrollment; ignoring");
+            }
+
+            ServerMessage::DeployApplication { app_id, name, module_hash, wasm_bytes, config } => {
                 tracing::info!("Deploying application '{}' ({})", name, app_id);
-                let (success, error) = match runner.deploy(app_id.clone(), wasm_bytes, config) {
-                    Ok(()) => (true, None),
-                    Err(e) => {
-                        tracing::error!("Deploy failed for '{}': {}", app_id, e);
-                        (false, Some(e.to_string()))
+                // Refuse a module whose bytes do not match the digest the
+                // gateway announced, before it reaches the runtime.
+                let actual_hash = {
+                    use sha2::{Digest, Sha256};
+                    Sha256::digest(&wasm_bytes).to_vec()
+                };
+                let (success, error) = if actual_hash != module_hash {
+                    tracing::error!(
+                        "Module hash mismatch for '{}': expected {} bytes digest {:02x?}, got {:02x?}",
+                        app_id, module_hash.len(), module_hash, actual_hash
+                    );
+                    (false, Some("module hash mismatch".to_string()))
+                } else {
+                    match runner.deploy(app_id.clone(), wasm_bytes, config) {
+                        Ok(()) => (true, None),
+                        Err(e) => {
+                            tracing::error!("Deploy failed for '{}': {}", app_id, e);
+                            (false, Some(e.to_string()))
+                        }
                     }
                 };
                 let ack = ClientMessage::ApplicationDeployAck { app_id, success, error };
