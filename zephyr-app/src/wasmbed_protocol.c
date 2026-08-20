@@ -12,6 +12,10 @@
 #include <string.h>
 #include <zephyr/kernel.h>
 #include <stdlib.h>
+#include <mbedtls/sha256.h>
+#include <mbedtls/pk.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/ctr_drbg.h>
 
 LOG_MODULE_REGISTER(wasmbed_protocol, LOG_LEVEL_INF);
 
@@ -19,6 +23,17 @@ LOG_MODULE_REGISTER(wasmbed_protocol, LOG_LEVEL_INF);
 #define GATEWAY_ENDPOINT_ADDR 0x20001000
 /* Memory address where Renode writes the device public key (4-byte LE length + key bytes) */
 #define DEVICE_KEY_ADDR       0x20002000
+/* This device's TLS client certificate (DER) */
+#define DEVICE_CERT_ADDR      0x20003000
+/* This device's PKCS#8 private key (DER) */
+#define DEVICE_PRIVKEY_ADDR   0x20004000
+/* The fleet CA certificate the gateway is verified against (DER) */
+#define DEVICE_CA_ADDR        0x20005000
+
+/* Domain separation tag for the proof-of-possession transcript; must match
+ * POP_CONTEXT in crates/wasmbed-gateway/src/main.rs. */
+#define POP_CONTEXT           "wasmbed-pop-v1"
+#define POP_CONTEXT_LEN       (sizeof(POP_CONTEXT) - 1)
 
 /* Heartbeat interval in milliseconds (keep below Gateway timeout, e.g. 90s) */
 #define HEARTBEAT_INTERVAL_MS 25000U
@@ -30,10 +45,22 @@ static char gateway_endpoint[64] = {0};
  * starts running, so by then it holds garbage and enrollment silently fell back
  * to the shared static test key -- which made every emulated device present the
  * same identity to the gateway. */
-static uint8_t device_public_key[32] = {0};
+/* A P-256 SubjectPublicKeyInfo is 91 bytes; 128 leaves room to spare. */
+static uint8_t device_public_key[128] = {0};
 static uint32_t device_public_key_len = 0U;
+/* TLS client certificate, PKCS#8 private key and fleet CA, all DER, all read
+ * out of injected memory during init for the same reason as the public key. */
+static uint8_t device_client_cert[1024] = {0};
+static uint32_t device_client_cert_len = 0U;
+static uint8_t device_private_key[256] = {0};
+static uint32_t device_private_key_len = 0U;
+static uint8_t fleet_ca_cert[1536] = {0};
+static uint32_t fleet_ca_cert_len = 0U;
 
 static void read_device_public_key(void);
+static void read_device_credentials(void);
+static int sign_challenge(const uint8_t *nonce, uint32_t nonce_len,
+                          uint8_t *sig, size_t sig_size, size_t *sig_len);
 static bool gateway_connected = false;
 static uint32_t last_heartbeat_uptime_ms = 0U;
 
@@ -120,6 +147,8 @@ static int recv_frame(uint8_t *buf, uint32_t buf_len, uint32_t *total_len,
  *   C→S  EnrollmentRequest  (0x81 0x01)
  *   S→C  EnrollmentAccepted (0x81 0x01)
  *   C→S  PublicKey { key }  (0x82 0x02 0x58 <len> <key bytes>)
+ *   S→C  Challenge { nonce } (0x82 0x09 0x58 <len> <nonce>)
+ *   C→S  ChallengeResponse   (0x82 0x08 0x58 <len> <DER signature>)
  *   S→C  DeviceUuid         (0x82 0x03 0x50 <16 bytes>)
  *   C→S  EnrollmentAcknowledgment (0x81 0x03)
  *   S→C  EnrollmentCompleted (0x81 0x04)
@@ -161,11 +190,17 @@ static int do_enrollment(void)
     uint32_t key_len = device_public_key_len;
 
     /* Step 4: Build and send PublicKey message.
-     * CBOR: array(2) uint(2) bytes(32) = 82 02 58 20 <32 bytes> = 36 CBOR bytes
-     * Wire: 00 00 00 24  82 02 58 20 <32 bytes> = 40 bytes total
+     * CBOR: array(2) uint(2) bytes(n) = 82 02 58 <n> <key>, where the key is a
+     * SubjectPublicKeyInfo (91 bytes for P-256), so the frame is 4 + 4 + n.
      */
-    uint8_t pub_key_pkt[8 + 32];  /* header(4) + cbor-prefix(4) + key(32) */
+    if (key_len == 0U || key_len > 255U) {
+        LOG_ERR("No usable device public key (%u bytes); cannot enroll", key_len);
+        return -1;
+    }
+
+    static uint8_t pub_key_pkt[8 + sizeof(device_public_key)];
     uint32_t cbor_len = 4 + key_len; /* 82 02 58 <klen> + key bytes */
+    uint32_t pkt_len = 4 + cbor_len;
     pub_key_pkt[0] = 0x00;
     pub_key_pkt[1] = 0x00;
     pub_key_pkt[2] = (uint8_t)((cbor_len >> 8) & 0xFF);
@@ -176,27 +211,84 @@ static int do_enrollment(void)
     pub_key_pkt[7] = (uint8_t)key_len;
     memcpy(&pub_key_pkt[8], pub_key, key_len);
 
-    ret = network_send(pub_key_pkt, sizeof(pub_key_pkt));
+    ret = network_send(pub_key_pkt, pkt_len);
     if (ret < 0) {
         LOG_ERR("Failed to send PublicKey");
         return -1;
     }
     LOG_INF("Sent PublicKey (%u bytes)", key_len);
 
-    /* Step 5: Receive DeviceUuid (wire: 00 00 00 13  82 03 50 <16 bytes>) */
+    /* Step 5: The gateway answers with a challenge we must sign before it will
+     * accept the key we just announced. A gateway that predates the challenge
+     * exchange replies with DeviceUuid straight away. */
     rx_len = 0;
     ret = recv_frame(rx_buf, sizeof(rx_buf), &rx_len, 5000);
     if (ret < 0 || rx_len < 6) {
-        LOG_ERR("No DeviceUuid response: ret=%d len=%u", ret, rx_len);
+        LOG_ERR("No response to PublicKey: ret=%d len=%u", ret, rx_len);
         return -1;
     }
+
+    if (rx_buf[4] == 0x82 && rx_buf[5] == 0x09) {
+        /* Challenge: 82 09 58 <nonce_len> <nonce> */
+        if (rx_len < 8 || rx_buf[6] != 0x58) {
+            LOG_ERR("Malformed Challenge (len=%u)", rx_len);
+            return -1;
+        }
+        uint32_t nonce_len = rx_buf[7];
+        if (nonce_len == 0U || rx_len < 8 + nonce_len) {
+            LOG_ERR("Truncated Challenge: nonce_len=%u len=%u", nonce_len, rx_len);
+            return -1;
+        }
+        LOG_INF("Received %u-byte challenge from gateway", nonce_len);
+
+        uint8_t sig[80];  /* DER ECDSA P-256 signature is at most 72 bytes */
+        size_t sig_len = 0;
+        if (sign_challenge(&rx_buf[8], nonce_len, sig, sizeof(sig), &sig_len) != 0) {
+            LOG_ERR("Could not prove possession of the device key");
+            return -1;
+        }
+        if (sig_len > 255U) {
+            LOG_ERR("Signature too long to encode: %u", (unsigned)sig_len);
+            return -1;
+        }
+
+        uint8_t resp_pkt[8 + sizeof(sig)];
+        uint32_t resp_cbor_len = 4 + (uint32_t)sig_len;
+        resp_pkt[0] = 0x00;
+        resp_pkt[1] = 0x00;
+        resp_pkt[2] = (uint8_t)((resp_cbor_len >> 8) & 0xFF);
+        resp_pkt[3] = (uint8_t)(resp_cbor_len & 0xFF);
+        resp_pkt[4] = 0x82;  /* array(2) */
+        resp_pkt[5] = 0x08;  /* uint(8) = ClientMessage::ChallengeResponse tag */
+        resp_pkt[6] = 0x58;  /* bytes with following 1-byte length */
+        resp_pkt[7] = (uint8_t)sig_len;
+        memcpy(&resp_pkt[8], sig, sig_len);
+
+        ret = network_send(resp_pkt, 4 + resp_cbor_len);
+        if (ret < 0) {
+            LOG_ERR("Failed to send ChallengeResponse");
+            return -1;
+        }
+        LOG_INF("Sent ChallengeResponse (%u byte signature)", (unsigned)sig_len);
+
+        rx_len = 0;
+        ret = recv_frame(rx_buf, sizeof(rx_buf), &rx_len, 5000);
+        if (ret < 0 || rx_len < 6) {
+            LOG_ERR("No DeviceUuid after the challenge: ret=%d len=%u", ret, rx_len);
+            return -1;
+        }
+    } else {
+        LOG_WRN("Gateway issued no challenge; this device's identity is unproven");
+    }
+
+    /* Step 6: DeviceUuid (wire: 00 00 00 13  82 03 50 <16 bytes>) */
     if (rx_buf[4] != 0x82 || rx_buf[5] != 0x03) {
-        LOG_ERR("Unexpected PublicKey response: 0x%02x 0x%02x", rx_buf[4], rx_buf[5]);
+        LOG_ERR("Enrollment rejected: 0x%02x 0x%02x", rx_buf[4], rx_buf[5]);
         return -1;
     }
     LOG_INF("Received DeviceUuid from gateway");
 
-    /* Step 6: Send EnrollmentAcknowledgment */
+    /* Step 7: Send EnrollmentAcknowledgment */
     ret = network_send(enrollment_ack_pkt, sizeof(enrollment_ack_pkt));
     if (ret < 0) {
         LOG_ERR("Failed to send EnrollmentAcknowledgment");
@@ -204,7 +296,7 @@ static int do_enrollment(void)
     }
     LOG_INF("Sent EnrollmentAcknowledgment");
 
-    /* Step 7: Receive EnrollmentCompleted (wire: 00 00 00 02  81 04) — optional */
+    /* Step 8: Receive EnrollmentCompleted (wire: 00 00 00 02  81 04) — optional */
     rx_len = 0;
     recv_frame(rx_buf, sizeof(rx_buf), &rx_len, 3000);
     if (rx_len >= 6 && rx_buf[4] == 0x81 && rx_buf[5] == 0x04) {
@@ -237,27 +329,139 @@ static int read_gateway_endpoint(void)
     return 0;
 }
 
-/* Read the device public key written by Renode at DEVICE_KEY_ADDR
- * (4-byte LE length, then the key bytes). Must run during init, while that
- * memory still holds what Renode wrote. Falls back to a static test key. */
+/* Copy a length-prefixed blob injected by Renode (4-byte LE length, then the
+ * bytes) into a static buffer. Must run during init, while that memory still
+ * holds what Renode wrote: the firmware reuses that RAM once it is running.
+ * Returns 0 when a blob was read, -1 when there is none. */
+static int read_injected_blob(uint32_t addr, uint8_t *out, uint32_t out_size,
+                              uint32_t *out_len, const char *what)
+{
+    volatile uint32_t *len_ptr = (volatile uint32_t *)addr;
+    uint32_t len = *len_ptr;
+
+    if (len == 0 || len > out_size) {
+        LOG_WRN("No %s injected at 0x%08x (len=%u)", what, addr, len);
+        *out_len = 0U;
+        return -1;
+    }
+
+    volatile uint8_t *data_ptr = (volatile uint8_t *)(addr + 4);
+    for (uint32_t i = 0; i < len; i++) {
+        out[i] = data_ptr[i];
+    }
+    *out_len = len;
+    LOG_INF("Read %s from memory (%u bytes)", what, len);
+    return 0;
+}
+
+/* Read the device public key written by Renode at DEVICE_KEY_ADDR.
+ *
+ * There is deliberately no fallback key. The previous static 0xAB key gave
+ * every board in the fleet the same identity, and no private key backs it, so
+ * a device using it could never answer the gateway's challenge anyway. */
 static void read_device_public_key(void)
 {
-    volatile uint32_t *klen_ptr = (volatile uint32_t *)DEVICE_KEY_ADDR;
-    uint32_t key_len = *klen_ptr;
+    if (read_injected_blob(DEVICE_KEY_ADDR, device_public_key,
+                           sizeof(device_public_key), &device_public_key_len,
+                           "device public key") != 0) {
+        LOG_ERR("This device has no identity and will not be able to enroll");
+    }
+}
 
-    if (key_len == 0 || key_len > sizeof(device_public_key)) {
-        LOG_WRN("No device key in memory (len=%u), using static test key", key_len);
-        memset(device_public_key, 0xAB, sizeof(device_public_key));
-        device_public_key_len = sizeof(device_public_key);
-        return;
+/* Read the TLS credentials injected for this device. */
+static void read_device_credentials(void)
+{
+    read_injected_blob(DEVICE_CERT_ADDR, device_client_cert,
+                       sizeof(device_client_cert), &device_client_cert_len,
+                       "client certificate");
+    read_injected_blob(DEVICE_PRIVKEY_ADDR, device_private_key,
+                       sizeof(device_private_key), &device_private_key_len,
+                       "private key");
+    read_injected_blob(DEVICE_CA_ADDR, fleet_ca_cert,
+                       sizeof(fleet_ca_cert), &fleet_ca_cert_len,
+                       "fleet CA certificate");
+}
+
+/* Compute the transcript the gateway expects to see signed:
+ * SHA-256("wasmbed-pop-v1" || nonce || spki). */
+static int pop_transcript(const uint8_t *nonce, uint32_t nonce_len, uint8_t out[32])
+{
+    mbedtls_sha256_context ctx;
+    int ret;
+
+    mbedtls_sha256_init(&ctx);
+    ret = mbedtls_sha256_starts(&ctx, 0);
+    if (ret == 0) {
+        ret = mbedtls_sha256_update(&ctx, (const unsigned char *)POP_CONTEXT, POP_CONTEXT_LEN);
+    }
+    if (ret == 0) {
+        ret = mbedtls_sha256_update(&ctx, nonce, nonce_len);
+    }
+    if (ret == 0) {
+        ret = mbedtls_sha256_update(&ctx, device_public_key, device_public_key_len);
+    }
+    if (ret == 0) {
+        ret = mbedtls_sha256_finish(&ctx, out);
+    }
+    mbedtls_sha256_free(&ctx);
+    return ret;
+}
+
+/* Sign the gateway's challenge with the injected private key.
+ * Writes an ASN.1 DER ECDSA signature into sig; returns 0 on success. */
+static int sign_challenge(const uint8_t *nonce, uint32_t nonce_len,
+                          uint8_t *sig, size_t sig_size, size_t *sig_len)
+{
+    /* Static rather than automatic: the entropy and DRBG contexts are over a
+     * kilobyte together, and this runs on the main thread during init, whose
+     * stack is already sized for WAMR instantiation. */
+    static mbedtls_pk_context pk;
+    static mbedtls_entropy_context entropy;
+    static mbedtls_ctr_drbg_context ctr_drbg;
+    uint8_t hash[32];
+    int ret;
+
+    if (device_private_key_len == 0U) {
+        LOG_ERR("No private key injected: cannot answer the challenge");
+        return -1;
     }
 
-    volatile uint8_t *kdata_ptr = (volatile uint8_t *)(DEVICE_KEY_ADDR + 4);
-    for (uint32_t i = 0; i < key_len; i++) {
-        device_public_key[i] = kdata_ptr[i];
+    mbedtls_pk_init(&pk);
+    mbedtls_entropy_init(&entropy);
+    mbedtls_ctr_drbg_init(&ctr_drbg);
+
+    ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy,
+                                (const unsigned char *)POP_CONTEXT, POP_CONTEXT_LEN);
+    if (ret != 0) {
+        LOG_ERR("ctr_drbg seed failed: -0x%04x", (unsigned)-ret);
+        goto out;
     }
-    device_public_key_len = key_len;
-    LOG_INF("Read device public key from memory (%u bytes)", key_len);
+
+    ret = pop_transcript(nonce, nonce_len, hash);
+    if (ret != 0) {
+        LOG_ERR("Failed to compute the challenge transcript: -0x%04x", (unsigned)-ret);
+        goto out;
+    }
+
+    ret = mbedtls_pk_parse_key(&pk, device_private_key, device_private_key_len,
+                               NULL, 0, mbedtls_ctr_drbg_random, &ctr_drbg);
+    if (ret != 0) {
+        LOG_ERR("Failed to parse the private key: -0x%04x", (unsigned)-ret);
+        goto out;
+    }
+
+    ret = mbedtls_pk_sign(&pk, MBEDTLS_MD_SHA256, hash, sizeof(hash),
+                          sig, sig_size, sig_len,
+                          mbedtls_ctr_drbg_random, &ctr_drbg);
+    if (ret != 0) {
+        LOG_ERR("Failed to sign the challenge: -0x%04x", (unsigned)-ret);
+    }
+
+out:
+    mbedtls_pk_free(&pk);
+    mbedtls_ctr_drbg_free(&ctr_drbg);
+    mbedtls_entropy_free(&entropy);
+    return ret == 0 ? 0 : -1;
 }
 
 /* Parse endpoint string (format: "host:port") */
@@ -313,6 +517,16 @@ int wasmbed_protocol_init(void)
     
     /* Read the device identity before anything else can overwrite that RAM */
     read_device_public_key();
+    read_device_credentials();
+
+    /* Register the credentials before connecting: the socket has to present the
+     * client certificate during the handshake, and check the gateway's against
+     * the fleet CA. */
+    if (network_set_tls_credentials(fleet_ca_cert, fleet_ca_cert_len,
+                                    device_client_cert, device_client_cert_len,
+                                    device_private_key, device_private_key_len) != 0) {
+        LOG_WRN("Continuing without TLS credentials; the gateway may refuse the connection");
+    }
 
     /* Parse endpoint and connect to gateway with TLS */
     char host[64];
@@ -463,12 +677,15 @@ static const uint8_t *cbor_skip_one(const uint8_t *p, const uint8_t *end)
 
 /*
  * Wire format from Gateway: 4 bytes length (big-endian u32) + CBOR(ServerMessage).
- * DeployApplication CBOR: array(5) = 0x85, u32(5), app_id (text), name (text), wasm_bytes (bytes), config (null/object).
+ * DeployApplication CBOR: array(6) = 0x86, u32(5), app_id (text), name (text),
+ * module_hash (bytes32), wasm_bytes (bytes), config (null/object).
  */
 static int handle_deploy_application(const uint8_t *cbor, uint32_t cbor_len,
+                                     const uint8_t *module_hash,
                                      const uint8_t *wasm_ptr, uint32_t wasm_len)
 {
     uint32_t module_id = 0, instance_id = 0;
+    uint8_t actual_hash[32];
     int ret;
 
     ARG_UNUSED(cbor);
@@ -478,6 +695,19 @@ static int handle_deploy_application(const uint8_t *cbor, uint32_t cbor_len,
         LOG_ERR("WASM size invalid: %u", (unsigned)wasm_len);
         return -1;
     }
+
+    /* Check the module against the digest the gateway announced before handing
+     * anything to the runtime: a module altered in transit must not be
+     * instantiated. */
+    if (mbedtls_sha256(wasm_ptr, wasm_len, actual_hash, 0) != 0) {
+        LOG_ERR("Failed to hash the received module");
+        return -1;
+    }
+    if (memcmp(actual_hash, module_hash, sizeof(actual_hash)) != 0) {
+        LOG_ERR("Module hash mismatch: refusing to instantiate %s", deploy_app_id_buf);
+        return -1;
+    }
+    LOG_INF("Module hash verified (%u bytes)", (unsigned)wasm_len);
 
     /* Reset the WAMR runtime completely before a new deployment.
      * Unloading instances/modules alone is not sufficient when a previous
@@ -606,8 +836,9 @@ int wasmbed_protocol_handle_message(const uint8_t *data, uint32_t data_len)
         if (data_len >= 4 + payload_len && payload_len >= 2) {
             const uint8_t *cbor = data + 4;
             const uint8_t *cbor_end = cbor + payload_len;
-            /* DeployApplication is array(5) = 0x85, tag u32(5) = 0x05, then app_id, name, wasm_bytes, config */
-            if (cbor[0] == 0x85 && cbor[1] == 0x05) {
+            /* DeployApplication is array(6) = 0x86, tag u32(5) = 0x05, then
+             * app_id, name, module_hash, wasm_bytes, config */
+            if (cbor[0] == 0x86 && cbor[1] == 0x05) {
                 const uint8_t *p = cbor + 2;
                 if (cbor_read_text(&p, cbor_end, deploy_app_id_buf, MAX_APP_ID_LEN) != 0) {
                     LOG_ERR("DeployApplication: failed to read app_id");
@@ -619,6 +850,13 @@ int wasmbed_protocol_handle_message(const uint8_t *data, uint32_t data_len)
                     send_deploy_ack(deploy_app_id_buf, false, "parse name");
                     return 0;
                 }
+                const uint8_t *hash_ptr = NULL;
+                uint32_t hash_len = 0;
+                if (cbor_read_bytes(&p, cbor_end, &hash_ptr, &hash_len) != 0 || hash_len != 32) {
+                    LOG_ERR("DeployApplication: failed to read module_hash (len=%u)", hash_len);
+                    send_deploy_ack(deploy_app_id_buf, false, "parse module_hash");
+                    return 0;
+                }
                 const uint8_t *wasm_ptr = NULL;
                 uint32_t wasm_len = 0;
                 if (cbor_read_bytes(&p, cbor_end, &wasm_ptr, &wasm_len) != 0) {
@@ -626,10 +864,10 @@ int wasmbed_protocol_handle_message(const uint8_t *data, uint32_t data_len)
                     send_deploy_ack(deploy_app_id_buf, false, "parse wasm_bytes");
                     return 0;
                 }
-                if (handle_deploy_application(cbor, payload_len, wasm_ptr, wasm_len) == 0) {
+                if (handle_deploy_application(cbor, payload_len, hash_ptr, wasm_ptr, wasm_len) == 0) {
                     send_deploy_ack(deploy_app_id_buf, true, NULL);
                 } else {
-                    send_deploy_ack(deploy_app_id_buf, false, "load/instantiate failed");
+                    send_deploy_ack(deploy_app_id_buf, false, "hash or load/instantiate failed");
                 }
             }
         }

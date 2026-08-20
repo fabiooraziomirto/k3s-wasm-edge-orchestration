@@ -20,6 +20,15 @@ void network_process(void);
 /* Connect to gateway */
 int network_connect(const char *host, uint16_t port);
 
+/* Register the device's TLS credentials before connecting.
+ * ca is the fleet CA the gateway's certificate is checked against; cert and key
+ * are this device's own client certificate and PKCS#8 private key.
+ * Returns 0 on success. Without this the connection is anonymous in both
+ * directions and neither side knows who it is talking to. */
+int network_set_tls_credentials(const uint8_t *ca, uint32_t ca_len,
+                                const uint8_t *cert, uint32_t cert_len,
+                                const uint8_t *key, uint32_t key_len);
+
 /* Connect to gateway with TLS */
 int network_connect_tls(const char *host, uint16_t port);
 

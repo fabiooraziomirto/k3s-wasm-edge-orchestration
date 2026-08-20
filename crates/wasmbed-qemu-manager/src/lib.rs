@@ -187,6 +187,11 @@ const DEVICE_CERT_ADDR: u32 = 0x2000_3000;
 /// Memory address where the device's PKCS#8 private key (DER) is injected,
 /// see `DEVICE_PRIVKEY_ADDR` in `zephyr-app/src/wasmbed_protocol.c`.
 const DEVICE_PRIVKEY_ADDR: u32 = 0x2000_4000;
+/// Memory address where the fleet CA certificate (DER) is injected, so the
+/// device can verify the gateway. Same for every board, but injected rather
+/// than compiled in so the firmware does not have to be rebuilt per deployment.
+/// See `DEVICE_CA_ADDR` in `zephyr-app/src/wasmbed_protocol.c`.
+const DEVICE_CA_ADDR: u32 = 0x2000_5000;
 
 /// Directory holding the identities written by
 /// `scripts/provision-device-identity.sh`: `<device-id>.{key,crt,spki}`.
@@ -342,6 +347,18 @@ fn device_credential_writes(device_id: &str) -> String {
     }
     if let Some(key) = device_identity_file(device_id, "key") {
         out.push_str(&format!("\n{}", renode_write_blob(DEVICE_PRIVKEY_ADDR, &key)));
+    }
+    // The CA is fleet-wide, so it lives beside the identities under a fixed name.
+    let ca_path = device_identity_dir().join("ca.der");
+    match std::fs::read(&ca_path) {
+        Ok(ca) if !ca.is_empty() => {
+            out.push_str(&format!("\n{}", renode_write_blob(DEVICE_CA_ADDR, &ca)));
+        },
+        _ => eprintln!(
+            "WARN: no fleet CA at {}; device {} cannot verify the gateway",
+            ca_path.display(),
+            device_id
+        ),
     }
     out
 }

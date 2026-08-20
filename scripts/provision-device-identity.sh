@@ -43,6 +43,11 @@ fi
 
 mkdir -p "$DEVICE_DIR"
 
+# The fleet CA in DER, beside the identities: RenodeManager injects it into
+# every board so the device can verify the gateway it is talking to.
+openssl x509 -in "$CERT_DIR/ca-cert.pem" -outform DER -out "$DEVICE_DIR/ca.der"
+echo "Fleet CA written to $DEVICE_DIR/ca.der"
+
 for device_id in "$@"; do
   spki_b64="$("$TOOL" issue-device \
     --ca-key "$CERT_DIR/ca-key.pem" \

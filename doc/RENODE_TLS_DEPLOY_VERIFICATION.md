@@ -148,15 +148,19 @@ Automated smoke: `./scripts/verify-tls-and-deploy.sh`
 
 ## 7. Multi-device fleet
 
-A fleet of N emulated devices only behaves as N devices if **three identifiers are unique
+A fleet of N emulated devices only behaves as N devices if **four identifiers are unique
 per device**. Sharing any one of them makes N devices collapse onto a single gateway
 session (the failure previously observed with 3 Renode machines).
 
 | Identifier | Where it comes from | Why it must be unique |
 |------------|---------------------|------------------------|
-| **Public key** (`0x20002000`) | `spec.publicKey` of the Device CRD, injected into device memory by RenodeManager | The gateway resolves a TLS connection to a Device via `Device::find` (key → CRD) and indexes connections by device id (`public_key_to_device`). Identical keys ⇒ every connection overwrites the previous one ⇒ one TLS sender. |
+| **Public key** (`0x20002000`) | `spec.publicKey` of the Device CRD: the SubjectPublicKeyInfo of the key pair issued by `scripts/provision-device-identity.sh`, injected into device memory by RenodeManager | The gateway resolves a TLS connection to a Device via `Device::find` (key → CRD) and indexes connections by device id (`public_key_to_device`). Identical keys ⇒ every connection overwrites the previous one ⇒ one TLS sender. |
+| **Client certificate + private key** (`0x20003000`, `0x20004000`) | Issued per device by `wasmbed-cert-tool issue-device`, read from `config/devices/<id>.{crt,key}` | The device authenticates the TLS handshake with the certificate and signs the gateway's enrollment challenge with the key. A shared key pair would let any board enroll as any other. |
 | **MAC address** | Derived from the device id: `02:` + `sha256(device_id)[0..5]` | Same MAC ⇒ same DHCP lease ⇒ same IP, plus L2 collisions on the shared segment. |
 | **TAP interface** | Derived from the device id: `wtap-` + `sha256(device_id)[0..4]` | Renode containers share the host network namespace (`--net=host`); a single `tap0` can only be attached by one of them. |
+
+The fleet CA (`0x20005000`, `config/devices/ca.der`) is deliberately **the same** on every
+board: it is what the device checks the gateway's certificate against.
 
 The derivation lives in `wasmbed-qemu-manager/src/lib.rs` (`device_tap_name`,
 `device_mac_address`, `device_public_key_bytes`) and is mirrored in

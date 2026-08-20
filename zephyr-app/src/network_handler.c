@@ -30,6 +30,13 @@ static bool network_initialized = false;
 static int socket_fd = -1;
 static struct net_if *net_iface = NULL;
 
+/* Security tag under which this device's TLS credentials are registered. */
+#define WASMBED_TLS_SEC_TAG 1
+
+/* Set once network_set_tls_credentials has registered a full credential set.
+ * Until then the socket falls back to an unauthenticated handshake. */
+static bool tls_credentials_ready = false;
+
 /* Memory address where Renode writes this device's MAC address
  * (4-byte LE length, then the address bytes), mirroring the gateway endpoint
  * and public key injections in wasmbed_protocol.c. */
@@ -264,6 +271,50 @@ int network_connect(const char *host, uint16_t port)
     return 0;
 }
 
+/* Register the fleet CA and this device's own certificate and key. */
+int network_set_tls_credentials(const uint8_t *ca, uint32_t ca_len,
+                                const uint8_t *cert, uint32_t cert_len,
+                                const uint8_t *key, uint32_t key_len)
+{
+    int ret;
+
+    if (ca == NULL || ca_len == 0 || cert == NULL || cert_len == 0 ||
+        key == NULL || key_len == 0) {
+        LOG_ERR("Incomplete TLS credentials (ca=%u cert=%u key=%u bytes)",
+                ca_len, cert_len, key_len);
+        return -1;
+    }
+
+    /* Credentials are DER, which tls_credential_add takes as-is. */
+    ret = tls_credential_add(WASMBED_TLS_SEC_TAG, TLS_CREDENTIAL_CA_CERTIFICATE,
+                             ca, ca_len);
+    if (ret != 0 && ret != -EEXIST) {
+        LOG_ERR("Failed to add CA certificate: %d", ret);
+        return -1;
+    }
+
+    /* Zephyr uses TLS_CREDENTIAL_SERVER_CERTIFICATE for the socket's own
+     * certificate, on a client socket too. */
+    ret = tls_credential_add(WASMBED_TLS_SEC_TAG, TLS_CREDENTIAL_SERVER_CERTIFICATE,
+                             cert, cert_len);
+    if (ret != 0 && ret != -EEXIST) {
+        LOG_ERR("Failed to add client certificate: %d", ret);
+        return -1;
+    }
+
+    ret = tls_credential_add(WASMBED_TLS_SEC_TAG, TLS_CREDENTIAL_PRIVATE_KEY,
+                             key, key_len);
+    if (ret != 0 && ret != -EEXIST) {
+        LOG_ERR("Failed to add private key: %d", ret);
+        return -1;
+    }
+
+    tls_credentials_ready = true;
+    LOG_INF("TLS credentials registered (ca=%u cert=%u key=%u bytes)",
+            ca_len, cert_len, key_len);
+    return 0;
+}
+
 /* Connect to gateway with TLS */
 int network_connect_tls(const char *host, uint16_t port)
 {
@@ -287,10 +338,28 @@ int network_connect_tls(const char *host, uint16_t port)
         return -1;
     }
 
-    /* Skip server certificate verification (no CA cert loaded) */
-    int verify = TLS_PEER_VERIFY_NONE;
+    /* Present this device's certificate and check the gateway's against the
+     * fleet CA. Without credentials neither side is authenticated, so the
+     * device cannot tell the real gateway from anything that answers on that
+     * address; keep that path only so a board can boot before it has been
+     * provisioned, and say so plainly. */
+    int verify = TLS_PEER_VERIFY_REQUIRED;
+    if (tls_credentials_ready) {
+        sec_tag_t sec_tag_list[] = { WASMBED_TLS_SEC_TAG };
+        if (zsock_setsockopt(socket_fd, SOL_TLS, TLS_SEC_TAG_LIST,
+                             sec_tag_list, sizeof(sec_tag_list)) < 0) {
+            LOG_ERR("Failed to set TLS_SEC_TAG_LIST: %d", errno);
+            zsock_close(socket_fd);
+            socket_fd = -1;
+            return -1;
+        }
+    } else {
+        LOG_WRN("No TLS credentials provisioned: the gateway will not be "
+                "authenticated and this device cannot authenticate itself");
+        verify = TLS_PEER_VERIFY_NONE;
+    }
     if (zsock_setsockopt(socket_fd, SOL_TLS, TLS_PEER_VERIFY, &verify, sizeof(verify)) < 0) {
-        LOG_WRN("Failed to set TLS_PEER_VERIFY_NONE: %d", errno);
+        LOG_WRN("Failed to set TLS_PEER_VERIFY: %d", errno);
     }
 
     /* Set TLS hostname for SNI (required by some servers even with PEER_VERIFY_NONE) */

@@ -125,6 +125,8 @@ fn install_identities(ids: &[&str]) -> std::path::PathBuf {
         std::fs::write(dir.join(format!("{id}.crt")), vec![0xC0 + i as u8; 64]).unwrap();
         std::fs::write(dir.join(format!("{id}.key")), vec![0xD0 + i as u8; 48]).unwrap();
     }
+    // Fleet-wide, shared by every board.
+    std::fs::write(dir.join("ca.der"), vec![0xEE; 96]).unwrap();
     std::env::set_var("WASMBED_DEVICE_IDENTITY_DIR", &dir);
     dir
 }
@@ -149,6 +151,10 @@ fn each_device_is_given_its_own_tls_credentials() {
 
         assert_eq!(cert, vec![0xC0 + i as u8; 64], "device {id} must get its own certificate");
         assert_eq!(key, vec![0xD0 + i as u8; 48], "device {id} must get its own private key");
+        // The CA is the same for the whole fleet: every device checks the
+        // gateway against it.
+        assert_eq!(decode_blob(&script, 0x2000_5000), vec![0xEE; 96]);
+
         certs.push(cert);
         keys.push(key);
     }
@@ -157,20 +163,13 @@ fn each_device_is_given_its_own_tls_credentials() {
     keys.dedup();
     assert_eq!(certs.len(), ids.len(), "certificates must be distinct across the fleet");
     assert_eq!(keys.len(), ids.len(), "private keys must be distinct across the fleet");
-}
 
-/// With no provisioned identity nothing is injected, so the firmware fails on an
-/// absent credential instead of quietly opening an unauthenticated session.
-#[test]
-fn a_device_without_a_provisioned_identity_gets_no_credentials() {
-    let _stub = install_stub_kubectl();
-    let dir = std::env::temp_dir().join(format!("wasmbed-identities-empty-{}", std::process::id()));
-    std::fs::create_dir_all(&dir).expect("identity dir");
-    std::env::set_var("WASMBED_DEVICE_IDENTITY_DIR", &dir);
-
-    let manager = RenodeManager::new("renode".to_string(), 30000);
+    // With no provisioned identity nothing is injected, so the firmware fails on
+    // an absent credential instead of quietly opening an unauthenticated
+    // session. Checked here rather than in its own test because the identity
+    // directory is selected by a process-wide environment variable, which
+    // parallel tests would race on.
     let script = manager_build(&manager, "unprovisioned-device");
-
     assert!(!script.contains("0x20003000"), "no certificate should be injected");
     assert!(!script.contains("0x20004000"), "no private key should be injected");
 }

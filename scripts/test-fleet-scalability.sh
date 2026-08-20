@@ -122,6 +122,8 @@ for d in "${DEVICES[@]}"; do
       && ok "$d.resc inietta il certificato client" || ko "$d.resc non inietta il certificato client"
     grep -q "WriteDoubleWord 0x20004000" "$f" \
       && ok "$d.resc inietta la chiave privata" || ko "$d.resc non inietta la chiave privata"
+    grep -q "WriteDoubleWord 0x20005000" "$f" \
+      && ok "$d.resc inietta la CA di fleet" || ko "$d.resc non inietta la CA di fleet"
   else
     ko "$f non generato"
   fi
