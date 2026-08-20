@@ -7,7 +7,7 @@ The evaluation confirms that protocol success alone is not sufficient: enrollmen
 
 For sustainable digital research infrastructures, the same separation creates explicit attachment points for energy and carbon policies. Placement decisions can be expressed as desired state, gateway and device observations can be treated as evidence, and sustainability controllers can consume the same status model without requiring constrained devices to run additional cloud-native agents. The measured baselines in Section~\ref{sec:sustainability-metrics}, byte-scale southbound traffic, single-digit-MiB gateway mediation, and no kubelet on the edge, suggest that subsequent green-experimentation studies can focus on policy and instrumentation rather than on redesigning the orchestration substrate.
 
-{\color{red}For the scope of sustainable digital research infrastructures, the main outcome is therefore methodological rather than directly energetic: the paper identifies where orchestration evidence, device liveness, gateway mediation, and resource overhead can be captured consistently before energy-aware or carbon-aware decisions are automated.}
+%{\color{red}For the scope of sustainable digital research infrastructures, the main outcome is therefore methodological rather than directly energetic: the paper identifies where orchestration evidence, device liveness, gateway mediation, and resource overhead can be captured consistently before energy-aware or carbon-aware decisions are automated.}
 
 \begingroup
 \color{red}
@@ -25,7 +25,9 @@ The validation targets system-level orchestration behavior rather than real-time
 
 \begingroup
 \color{blue}
-\paragraph{Scope of the energy signal.} cgroup CPU-time (\texttt{cpu.stat}) is the only quantity in Section~\ref{sec:energy-instrumentation} that is an exact, reproducible measurement rather than a model output, and it alone should be treated as load-bearing for any energy claim in this paper. The Kepler wattage is a secondary, corroborating signal: this VM exposes no RAPL counters, so every reported watt is the output of Kepler's regression-based power model rather than a hardware reading, independent of how large the sample is. The Joule and carbon figures in Table~\ref{tab:workload-cpu-time} are a further derived layer on top of the measured CPU-time, using a literature power coefficient, and are reported as illustrative estimates rather than measurements. A hardware-validated absolute wattage for this workload, on a host that combines a working k3s control plane with exposed RAPL counters, remains future work.
+\paragraph{Scope of the energy signal.} cgroup CPU-time (\texttt{cpu.stat}) is the only quantity in Section~\ref{sec:energy-instrumentation} that is an exact, reproducible measurement rather than a model output, and it alone should be treated as load-bearing for any energy claim in this paper. 
+%The Kepler wattage is a secondary, corroborating signal: this VM exposes no RAPL counters, so every reported watt is the output of Kepler's regression-based power model rather than a hardware reading, independent of how large the sample is. The Joule and carbon figures in Table~\ref{tab:workload-cpu-time} are a further derived layer on top of the measured CPU-time, using a literature power coefficient, and are reported as illustrative estimates rather than measurements. 
+A hardware-validated absolute wattage for this workload, on a host that combines a working k3s control plane with exposed RAPL counters, remains future work.
 \endgroup
 
 Conclusion validity is strengthened by the transactional success criterion: enrollment, heartbeat visibility, and deployment must succeed within the same trial. This avoids overstating correctness from isolated protocol stages. Broader claims about optimality, scalability, or comparative advantage require additional experiments against alternative orchestration designs and physical-device deployments.

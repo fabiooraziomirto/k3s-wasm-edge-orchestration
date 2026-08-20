@@ -21,7 +21,8 @@ These pillars lead to a compact set of requirements. Desired and observed state 
 
 \begingroup
 \color{red}
-Table~\ref{tab:requirements-traceability} makes these requirements explicit and links each one to the architectural decision and evaluation observable used later in the paper. This traceability is important because the system is not evaluated as a generic IoT middleware platform, but as an orchestration path whose correctness depends on agreement between cloud resources, gateway evidence, and device-side execution. A requirement is therefore considered satisfied only when the corresponding design element leaves an observable artifact in the control plane or in the measurement record.
+Table~\ref{tab:requirements-traceability} makes these requirements explicit and links each one to the architectural decision and evaluation observable used later in the paper. 
+%This traceability is important because the system is not evaluated as a generic IoT middleware platform, but as an orchestration path whose correctness depends on agreement between cloud resources, gateway evidence, and device-side execution. A requirement is therefore considered satisfied only when the corresponding design element leaves an observable artifact in the control plane or in the measurement record.
 
 \begin{table*}[pos=t]
 \centering
@@ -44,4 +45,5 @@ R6: Reproducible sustainability baseline & Later energy and carbon policies requ
 \end{table*}
 \endgroup
 
-Secure attachment without unified state would remain difficult to operate; unified state without secure attachment would be insecure by construction; and either property without runtime evidence would leave operators unable to trust the control plane. Communication, orchestration, and status management are therefore co-designed rather than layered opportunistically. Embedded devices are not trusted to manage cluster state directly, and Kubernetes is not expected to maintain device sessions directly: a managed gateway acts as the trusted fog-layer mediation point while the control plane remains authoritative for desired state.
+%Secure attachment without unified state would remain difficult to operate; unified state without secure attachment would be insecure by construction; and either property without runtime evidence would leave operators unable to trust the control plane. 
+Communication, orchestration, and status management are therefore co-designed rather than layered opportunistically. Embedded devices are not trusted to manage cluster state directly, and Kubernetes is not expected to maintain device sessions directly: a managed gateway acts as the trusted fog-layer mediation point while the control plane remains authoritative for desired state.
