@@ -18,7 +18,6 @@ Usage:
 """
 
 import argparse
-import hashlib
 import socket
 import ssl
 import struct
@@ -102,8 +101,11 @@ def enroll(host, port, ca, cert, key, spki, signing_key) -> str:
                 return f"expected Challenge, got {describe(challenge)}"
             nonce = challenge[4:]
 
-            digest = hashlib.sha256(POP_CONTEXT + nonce + spki).digest()
-            signature = signing_key.sign(digest, ec.ECDSA(hashes.SHA256()))
+            # Sign the pre-image, not its digest: ec.ECDSA(SHA256) hashes what it
+            # is given, so passing a digest would sign SHA-256 applied twice and
+            # every honest attempt would be rejected.
+            transcript = POP_CONTEXT + nonce + spki
+            signature = signing_key.sign(transcript, ec.ECDSA(hashes.SHA256()))
             sock.send(frame(cbor_bytes(0x08, signature)))
 
             return describe(read_frame(sock))
