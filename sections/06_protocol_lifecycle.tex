@@ -131,20 +131,14 @@ Protocol correctness becomes platform correctness only when message outcomes are
 
 Integration testing exercised short-lived differences between gateway observations and control-plane status, confirming that liveness should not be inferred from a single incomplete observation. The resulting policy preserves the latest valid gateway association, avoids immediate disconnection when heartbeat evidence and transport visibility briefly diverge, and waits for a subsequent reconciliation cycle before treating the condition as a real state transition. Reconciliation policy is therefore part of the architecture rather than an incidental implementation detail.
 
-\revD{The policy is governed by four constants, reported here so that its behaviour can be
-reproduced and its stability checked. The firmware emits a heartbeat every 25~s. The
-gateway treats an association as stale only after 90~s without one, and evaluates that
-condition on a 30~s sweep. Device and Application controllers requeue every 30~s, which
-bounds how long a corrected status can remain unobserved. The staleness threshold is thus
-$3.6\times$ the emission period, so at least three consecutive heartbeats must be lost
-before a device leaves \texttt{Connected} for \texttt{Unreachable}, and the sweep period
-sets the $\pm30$~s granularity with which that transition is detected. Oscillation is
-avoided by construction rather than by damping: the timeout transition is one-directional,
-and only the arrival of a fresh heartbeat returns a device to \texttt{Connected}, so a
-single delayed observation cannot produce a disconnect--reconnect cycle. These values are
-deliberately conservative for an emulated single-gateway deployment; a deployment with
-tighter liveness requirements would lower the threshold at the cost of a higher false-disconnect
-rate under transient loss.}
+\revD{Four constants govern the policy. The firmware emits a heartbeat every 25~s; the gateway
+treats an association as stale after 90~s without one, evaluated on a 30~s sweep; Device
+and Application controllers requeue every 30~s. The staleness threshold is $3.6\times$ the
+emission period, so at least three consecutive heartbeats must be lost before a device
+leaves \texttt{Connected} for \texttt{Unreachable}, detected with $\pm30$~s granularity.
+Oscillation is precluded by construction rather than by damping: the timeout transition is
+one-directional and only a fresh heartbeat restores \texttt{Connected}, so a single delayed
+observation cannot produce a disconnect--reconnect cycle.}
 
 \begingroup
 \color{red}
@@ -168,4 +162,5 @@ Measurement record & Trial identifier, enrollment result, heartbeat-freshness ch
 \endgroup
 
 For reproducibility, the protocol messages evaluated here should therefore be read as typed CBOR records with explicit identity, freshness, target, artifact, and outcome fields, even when the diagrams show only message names. The implementation-facing invariant is that a transport acknowledgment alone is insufficient for success: Kubernetes status is updated only after the gateway has matched the device identity, preserved the gateway association, and propagated fresh deployment or liveness evidence.
-{\color{red}In the evaluated configuration, heartbeat freshness is interpreted relative to the configured 25~s firmware heartbeat period: a newly observed heartbeat refreshes the gateway association, while stale or missing observations are treated conservatively and do not immediately erase the last valid association until reconciliation confirms the transition. The protocol specification is intentionally minimal in this manuscript; a replication package should expose the concrete CRD schemas, CBOR field names, status enum values, timeout constants, and error codes used by the implementation.}
+%Removed (ridondanza): {\color{red}In the evaluated configuration, heartbeat freshness is interpreted relative to the configured 25~s firmware heartbeat period: a newly observed heartbeat refreshes the gateway association, while stale or missing observations are treated conservatively and do not immediately erase the last valid association until reconciliation confirms the transition. The protocol specification is intentionally minimal in this manuscript; a replication package should expose the concrete CRD schemas, CBOR field names, status enum values, timeout constants, and error codes used by the implementation.}
+

@@ -14,22 +14,22 @@ This paper introduces a full-stack framework that addresses this problem through
 The framework is not presented as an energy-optimization algorithm, but as a reusable digital-research-infrastructure substrate that makes constrained edge participation observable, repeatable, and ready to be combined with future power, carbon-intensity, and placement policies.}
 
 The work is motivated by a concrete engineering observation: secure enrollment is necessary but insufficient. A practical platform must also define ownership of status updates, avoid false disconnection semantics during transient conditions, and expose enough evidence for operators to trust the control plane. %Removed (M5): This requirement defines the central novelty of the work: a Kubernetes-native evidence and reconciliation model for non-node embedded WASM endpoints, combining declarative resource modeling, secure gateway mediation, state reconciliation, and deployment reproducibility into a single verifiable operational path.
-\revD{This requirement defines what the work integrates: a Kubernetes-native evidence
-and reconciliation model for non-node embedded WASM endpoints, combining declarative
-resource modeling, gateway mediation, state reconciliation, and deployment reproducibility
-into a single verifiable operational path. The separation of desired from reported state
-is the established device-twin pattern rather than a new mechanism, as
-Section~\ref{sec:related-work} discusses; the contribution is that the reconciliation
-point is an ordinary Kubernetes resource rather than a managed twin service.}
+\revD{This requirement defines what the work integrates: a Kubernetes-native evidence and
+reconciliation model for non-node embedded WASM endpoints, combining declarative resource
+modeling, gateway mediation, state reconciliation, and deployment reproducibility into a
+single verifiable operational path. Separating desired from reported state is the
+established device-twin pattern (Section~\ref{sec:related-work}); the contribution is that
+the reconciliation point is an ordinary Kubernetes resource rather than a managed service.}
 
 \subsection{Scope and Contributions}
-This work presents a systems-oriented contribution at the intersection of IoT orchestration, embedded computing, and secure cyber-physical infrastructure. It does not claim novelty in WebAssembly, Kubernetes, TLS, or Concise Binary Object Representation (CBOR) as isolated technologies. %Removed (M11): ...without sacrificing secure attachment, control-plane visibility, and state fidelity.
+This work presents a systems-oriented contribution at the intersection of IoT orchestration, embedded computing, and secure cyber-physical infrastructure. %Removed (ridondanza): It does not claim novelty in WebAssembly, Kubernetes, TLS, or Concise Binary Object Representation (CBOR) as isolated technologies.
+%Removed (M11): ...without sacrificing secure attachment, control-plane visibility, and state fidelity.
 Instead, it integrates these elements into a coherent platform that closes an implementation gap frequently acknowledged in the literature but less often documented end to end: how declarative cloud-side intent can be made operational on constrained, non-node embedded devices without sacrificing \revD{identity-bound attachment}, control-plane visibility, and state fidelity.
 
 The contributions are fourfold:
 \begin{itemize}[leftmargin=*,nosep]
     \item a Kubernetes-native resource model with CRDs for devices, gateways, and deployable WASM applications (Section~\ref{sec:architecture});
-    \item a gateway-mediated TLS/CBOR enrollment and control workflow with explicit identity matching and southbound message translation (Section~\ref{sec:protocol});
+    \item a gateway-mediated \revD{TLS/Concise Binary Object Representation (CBOR)} enrollment and control workflow with explicit identity matching and southbound message translation (Section~\ref{sec:protocol});
     \item a reconciliation strategy that links desired and reported state while avoiding false disconnect loops and ambiguous status ownership (Section~\ref{sec:protocol});
     % Removed: \item an end-to-end K3s validation study with emulated embedded targets and sustainability-oriented baselines for wire traffic, firmware footprint, and control-plane resource use (Section~\ref{sec:evaluation}).
     \item {\color{red}an end-to-end K3s validation study with emulated embedded targets and sustainability-oriented observables for wire traffic, firmware footprint, and control-plane resource use, intended as baselines for later green-experimentation studies (Section~\ref{sec:evaluation}).}

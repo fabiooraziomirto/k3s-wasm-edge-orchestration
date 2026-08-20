@@ -30,7 +30,16 @@ Device networking & Bridge \texttt{wasmbr0} at 192.168.1.1/24, one TAP per devic
 % Removed: After one warm-up run, the campaign executes $n{=}100$ independent trials.
 {\color{red}After one warm-up run, the campaign executes $n{=}100$ repeated enrollment-to-deployment trials started from a known logical state.} Each trial performs enrollment verification, heartbeat supervision, and deployment of the minimal WASM module to the same emulated device. A trial is \emph{transactionally} successful only if all three stages succeed and deployment evidence is consistent across the gateway runtime view and the Application CRD (\texttt{phase=Running}, device connected, fresh heartbeat). Continuous latencies use monotonic client-side timers; we report mean, standard deviation, median, p95, p99, IQR, CV, and 95\% CI of the mean ($\bar{x} \pm t_{0.975,n-1}\,s/\sqrt{n}$, with $t_{0.975,99}{=}1.984$). For binary outcomes we use Wilson score intervals; with 100/100 successes the 95\% lower bound is 96.3\%.
 
-\revC{Two caveats govern how these summaries should be read. First, consecutive trials share the same host, the same warmed page cache, the same already-compiled runtime and the same long-lived control-plane processes, so they are repetitions rather than independent draws: we report the $t$-based intervals as descriptive dispersion summaries of this campaign, not as inferential statements about a wider population of deployments or about heterogeneous devices, gateways and physical networks, and we check the assumption directly on the trial series (Figure~\ref{fig:latency-trial-scatter}). The end-to-end series shows no accumulation and no drift: the lag-1 autocorrelation is $-0.09$, the Spearman rank correlation between latency and trial index is $-0.14$ ($t{=}{-}1.42$, not significant at $n{=}100$), and the first and second halves of the campaign have means of 1212.1~ms and 1159.5~ms with standard deviations of 184.7~ms and 142.2~ms. The campaign is thus stationary after the discarded warm-up run. Second, the campaign induces no faults: no packet loss, no gateway restart, no key mismatch, no contention from co-located tenants. Under those conditions, 100/100 confirms that the cross-layer evidence-convergence criterion of Table~\ref{tab:trial-semantics} holds whenever the mechanism is exercised without induced failure, and the Wilson lower bound of 96.3\% is the arithmetic consequence of that fault-free protocol rather than an availability figure for a production fleet.}
+%Removed (compressione): \revC{Two caveats govern how these summaries should be read. First, consecutive trials share the same host, the same warmed page cache, the same already-compiled runtime and the same long-lived control-plane processes, so they are repetitions rather than independent draws: we report the $t$-based intervals as descriptive dispersion summaries of this campaign, not as inferential statements about a wider population of deployments or about heterogeneous devices, gateways and physical networks, and we check the assumption directly on the trial series (Figure~\ref{fig:latency-trial-scatter}). The end-to-end series shows no accumulation and no drift: the lag-1 autocorrelation is $-0.09$, the Spearman rank correlation between latency and trial index is $-0.14$ ($t{=}{-}1.42$, not significant at $n{=}100$), and the first and second halves of the campaign have means of 1212.1~ms and 1159.5~ms with standard deviations of 184.7~ms and 142.2~ms. The campaign is thus stationary after the discarded warm-up run. Second, the campaign induces no faults: no packet loss, no gateway restart, no key mismatch, no contention from co-located tenants. Under those conditions, 100/100 confirms that the cross-layer evidence-convergence criterion of Table~\ref{tab:trial-semantics} holds whenever the mechanism is exercised without induced failure, and the Wilson lower bound of 96.3\% is the arithmetic consequence of that fault-free protocol rather than an availability figure for a production fleet.}
+\revC{Consecutive trials share a host, a warmed cache and long-lived control-plane
+processes, so they are repetitions rather than independent draws, and the $t$-based
+intervals summarize dispersion within this campaign rather than across deployments. The
+series is stationary after the discarded warm-up run: lag-1 autocorrelation $-0.09$,
+Spearman correlation with trial index $-0.14$ ($t{=}{-}1.42$), and half-campaign means of
+1212.1~ms and 1159.5~ms (Figure~\ref{fig:latency-trial-scatter}). The campaign also induces
+no faults, so 100/100 establishes that the evidence-convergence criterion of
+Table~\ref{tab:trial-semantics} holds whenever the mechanism runs without induced failure,
+not an availability figure for a fleet.}
 
 \begingroup
 \color{red}
@@ -64,25 +73,19 @@ Enrollment, heartbeat freshness, gateway association, and Application outcome ag
 
 \subsection{Functional Validation Results}\label{sec:functional-results}
 All 100 transactional trials completed successfully: enrollment, heartbeat supervision, deployment, and cross-layer evidence checks never failed. \revC{These trials exercise the enrollment path in which the Device resource reaches \texttt{phase}\,=\,\texttt{Connected} from gateway-observed session evidence, which is the path described in Section~\ref{sec:protocol} and the one the framework uses in normal operation.} %Removed (M8): Section~\ref{sec:energy-instrumentation} reports a separate, later instrumentation pass that provisions devices through the auxiliary HTTP registry endpoint instead, and the difference between the two is explained there.}
-\revD{Section~\ref{sec:energy-instrumentation} reports a separate, later instrumentation
-pass in which the same enrollment path is preceded by an explicit board registration
-through the gateway HTTP endpoint, so that the resource creation cost falls inside the
-measured window; the two passes exercise the same protocol stages and their latencies are
-not compared.} %Removed (minore): Because {\color{red}every measured stage succeeded in all trials}, a per-stage success table would repeat identical Wilson bounds and is omitted; the meaningful variation lies in latency and its distribution.
+\revD{Section~\ref{sec:energy-instrumentation} reports a later pass in which an explicit board
+registration precedes the same enrollment path, placing resource creation inside the
+measured window.} %Removed (minore): Because {\color{red}every measured stage succeeded in all trials}, a per-stage success table would repeat identical Wilson bounds and is omitted; the meaningful variation lies in latency and its distribution.
 \revD{Every measured stage succeeded in all trials, so the meaningful variation lies in latency and its distribution.}
 
 Table~\ref{tab:quantitative-latency} reports the latency profile. Mean end-to-end latency {\color{red}(enrollment plus deployment; heartbeat observability reported separately)} is 1286.0~ms with 95\% CI [1226.4, 1345.6]~ms. %Removed (M9): Deployment carries a heavy upper tail (CV 0.43, maximum 3000.8~ms against a median of 574.1~ms) that the mean and the p95 both understate; it reproduces across independent campaigns on this testbed and is the dominant contribution to end-to-end variability.
-\revD{Deployment carries a heavy upper tail (CV 0.43, maximum 3000.8~ms against a
-median of 574.1~ms) that the mean and the p95 both understate. The tail is an artefact of
-how the harness observes completion, not of the orchestration path: after issuing the
-deployment the harness polls the Application resource on a fixed two-second cycle, so a
-trial whose evidence becomes visible just after a poll is charged a full cycle. The raw
-series is consistent with this. Seventy of the hundred trials fall in a narrow
-487--598~ms band and twenty-eight more between 603 and 1112~ms; only two exceed that, the
-largest at 3000.8~ms, a full polling cycle beyond the rest. The reported deployment latency is therefore
-an upper bound that includes observation granularity, and the dispersion statistics of
-this stage should be read as a property of the measurement procedure rather than of WASM
-orchestration.}
+\revD{Deployment carries a heavy upper tail (CV 0.43, maximum 3000.8~ms against a median of
+574.1~ms). The tail reflects how the harness observes completion rather than the
+orchestration path: it polls the Application resource on a fixed two-second cycle, so a
+trial whose evidence appears just after a poll is charged a full cycle. Seventy trials fall
+in a 487--598~ms band and twenty-eight more between 603 and 1112~ms; only two exceed that,
+the largest at 3000.8~ms, one polling cycle beyond the rest. Deployment latency is
+therefore an upper bound inclusive of observation granularity.}
 
 \begin{table}[pos=t]
 \centering
@@ -105,12 +108,11 @@ End-to-end & 1286.0 & 1168.7 & 1661.5 & 1974.3 & 270.7 & 0.234 & [1226.4, 1345.6
 \end{table}
 
 Figure~\ref{fig:latency-boxplot} compares stage latency distributions on a logarithmic scale. Heartbeat observability is two orders of magnitude faster than enrollment or deployment. %Removed (M9): Figure~\ref{fig:latency-cdf} shows that deployment contributes most of the tail mass: its p95 (1021.8~ms) and p99 (1145.2~ms) exceed enrollment's, so WASM orchestration, not TLS enrollment, dominates end-to-end variability (deployment CV\,=\,0.428 vs.\ enrollment CV\,=\,0.164).
-\revD{Figure~\ref{fig:latency-cdf} shows that deployment contributes most of the tail
-mass: its p95 (1021.8~ms) and p99 (1145.2~ms) exceed enrollment's, and its coefficient of
-variation is correspondingly larger (0.428 against 0.164). Given the polling artefact
-described above, this separates the two stages by how they are observed rather than by
-their intrinsic cost: enrollment is timed on the protocol exchange itself, whereas
-deployment is timed on the first poll that sees converged status.}
+\revD{Figure~\ref{fig:latency-cdf} shows that deployment contributes most of the tail mass: its
+p95 (1021.8~ms) and p99 (1145.2~ms) exceed enrollment's, with a larger coefficient of
+variation (0.428 against 0.164). Given the polling granularity, this separates the stages
+by how they are observed: enrollment is timed on the protocol exchange, deployment on the
+first poll that sees converged status.}
 
 \begin{figure}[pos=t]
 \centering
@@ -139,18 +141,14 @@ deployment is timed on the first poll that sees converged status.}
 Application messages use a 4-byte big-endian length prefix followed by CBOR payloads. Figure~\ref{fig:wire-sizes} summarizes measured wire sizes for representative messages. Heartbeat request and acknowledgment are 6~B each; a complete enrollment round trip totals 87~B of application payload; a minimal deploy round trip (33~B WASM module) totals 90~B. % Removed: At the configured 25~s heartbeat period, steady-state control traffic is $12 \times (3600/25) = 1728$~B/h per device (${\approx}$1.69~KiB/h), excluding TLS record overhead.
 {\color{red}At the configured 25~s heartbeat period, steady-state application-layer heartbeat traffic is $12 \times (3600/25) = 1728$~B/h per device (${\approx}$1.69~KiB/h), excluding TLS record overhead and lower-layer TCP/IP, Ethernet/TAP, and retransmission overhead.}
 
-\revD{Because that exclusion spans more than an order of magnitude, we state the on-wire
-cost analytically from the protocol constants, and mark it as an estimate rather than a
-measurement. Under the evaluated TLS~1.2 AES-128-GCM cipher suite each record adds 5~B of
-record header, an 8~B explicit nonce and a 16~B authentication tag, so a 6~B heartbeat
-becomes a 35~B record, a 75~B IPv4 segment and a 93~B Ethernet frame. At a 25~s period the
-delayed-acknowledgment timer expires between exchanges, so request and acknowledgment are
-each acknowledged separately, giving roughly 300~B per heartbeat exchange and of order
-40~KB/h per device: approximately $25\times$ the application-layer figure. Session
-establishment is excluded from both numbers and is paid again on every reconnection, so a
-device that re-handshakes frequently is dominated by that cost rather than by heartbeats.
-A packet-capture measurement of steady-state and reconnection traffic, which would replace
-this estimate, is left to future work.}
+\revD{That exclusion spans more than an order of magnitude. Under the TLS~1.2 AES-128-GCM
+cipher suite each record adds 5~B of header, an 8~B explicit nonce and a 16~B tag, so a
+6~B heartbeat becomes a 35~B record, a 75~B IPv4 segment and a 93~B Ethernet frame. At a
+25~s period the delayed-acknowledgment timer expires between exchanges, giving roughly
+300~B per exchange and of order 40~KB/h per device, some $25\times$ the application-layer
+figure. Session establishment is excluded from both and is paid again on every
+reconnection, so a frequently reconnecting device is dominated by handshake cost rather
+than by heartbeats.}
 
 \begin{figure}[pos=t]
 \centering
@@ -193,10 +191,9 @@ level; Section~\ref{sec:discussion} states what this does not characterize.
 
 \subsubsection{Control-plane resources}
 Figure~\ref{fig:pod-resources} reports mean Kubernetes pod usage ($n{=}5$ samples, one TLS-connected device, sampled while the trial campaign was running). {\color{red}The metric is the container working set reported by \texttt{metrics-server}, cross-checked against cgroup~v2 \texttt{memory.current} and the anonymous resident set in \texttt{memory.stat}, which agree with it to within a few hundred kilobytes.} The gateway averaged 3.0~millicores CPU and 4.4~MiB RAM (\texttt{memory.current} 5.60~MB, anonymous 3.82~MB), the API server averaged 169.2~millicores and 33.4~MiB under campaign load (\texttt{memory.current} 32.3--33.0~MB), and the application controller averaged 38.4~millicores and 12.0~MiB (\texttt{memory.current} 13.3~MB). %Removed (minore): Registering 50 synthetic boards through the gateway HTTP registry left gateway resident memory unchanged (\texttt{memory.current} identical before and after), indicating lightweight per-device mediation state at the fog layer.
-\revD{Registering 50 synthetic boards through the gateway HTTP registry left gateway
-resident memory unchanged. This bounds the cost of registry state only: the boards are
-\texttt{Device} entries rather than TLS-connected sessions, so the observation says nothing
-about the per-session cost that would dominate a real fleet.}
+\revD{Registering 50 synthetic boards through the gateway HTTP registry left gateway resident
+memory unchanged, bounding the cost of registry state alone: those boards are
+\texttt{Device} entries rather than TLS-connected sessions.}
 
 \begin{figure}[pos=t]
 \centering
@@ -242,29 +239,36 @@ Repeating the same idle/active protocol while varying the workload size $N \in \
 \end{tabular}
 \end{table}
 
-Converting CPU-seconds into Joules requires a hardware-specific power coefficient, and this is the one step of the pipeline that is not measured on this platform. We therefore state its provenance explicitly. The primary reference is the manufacturer specification for the deployed processor, the AMD EPYC 7313P: 16 cores / 32 threads with a default TDP of 155~W and a configurable TDP of 155--180~W~\cite{amd_epyc7313p}, %Removed (minore): giving 4.84~W per vCPU at the default TDP.
-giving 4.84~W per vCPU at the default TDP. \revD{The coefficient assumes that one vCPU
-of the KVM guest of Table~\ref{tab:testbed} maps to one hardware thread of the host part,
-which holds when the guest is not oversubscribed: the 32~vCPU guest matches the 32 threads
-of the single socket. Under contention from other guests the effective per-vCPU power
-would be lower than stated.} TDP is a thermal design limit rather than an instantaneous power draw, so it bounds rather than predicts consumption; as secondary corroboration, a third-party RAPL/\texttt{turbostat} measurement of the same single-socket part reports 35~W idle and 151~W full load across 32 threads~\cite{epyc7313power}, i.e.\ 1.09~W and 4.72~W per vCPU, within 3\% of the specification-derived value. Neither figure is a measurement of this workload on this hardware, and a platform-specific coefficient would come from a documented energy benchmark such as SPECpower\_ssj2008~\cite{specpower} or the per-family coefficient table of the Cloud Carbon Footprint project~\cite{ccf}. \revC{The conversion also rests on a deliberately simple model --- power proportional to allocated vCPU-time at full load --- which ignores the idle baseline, DVFS and turbo behaviour, shared uncore, memory and I/O power, and the known non-linearity of power against utilization. Each effect can move the result by tens of percent in either direction, which is why every derived figure below is given to at most two significant digits; removing the assumption requires re-anchoring the pipeline on a host exposing RAPL counters.}
-Applying the Cloud Carbon Footprint average-wattage formula~\cite{ccf} to the measured utilization yields \revC{${\approx}119$}~J attributable to the active window above its idle baseline (\revC{${\approx}1.5$}~mJ per WASM invocation over ${\approx}$79{,}300 invocations per window). Carbon follows from that energy and a grid emission factor, and is reported here parametrically for the same reason: at an intensity $I$, the active window accounts for \revC{${\approx}33\,I$}~$\mu$gCO\textsubscript{2}eq with $I$ in gCO\textsubscript{2}eq/kWh. We take $I$ from the institutional source for Italy, the ISPRA national consumption-mix emission factor, 199.61~gCO\textsubscript{2}eq/kWh for 2025 (preliminary estimate)~\cite{ispra_settore_elettrico}, which puts the active window at \revC{${\approx}6.6$~mgCO\textsubscript{2}eq (of order $0.1$~$\mu$gCO\textsubscript{2}eq per invocation)}. Production- and consumption-mix factors differ and the choice must be stated with the value; the European Environment Agency indicator~\cite{eea_grid_intensity} provides the corresponding cross-country basis. 
-%\revC{The measured claims of this subsection are therefore the CPU-time quantities alone; everything in Joules or grams of CO\textsubscript{2}eq is a proxy computed from them with an external coefficient, and no conclusion of this paper depends on its absolute value.}
+%Removed (compressione): blocco originale sulla provenienza del coefficiente di potenza, ~400 parole
+Converting CPU-seconds into Joules requires a hardware-specific power coefficient, the one
+step of the pipeline not measured on this platform. The deployed processor is an AMD EPYC
+7313P, 16 cores / 32 threads at a 155~W default TDP~\cite{amd_epyc7313p}, giving 4.84~W per
+vCPU; \revD{the guest of Table~\ref{tab:testbed} is not oversubscribed, so its 32~vCPUs map
+one-to-one onto the socket's threads.} TDP bounds rather than predicts draw, and a
+third-party RAPL measurement of the same part reports 4.72~W per vCPU at full
+load~\cite{epyc7313power}, within 3\% of it; a platform-specific coefficient would instead
+come from SPECpower\_ssj2008~\cite{specpower} or the Cloud Carbon Footprint per-family
+table~\cite{ccf}. \revC{The conversion assumes power proportional to allocated vCPU-time at
+full load, ignoring the idle baseline, DVFS, shared uncore and the non-linearity of power
+against utilization; each can move the result by tens of percent, so every derived figure
+is given to at most two significant digits.} Applying the Cloud Carbon Footprint
+average-wattage formula~\cite{ccf} yields \revC{${\approx}119$}~J for the active window
+above its idle baseline, \revC{${\approx}1.5$}~mJ per invocation over ${\approx}$79{,}300
+invocations. At a grid intensity $I$ in gCO\textsubscript{2}eq/kWh the window accounts for
+\revC{${\approx}33\,I$}~$\mu$gCO\textsubscript{2}eq; the ISPRA consumption-mix factor for
+Italy, 199.61~gCO\textsubscript{2}eq/kWh for 2025~\cite{ispra_settore_elettrico}, puts it
+at \revC{${\approx}6.6$~mgCO\textsubscript{2}eq}. Production- and consumption-mix factors
+differ and must be stated with the value~\cite{eea_grid_intensity}.
 
 \paragraph{Per-phase, per-pod CPU-time (control-plane trials).} %Removed (minore): As a minimal, additive instrumentation point layered on the trial harness behind Table~\ref{tab:quantitative-latency} (no change to gateway, controller, or reconciler logic), each
 \revD{As an instrumentation point layered on the trial harness behind Table~\ref{tab:quantitative-latency}, leaving gateway, controller and reconciler logic unchanged, each} of the enrollment, heartbeat, and deployment stages is separately bracketed by a \texttt{cpu.stat} \texttt{usage\_usec} snapshot for the gateway, API-server, and application-controller pods, giving CPU-seconds consumed by each pod during exactly that stage's wall-clock window. %Removed (M8): The measurement runs against the full live stack: a Zephyr~3.5.0/WAMR firmware image for the emulated STM32F746G target, connected to the gateway over TLS through the Renode TAP bridge.
-\revD{The measurement runs against the full live stack: a Zephyr~3.5.0/WAMR firmware
-image for the emulated STM32F746G target, connected to the gateway over TLS through the
-Renode TAP bridge. The two provisioning paths mentioned above are not alternatives here
-but successive steps of the same trial. The board is first registered through the gateway's
-auxiliary HTTP endpoint, which creates the \texttt{Device} resource and its expected
-identity; the firmware then attaches over TLS and drives the same enrollment exchange as
-the campaign of Table~\ref{tab:quantitative-latency}, so each record carries both a
-registered board and a \texttt{Device} that reaches \texttt{phase}\,=\,\texttt{Connected}
-with a fresh heartbeat. The difference from the main campaign is that registration is
-performed explicitly rather than assumed from a pre-existing resource, which shifts a small
-and constant amount of API-server work into the enrollment window; the stages themselves
-are the same, and the two sets of latencies are not intended to be compared.} Table~\ref{tab:cpu-time-per-phase} reports a $n{=}5$-trial pass: all three stages succeed 5/5, with real, reproducible CPU-time per stage per pod, and the enrollment row covers the full protocol exchange (TLS handshake, CBOR EnrollmentRequest/PublicKey/DeviceUuid, gateway-side connection established) up to the Device CRD reaching \texttt{status.phase}\,=\,\texttt{Connected}.
+\revD{The measurement runs against the full live stack: a Zephyr~3.5.0/WAMR image for the
+emulated STM32F746G target, connected to the gateway over TLS through the Renode TAP
+bridge. Each trial registers the board through the gateway HTTP endpoint, which creates the
+\texttt{Device} resource, and the firmware then drives the same enrollment exchange as the
+campaign of Table~\ref{tab:quantitative-latency}, reaching
+\texttt{phase}\,=\,\texttt{Connected} with a fresh heartbeat. Registration falls inside the
+measured window, so these latencies are not comparable with that campaign.} Table~\ref{tab:cpu-time-per-phase} reports a $n{=}5$-trial pass: all three stages succeed 5/5, with real, reproducible CPU-time per stage per pod, and the enrollment row covers the full protocol exchange (TLS handshake, CBOR EnrollmentRequest/PublicKey/DeviceUuid, gateway-side connection established) up to the Device CRD reaching \texttt{status.phase}\,=\,\texttt{Connected}.
 
 Given $n{=}5$, this table demonstrates the instrumentation working end-to-end on real infrastructure rather than providing a statistically powered per-stage estimate; a $n{=}100$ run aligned with Table~\ref{tab:quantitative-latency} is future work.
 
@@ -309,16 +313,13 @@ Deployment & app-controller & 0.057557 & 0.027365 & \revD{0.019152--0.111654} & 
 \subsubsection{Architectural comparison}
 Table~\ref{tab:arch-compare} contrasts gateway-mediated WASM orchestration with treating each constrained device as a Kubernetes worker. % Removed: Edge Kubernetes deployments commonly require tens to hundreds of MiB of resident memory per worker for kubelet and container runtime before user workloads~\cite{kubernetes}.
 {\color{red}Edge Kubernetes deployments require a Linux-capable node with a kubelet, container runtime, and supporting operating-system services before user workloads, whereas the evaluated endpoint keeps those cluster agents off the device.} %Removed (M6): Our design concentrates orchestration in a shared gateway (under 5~MiB measured) while keeping cluster agents off the device.
-\revD{Our design concentrates orchestration in a shared gateway (under 5~MiB measured)
-while keeping cluster agents off the device. The comparison is a qualitative contrast of
-architectural models, not a measured benchmark: only the right-hand column is instrumented
-here, and establishing the left-hand one would require running the same WASM workload on a
-Linux single-board node with a cluster agent. The pod measurements also locate the real
-cost differently from the intuition the table invites. Mediation is cheap---the gateway
-averages 3.0~millicores---while the API server averages 169.2~millicores, so the
-control plane, not the fog layer, dominates control-plane CPU at this scale. Whether
-gateway mediation remains cheaper than per-device agents therefore depends on fleet size
-through a break-even this evaluation does not determine.}
+\revD{Our design concentrates orchestration in a shared gateway (under 5~MiB measured) while
+keeping cluster agents off the device. Only the right-hand column is instrumented here;
+establishing the left-hand one would require the same WASM workload on a Linux
+single-board node with a cluster agent. The pod measurements also locate the cost
+differently: the gateway averages 3.0~millicores against the API server's 169.2, so the
+control plane rather than the fog layer dominates at this scale, and the fleet size at
+which gateway mediation overtakes per-device agents is not determined here.}
 
 \begin{table}[pos=t]
 \centering

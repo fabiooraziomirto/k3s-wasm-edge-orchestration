@@ -4,10 +4,9 @@ This paper presented a Kubernetes-native framework for managing embedded WebAsse
 
 % Removed: The experimental evaluation on a K3s test bed with emulated embedded targets confirms that the architecture supports a complete enrollment-to-deployment workflow under repeatable conditions, with 100/100 transactional success and {\color{red}approximately 1.29~s mean end-to-end orchestration latency}. Measured southbound control traffic, firmware footprint, and fog-layer resource use provide quantitative anchors for subsequent energy-aware placement and green-experimentation studies.
 {\color{red}The experimental evaluation on a K3s testbed with emulated embedded targets confirms that the architecture supports a complete enrollment-to-deployment workflow under repeatable conditions, with 100/100 transactional success and approximately 1.29~s mean end-to-end orchestration latency. The measured application-layer traffic, firmware footprint, and fog-layer resource use provide quantitative anchors for subsequent energy-aware placement, carbon-aware annotation, and green-experimentation studies, while direct energy optimization remains future work.}
-\revD{The computational-energy pass of Section~\ref{sec:energy-instrumentation} should be
-read with the same scope: it instruments a Wasmtime runtime at the fog layer, not the
-Zephyr/WAMR firmware on the embedded target, and its Joule and carbon figures are proxies
-derived from measured CPU-time with an external power coefficient. No energy measurement
-on the constrained endpoint itself is claimed.}
+\revD{The computational-energy pass of Section~\ref{sec:energy-instrumentation} has the same
+scope: it instruments a Wasmtime runtime at the fog layer rather than the Zephyr/WAMR
+firmware on the embedded target, and its Joule and carbon figures are proxies derived from
+measured CPU-time with an external power coefficient.}
 
 Future work will extend the platform toward multi-gateway deployments, fault injection, physical hardware, wattmeter- or RAPL-validated energy measurements{\color{blue}, carbon-intensity annotation beyond the illustrative, derived-estimate pass reported in Section~\ref{sec:energy-instrumentation}}, and larger device populations.
