@@ -15,8 +15,7 @@
 #include <mbedtls/sha256.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/x509_crt.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ctr_drbg.h>
+#include <zephyr/random/random.h>
 
 LOG_MODULE_REGISTER(wasmbed_protocol, LOG_LEVEL_INF);
 
@@ -394,6 +393,30 @@ static void read_device_credentials(void)
                        "fleet CA certificate");
 }
 
+/* Randomness for mbedTLS, taken from the platform CSPRNG.
+ *
+ * mbedtls_entropy_func cannot be used here: this board registers no entropy
+ * source with mbedTLS, so seeding a CTR_DRBG from it fails outright with
+ * MBEDTLS_ERR_CTR_DRBG_ENTROPY_SOURCE_FAILED and the device cannot sign the
+ * gateway's challenge.
+ *
+ * sys_rand_get and not sys_csrand_get: CONFIG_CSPRNG_ENABLED needs a hardware
+ * entropy driver, which this board does not model under Renode, so the CSPRNG
+ * symbol does not even link. What remains is CONFIG_TEST_RANDOM_GENERATOR --
+ * the same generator Zephyr's own TLS stack warns about at boot.
+ *
+ * That is survivable only because CONFIG_MBEDTLS_ECDSA_DETERMINISTIC derives
+ * the per-signature nonce from the key and message (RFC 6979) instead of from
+ * here: a repeated or predictable ECDSA nonce discloses the private key, while
+ * the randomness used for blinding does not.
+ */
+static int platform_rng(void *ctx, unsigned char *out, size_t len)
+{
+    ARG_UNUSED(ctx);
+    sys_rand_get(out, len);
+    return 0;
+}
+
 /* Parse each injected credential the way Zephyr's TLS socket will, and report
  * which one fails and why.
  *
@@ -413,7 +436,6 @@ static void check_credentials(void)
     }
 
     if (device_client_cert_len > 0U) {
-        LOG_HEXDUMP_INF(device_client_cert, 24, "client cert head as read");
         mbedtls_x509_crt_init(&crt);
         ret = mbedtls_x509_crt_parse_der(&crt, device_client_cert, device_client_cert_len);
         LOG_INF("Credential check: client certificate parse -> %d (-0x%04x)", ret, (unsigned)-ret);
@@ -423,7 +445,7 @@ static void check_credentials(void)
     if (device_private_key_len > 0U) {
         mbedtls_pk_init(&pk);
         ret = mbedtls_pk_parse_key(&pk, device_private_key, device_private_key_len,
-                                   NULL, 0, NULL, NULL);
+                                   NULL, 0, platform_rng, NULL);
         LOG_INF("Credential check: private key parse -> %d (-0x%04x)", ret, (unsigned)-ret);
         mbedtls_pk_free(&pk);
     }
@@ -459,12 +481,7 @@ static int pop_transcript(const uint8_t *nonce, uint32_t nonce_len, uint8_t out[
 static int sign_challenge(const uint8_t *nonce, uint32_t nonce_len,
                           uint8_t *sig, size_t sig_size, size_t *sig_len)
 {
-    /* Static rather than automatic: the entropy and DRBG contexts are over a
-     * kilobyte together, and this runs on the main thread during init, whose
-     * stack is already sized for WAMR instantiation. */
     static mbedtls_pk_context pk;
-    static mbedtls_entropy_context entropy;
-    static mbedtls_ctr_drbg_context ctr_drbg;
     uint8_t hash[32];
     int ret;
 
@@ -474,15 +491,6 @@ static int sign_challenge(const uint8_t *nonce, uint32_t nonce_len,
     }
 
     mbedtls_pk_init(&pk);
-    mbedtls_entropy_init(&entropy);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
-
-    ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy,
-                                (const unsigned char *)POP_CONTEXT, POP_CONTEXT_LEN);
-    if (ret != 0) {
-        LOG_ERR("ctr_drbg seed failed: -0x%04x", (unsigned)-ret);
-        goto out;
-    }
 
     ret = pop_transcript(nonce, nonce_len, hash);
     if (ret != 0) {
@@ -491,7 +499,7 @@ static int sign_challenge(const uint8_t *nonce, uint32_t nonce_len,
     }
 
     ret = mbedtls_pk_parse_key(&pk, device_private_key, device_private_key_len,
-                               NULL, 0, mbedtls_ctr_drbg_random, &ctr_drbg);
+                               NULL, 0, platform_rng, NULL);
     if (ret != 0) {
         LOG_ERR("Failed to parse the private key: -0x%04x", (unsigned)-ret);
         goto out;
@@ -499,15 +507,13 @@ static int sign_challenge(const uint8_t *nonce, uint32_t nonce_len,
 
     ret = mbedtls_pk_sign(&pk, MBEDTLS_MD_SHA256, hash, sizeof(hash),
                           sig, sig_size, sig_len,
-                          mbedtls_ctr_drbg_random, &ctr_drbg);
+                          platform_rng, NULL);
     if (ret != 0) {
         LOG_ERR("Failed to sign the challenge: -0x%04x", (unsigned)-ret);
     }
 
 out:
     mbedtls_pk_free(&pk);
-    mbedtls_ctr_drbg_free(&ctr_drbg);
-    mbedtls_entropy_free(&entropy);
     return ret == 0 ? 0 : -1;
 }
 

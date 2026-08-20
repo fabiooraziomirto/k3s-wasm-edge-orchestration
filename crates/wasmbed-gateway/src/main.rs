@@ -973,13 +973,17 @@ const POP_CONTEXT: &[u8] = b"wasmbed-pop-v1";
 /// Binding the announced key into the transcript alongside the nonce means a
 /// signature captured from one device cannot be presented by another that
 /// claims a different key.
+///
+/// This is the pre-image, not its digest: ring's ECDSA_P256_SHA256_ASN1 hashes
+/// the message it is given, while the firmware's mbedtls_pk_sign is handed a
+/// digest directly. Hashing here as well would have the gateway verify over
+/// SHA-256 applied twice and reject every genuine signature.
 fn pop_transcript(nonce: &[u8], spki: &[u8]) -> Vec<u8> {
-    use sha2::{Digest, Sha256};
-    let mut hasher = Sha256::new();
-    hasher.update(POP_CONTEXT);
-    hasher.update(nonce);
-    hasher.update(spki);
-    hasher.finalize().to_vec()
+    let mut transcript = Vec::with_capacity(POP_CONTEXT.len() + nonce.len() + spki.len());
+    transcript.extend_from_slice(POP_CONTEXT);
+    transcript.extend_from_slice(nonce);
+    transcript.extend_from_slice(spki);
+    transcript
 }
 
 /// Extract the uncompressed EC point from a SubjectPublicKeyInfo DER blob.
@@ -1068,6 +1072,22 @@ mod pop_tests {
         let sig = sign(&pkcs8, &pop_transcript(&nonce, &other_spki));
 
         assert!(verify_pop_signature(&spki, &nonce, &sig).is_err());
+    }
+
+    /// The firmware computes SHA-256 over exactly these bytes and signs the
+    /// digest (see pop_transcript in zephyr-app/src/wasmbed_protocol.c), so the
+    /// layout is an interop contract, not an implementation detail.
+    #[test]
+    fn transcript_is_the_context_then_nonce_then_key() {
+        let nonce = [0xAAu8; 4];
+        let spki = [0xBBu8; 3];
+
+        let transcript = pop_transcript(&nonce, &spki);
+
+        assert_eq!(&transcript[..14], b"wasmbed-pop-v1");
+        assert_eq!(&transcript[14..18], &nonce);
+        assert_eq!(&transcript[18..], &spki);
+        assert_eq!(transcript.len(), 14 + 4 + 3);
     }
 
     #[test]
