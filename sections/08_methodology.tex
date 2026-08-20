@@ -122,21 +122,21 @@ exchange itself whereas deployment is timed on a subsequent status query.}
 
 \begin{figure}[pos=t]
 \centering
-\includegraphics[width=\columnwidth]{figures/latency_boxplot.png}
+\includegraphics[width=0.88\columnwidth]{figures/latency_boxplot.png}
 \caption{Distribution of trial-level stage latencies ($n{=}100$, log scale). Diamonds indicate sample means.}%
 \label{fig:latency-boxplot}
 \end{figure}
 
 \begin{figure}[pos=t]
 \centering
-\includegraphics[width=\columnwidth]{figures/latency_trial_scatter.png}
+\includegraphics[width=0.88\columnwidth]{figures/latency_trial_scatter.png}
 \caption{\revC{End-to-end latency by trial index ($n{=}100$). The series is stationary after the discarded warm-up run; see Section~\ref{sec:evaluation} for the correlation statistics.}}%
 \label{fig:latency-trial-scatter}
 \end{figure}
 
 \begin{figure}[pos=t]
 \centering
-\includegraphics[width=\columnwidth]{figures/latency_cdf.png}
+\includegraphics[width=0.88\columnwidth]{figures/latency_cdf.png}
 \caption{Empirical CDF of enrollment, deployment, and end-to-end latencies ($n{=}100$).}%
 \label{fig:latency-cdf}
 \end{figure}
@@ -161,7 +161,7 @@ against the framing cost itself.}
 
 \begin{figure}[pos=t]
 \centering
-\includegraphics[width=\columnwidth]{figures/wire_sizes_bar.png}
+\includegraphics[width=0.88\columnwidth]{figures/wire_sizes_bar.png}
 \caption{Application-layer wire sizes (4-byte length prefix + CBOR) for representative protocol messages.}%
 \label{fig:wire-sizes}
 \end{figure}
@@ -206,7 +206,7 @@ memory unchanged, bounding the cost of registry state alone: those boards are
 
 \begin{figure}[pos=t]
 \centering
-\includegraphics[width=\columnwidth]{figures/pod_resources_bar.png}
+\includegraphics[width=0.88\columnwidth]{figures/pod_resources_bar.png}
 \caption{Mean CPU (millicores) and RAM (MiB) for control-plane pods during the sustainability measurement pass.}%
 \label{fig:pod-resources}
 \end{figure}
@@ -224,7 +224,7 @@ Because the host is a virtualized guest without exposed RAPL counters, Kepler's 
 
 \begin{figure}[pos=t]
 \centering
-\includegraphics[width=\columnwidth]{figures/energy_idle_active_kepler.png}
+\includegraphics[width=0.88\columnwidth]{figures/energy_idle_active_kepler.png}
 \caption{Kepler-estimated power, idle vs.\ active phase ($n{=}38$ paired 30~s cycles with a power reading, $N{=}200{,}000$). Model-based estimate: this host exposes no RAPL counters.}%
 \label{fig:energy-idle-active}
 \end{figure}
