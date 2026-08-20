@@ -463,6 +463,44 @@ mod test {
         assert_encode_decode(&ServerMessage::HeartbeatAck);
     }
 
+    /// Frame sizes on the wire: 4-byte big-endian length prefix + CBOR.
+    ///
+    /// These are quoted in the paper (Section 7.4.1 and the wire-size figure),
+    /// so they are pinned here: a protocol change that moves them should fail a
+    /// test rather than silently invalidate a published figure.
+    #[test]
+    fn test_wire_sizes() {
+        fn frame(msg_len: usize) -> usize {
+            4 + msg_len
+        }
+        fn client(m: &ClientMessage) -> usize {
+            frame(minicbor::to_vec(m).unwrap().len())
+        }
+        fn server(m: &ServerMessage) -> usize {
+            frame(minicbor::to_vec(m).unwrap().len())
+        }
+
+        // A P-256 SubjectPublicKeyInfo, and an ASN.1 DER ECDSA signature.
+        let spki = alloc::vec![0u8; 91];
+        let signature = alloc::vec![0u8; 71];
+
+        assert_eq!(client(&ClientMessage::Heartbeat), 6);
+        assert_eq!(server(&ServerMessage::HeartbeatAck), 6);
+
+        assert_eq!(client(&ClientMessage::EnrollmentRequest), 6);
+        assert_eq!(server(&ServerMessage::EnrollmentAccepted), 6);
+        assert_eq!(client(&ClientMessage::PublicKey { key: spki.clone() }), 99);
+        assert_eq!(server(&ServerMessage::Challenge { nonce: alloc::vec![0u8; 32] }), 40);
+        assert_eq!(client(&ClientMessage::ChallengeResponse { signature }), 79);
+        assert_eq!(server(&ServerMessage::DeviceUuid { uuid: DeviceUuid::new([0u8; 16]) }), 23);
+        assert_eq!(client(&ClientMessage::EnrollmentAcknowledgment), 6);
+        assert_eq!(server(&ServerMessage::EnrollmentCompleted), 6);
+
+        // The whole enrollment round trip, which the paper quotes as one figure.
+        let enrollment = 6 + 6 + 99 + 40 + 79 + 23 + 6 + 6;
+        assert_eq!(enrollment, 265);
+    }
+
     #[test]
     fn test_server_message_challenge() {
         assert_encode_decode(&ServerMessage::Challenge {
