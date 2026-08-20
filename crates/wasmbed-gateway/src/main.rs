@@ -46,6 +46,11 @@ struct Args {
     pod_namespace: String,
     #[arg(long, env = "WASMBED_GATEWAY_POD_NAME")]
     pod_name: String,
+    /// Require devices to present a certificate issued by the client CA.
+    /// Off by default so the fleet can be migrated to provisioned identities
+    /// before the handshake starts refusing anonymous devices.
+    #[arg(long, env = "WASMBED_GATEWAY_REQUIRE_CLIENT_AUTH", default_value = "false")]
+    require_client_auth: bool,
     #[arg(long, env = "WASMBED_GATEWAY_PAIRING_MODE", default_value = "false")]
     pairing_mode: bool,
     #[arg(long, env = "WASMBED_GATEWAY_PAIRING_TIMEOUT", default_value = "300")]
@@ -55,6 +60,7 @@ struct Args {
 }
 
 struct Callbacks {
+    require_client_auth: bool,
     api: Api<Device>,
     gateway_reference: GatewayReference,
     http_server: Arc<HttpApiServer>,
@@ -65,6 +71,7 @@ impl Callbacks {
         let api = self.api.clone();
         let gateway_reference = self.gateway_reference.clone();
         let http_server = self.http_server.clone();
+        let require_client_auth = self.require_client_auth;
         Box::new(move |public_key: Vec<u8>| {
             let api = api.clone();
             let gateway_reference = gateway_reference.clone();
@@ -128,9 +135,15 @@ impl Callbacks {
                         }
                     },
                     Ok(None) => {
-                        // No TLS client cert (anonymous connection): always allow.
-                        // Device identity will be established via CBOR enrollment.
+                        // No TLS client cert. Only tolerated while the fleet is
+                        // being migrated to provisioned identities; with client
+                        // auth required the handshake never gets this far, but
+                        // refuse explicitly rather than relying on that.
                         if public_key.is_empty() {
+                            if require_client_auth {
+                                error!("Anonymous TLS connection rejected: client certificate required");
+                                return AuthorizationResult::Unauthorized;
+                            }
                             println!("[on_connect] Anonymous connection → Authorized");
                             debug!("Anonymous TLS connection accepted; awaiting CBOR enrollment");
                             AuthorizationResult::Authorized
@@ -791,6 +804,7 @@ async fn main() -> Result<()> {
     let http_server = Arc::new(http_server);
 
     let callbacks = Callbacks {
+        require_client_auth: args.require_client_auth,
         api: api.clone(),
         gateway_reference: gateway_reference.clone(),
         http_server: http_server.clone(),
@@ -800,6 +814,7 @@ async fn main() -> Result<()> {
         bind_addr: args.bind_addr,
         identity,
         client_ca,
+        require_client_auth: args.require_client_auth,
         on_client_connect: Arc::new(callbacks.on_connect()),
         on_client_disconnect: Arc::new(callbacks.on_disconnect()),
         on_client_message: Arc::new(callbacks.on_message()),

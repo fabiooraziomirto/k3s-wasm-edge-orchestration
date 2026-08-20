@@ -193,6 +193,10 @@ pub struct GatewayServerConfig {
     pub bind_addr: std::net::SocketAddr,
     pub identity: ServerIdentity,
     pub client_ca: CertificateDer<'static>,
+    /// When true the TLS handshake fails unless the device presents a
+    /// certificate issued by `client_ca`. When false an anonymous client is
+    /// still accepted, but a certificate, if offered, is still validated.
+    pub require_client_auth: bool,
     pub on_client_connect: Arc<OnClientConnectWithKey>,
     pub on_client_disconnect: Arc<OnClientDisconnectWithKey>,
     pub on_client_message: Arc<OnClientMessageWithKey>,
@@ -920,7 +924,11 @@ impl GatewayServer {
         println!("[DEBUG] After logging TLS server configuration");
         println!("[DEBUG] About to create ServerConfig");
         
-        // Create TLS server configuration without client certificate verification initially
+        // Devices authenticate with a client certificate issued by the fleet CA.
+        // Without this the handshake leaves `peer_certificates()` empty, every
+        // device lands on the anonymous path, and identity collapses to
+        // announcing a public key -- which is not a secret -- over an
+        // unauthenticated channel.
         println!("[DEBUG] Calling ServerConfig::builder()");
         println!("[DEBUG] Certificate: {:?}", self.config.identity.certificate());
         println!("[DEBUG] Private key: {:?}", self.config.identity.private_key());
@@ -931,13 +939,42 @@ impl GatewayServer {
             rustls::crypto::ring::cipher_suite::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
             rustls::crypto::ring::cipher_suite::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
         ];
-        let server_config = ServerConfig::builder_with_provider(provider.into())
+        let provider = std::sync::Arc::new(provider);
+
+        let mut client_roots = rustls::RootCertStore::empty();
+        client_roots
+            .add(self.config.client_ca.clone())
+            .map_err(|e| {
+                log::error!("Failed to add client CA to the root store: {:?}", e);
+                anyhow::anyhow!("invalid client CA certificate: {e}")
+            })?;
+
+        let verifier_builder = rustls::server::WebPkiClientVerifier::builder_with_provider(
+            std::sync::Arc::new(client_roots),
+            provider.clone(),
+        );
+        let client_verifier = if self.config.require_client_auth {
+            log::info!("Client certificate authentication is REQUIRED");
+            verifier_builder.build()
+        } else {
+            log::warn!(
+                "Client certificate authentication is OPTIONAL: anonymous devices are still \
+                 accepted. Device identity rests on the application-level exchange alone."
+            );
+            verifier_builder.allow_unauthenticated().build()
+        }
+        .map_err(|e| {
+            log::error!("Failed to build the client certificate verifier: {:?}", e);
+            anyhow::anyhow!("client verifier: {e}")
+        })?;
+
+        let server_config = ServerConfig::builder_with_provider(provider)
             .with_protocol_versions(&[&rustls::version::TLS12])
             .map_err(|e| {
                 log::error!("Failed to configure TLS 1.2 with cipher suites: {:?}", e);
                 e
             })?
-            .with_no_client_auth()
+            .with_client_cert_verifier(client_verifier)
             .with_single_cert(
                 vec![self.config.identity.certificate().clone()],
                 rustls_pki_types::PrivateKeyDer::from(self.config.identity.private_key().clone_key()),
