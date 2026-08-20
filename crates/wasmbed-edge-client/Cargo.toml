@@ -20,8 +20,10 @@ workspace = true
 [dependencies]
 wasmbed-protocol = { path = "../wasmbed-protocol" }
 
-# Module integrity digest (DeployApplication.module_hash)
+# Module integrity digest (DeployApplication.module_hash) and the
+# proof-of-possession transcript
 sha2 = "0.10"
+ring = "0.17"
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
@@ -44,4 +46,7 @@ anyhow = "1"
 clap = { version = "4.4", features = ["derive", "env"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-hex = "0.4"
+
+[dev-dependencies]
+# Independent P-256 key generation, to cross-check the derived SPKI
+rcgen = { version = "0.13", default-features = false, features = ["crypto", "ring"] }

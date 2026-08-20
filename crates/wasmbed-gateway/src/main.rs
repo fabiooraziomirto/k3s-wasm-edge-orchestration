@@ -229,6 +229,7 @@ impl Callbacks {
         let api = self.api.clone();
         let gateway_reference = self.gateway_reference.clone();
         let http_server = self.http_server.clone();
+        let require_client_auth = self.require_client_auth;
         Box::new(move |ctx: MessageContextWithKey| {
             let api = api.clone();
             let gateway_reference = gateway_reference.clone();
@@ -278,8 +279,18 @@ impl Callbacks {
                     Some(ClientMessage::PublicKey { key }) => {
                         info!("Received public key during enrollment: {} bytes", key.len());
 
-                        // Guard: TLS cert key must match CBOR key when a cert is present.
+                        // The key announced over CBOR must be the one the device
+                        // authenticated with at the transport layer, otherwise it
+                        // could enroll as any identity it likes over a channel it
+                        // holds under a different one.
                         let tls_public_key_bytes = ctx.client_public_key();
+                        if require_client_auth && tls_public_key_bytes.is_empty() {
+                            error!("Enrollment rejected: no TLS client certificate to bind the announced key to");
+                            let _ = ctx.reply(ServerMessage::EnrollmentRejected {
+                                reason: "Client certificate required".as_bytes().to_vec()
+                            });
+                            return;
+                        }
                         if !tls_public_key_bytes.is_empty() && tls_public_key_bytes != key {
                             error!("Public key mismatch between TLS certificate and CBOR message");
                             let _ = ctx.reply(ServerMessage::EnrollmentRejected {
@@ -287,106 +298,60 @@ impl Callbacks {
                             });
                             return;
                         }
-
-                        use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
-                        let key_b64 = BASE64.encode(key);
-                        let public_key_obj = PublicKey::from(key.as_slice());
-
-                        match Device::find(api.clone(), public_key_obj.clone()).await {
-                            Ok(Some(existing_device)) => {
-                                // RECONNECT: device was previously enrolled — skip pairing mode.
-                                let device_id = existing_device.name_any();
-                                // Reconstruct the UUID from the device name ("device-<32hexchars>").
-                                let uuid_hex = device_id.trim_start_matches("device-");
-                                let existing_uuid = uuid::Uuid::parse_str(uuid_hex)
-                                    .map(|u| DeviceUuid::new(*u.as_bytes()))
-                                    .unwrap_or_else(|_| DeviceUuid::new(*uuid::Uuid::new_v4().as_bytes()));
-
-                                info!("Device {} reconnected (previously enrolled)", device_id);
-
-                                // Upsert device in HTTP registry.
-                                let capabilities = DeviceCapabilities {
-                                    available_memory: 0,
-                                    cpu_arch: "unknown".to_string(),
-                                    wasm_features: vec![],
-                                    max_app_size: 0,
-                                };
-                                http_server.register_device(device_id.clone(), key_b64.clone(), capabilities).await;
-                                http_server.activate_device_sender(&ctx.connection_id, &device_id, &key_b64).await;
-
-                                // Update K8s status to Connected.
-                                if let Err(e) = DeviceStatusUpdate::default()
-                                    .mark_connected(gateway_reference.clone())
-                                    .apply(api.clone(), existing_device.clone())
-                                    .await
-                                {
-                                    error!("Error updating device status to Connected on reconnect: {e}");
-                                }
-
-                                let _ = ctx.reply(ServerMessage::DeviceUuid { uuid: existing_uuid });
-                            },
-                            Ok(None) => {
-                                // NEW ENROLLMENT: check pairing mode.
-                                let pairing_mode = *http_server.pairing_mode.read().await;
-                                if !pairing_mode {
-                                    error!("Enrollment rejected: pairing mode disabled");
-                                    let _ = ctx.reply(ServerMessage::EnrollmentRejected {
-                                        reason: "Pairing mode disabled".as_bytes().to_vec()
-                                    });
-                                    return;
-                                }
-
-                                let uuid = uuid::Uuid::new_v4();
-                                let device_uuid = DeviceUuid::new(*uuid.as_bytes());
-
-                                match create_device_crd(key, &device_uuid, &api, &gateway_reference).await {
-                                    Ok(device_name) => {
-                                        info!("Created Device CRD: {}", device_name);
-
-                                        // Register and activate sender.
-                                        let capabilities = DeviceCapabilities {
-                                            available_memory: 0,
-                                            cpu_arch: "unknown".to_string(),
-                                            wasm_features: vec![],
-                                            max_app_size: 0,
-                                        };
-                                        http_server.register_device(device_name.clone(), key_b64.clone(), capabilities).await;
-                                        http_server.activate_device_sender(&ctx.connection_id, &device_name, &key_b64).await;
-
-                                        // Mark device as enrolled in K8s.
-                                        if let Ok(Some(device)) = Device::find(api.clone(), public_key_obj.clone()).await {
-                                            if let Err(e) = DeviceStatusUpdate::default()
-                                                .mark_enrolled()
-                                                .apply(api.clone(), device.clone())
-                                                .await
-                                            {
-                                                error!("Error updating device status to Enrolled: {e}");
-                                            }
-                                        }
-
-                                        let _ = ctx.reply(ServerMessage::DeviceUuid { uuid: device_uuid });
-                                    },
-                                    Err(e) => {
-                                        error!("Failed to create Device CRD: {}", e);
-                                        let _ = ctx.reply(ServerMessage::EnrollmentRejected {
-                                            reason: format!("Failed to create device: {}", e).into_bytes()
-                                        });
-                                    }
-                                }
-                            },
-                            Err(e) => {
-                                error!("K8s error while looking up device: {}", e);
-                                let _ = ctx.reply(ServerMessage::EnrollmentRejected {
-                                    reason: "Internal error".as_bytes().to_vec()
-                                });
-                            }
-                        }
+                        // Do not trust the announced key yet: a public key is not a
+                        // secret, so anyone can replay one. Ask the device to sign a
+                        // fresh nonce with the matching private key and defer every
+                        // enrollment side effect until that signature checks out.
+                        let nonce = http_server.issue_challenge(&ctx.connection_id, key).await;
+                        info!(
+                            "Issued proof-of-possession challenge to connection {}",
+                            ctx.connection_id
+                        );
+                        let _ = ctx.reply(ServerMessage::Challenge { nonce });
                     },
-                    Some(ClientMessage::ChallengeResponse { .. }) => {
-                        // No challenge is outstanding for this connection: the
-                        // proof-of-possession exchange has not been wired up yet,
-                        // so a response can only be unsolicited.
-                        warn!("Received ChallengeResponse with no challenge outstanding on connection {}", ctx.connection_id);
+                    Some(ClientMessage::ChallengeResponse { signature }) => {
+                        // take_challenge consumes the nonce whatever happens next,
+                        // so a captured signature cannot be replayed onto a second
+                        // connection or a second attempt.
+                        let Some(challenge) = http_server.take_challenge(&ctx.connection_id).await else {
+                            warn!(
+                                "ChallengeResponse on connection {} with no valid challenge outstanding",
+                                ctx.connection_id
+                            );
+                            let _ = ctx.reply(ServerMessage::EnrollmentRejected {
+                                reason: "No challenge outstanding".as_bytes().to_vec()
+                            });
+                            return;
+                        };
+
+                        if let Err(e) = verify_pop_signature(
+                            &challenge.announced_key,
+                            &challenge.nonce,
+                            signature,
+                        ) {
+                            error!(
+                                "Proof of possession failed on connection {}: {}",
+                                ctx.connection_id, e
+                            );
+                            let _ = ctx.reply(ServerMessage::EnrollmentRejected {
+                                reason: "Proof of possession failed".as_bytes().to_vec()
+                            });
+                            return;
+                        }
+
+                        info!(
+                            "Proof of possession verified for connection {}",
+                            ctx.connection_id
+                        );
+                        complete_enrollment(
+                            &challenge.announced_key,
+                            api.clone(),
+                            gateway_reference.clone(),
+                            http_server.clone(),
+                            &ctx.connection_id,
+                            &ctx,
+                        )
+                        .await;
                     },
                     Some(ClientMessage::EnrollmentAcknowledgment) => {
                         info!("Received enrollment acknowledgment");
@@ -882,4 +847,235 @@ async fn main() -> Result<()> {
     info!("server.run().await returned");
 
     Ok(())
+}
+/// Finish enrollment for a device that has proved possession of its key:
+/// register it, wire its sender, and reflect the new state into Kubernetes.
+///
+/// Split out of the `PublicKey` handler so that none of it can run before the
+/// signature over the challenge has been verified.
+async fn complete_enrollment(
+    key: &Vec<u8>,
+    api: Api<Device>,
+    gateway_reference: GatewayReference,
+    http_server: Arc<HttpApiServer>,
+    connection_id: &str,
+    ctx: &MessageContextWithKey,
+) {
+
+    use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+    let key_b64 = BASE64.encode(key);
+    let public_key_obj = PublicKey::from(key.as_slice());
+
+    match Device::find(api.clone(), public_key_obj.clone()).await {
+        Ok(Some(existing_device)) => {
+            // RECONNECT: device was previously enrolled — skip pairing mode.
+            let device_id = existing_device.name_any();
+            // Reconstruct the UUID from the device name ("device-<32hexchars>").
+            let uuid_hex = device_id.trim_start_matches("device-");
+            let existing_uuid = uuid::Uuid::parse_str(uuid_hex)
+                .map(|u| DeviceUuid::new(*u.as_bytes()))
+                .unwrap_or_else(|_| DeviceUuid::new(*uuid::Uuid::new_v4().as_bytes()));
+
+            info!("Device {} reconnected (previously enrolled)", device_id);
+
+            // Upsert device in HTTP registry.
+            let capabilities = DeviceCapabilities {
+                available_memory: 0,
+                cpu_arch: "unknown".to_string(),
+                wasm_features: vec![],
+                max_app_size: 0,
+            };
+            http_server.register_device(device_id.clone(), key_b64.clone(), capabilities).await;
+            http_server.activate_device_sender(connection_id, &device_id, &key_b64).await;
+
+            // Update K8s status to Connected.
+            if let Err(e) = DeviceStatusUpdate::default()
+                .mark_connected(gateway_reference.clone())
+                .apply(api.clone(), existing_device.clone())
+                .await
+            {
+                error!("Error updating device status to Connected on reconnect: {e}");
+            }
+
+            let _ = ctx.reply(ServerMessage::DeviceUuid { uuid: existing_uuid });
+        },
+        Ok(None) => {
+            // NEW ENROLLMENT: check pairing mode.
+            let pairing_mode = *http_server.pairing_mode.read().await;
+            if !pairing_mode {
+                error!("Enrollment rejected: pairing mode disabled");
+                let _ = ctx.reply(ServerMessage::EnrollmentRejected {
+                    reason: "Pairing mode disabled".as_bytes().to_vec()
+                });
+                return;
+            }
+
+            let uuid = uuid::Uuid::new_v4();
+            let device_uuid = DeviceUuid::new(*uuid.as_bytes());
+
+            match create_device_crd(key, &device_uuid, &api, &gateway_reference).await {
+                Ok(device_name) => {
+                    info!("Created Device CRD: {}", device_name);
+
+                    // Register and activate sender.
+                    let capabilities = DeviceCapabilities {
+                        available_memory: 0,
+                        cpu_arch: "unknown".to_string(),
+                        wasm_features: vec![],
+                        max_app_size: 0,
+                    };
+                    http_server.register_device(device_name.clone(), key_b64.clone(), capabilities).await;
+                    http_server.activate_device_sender(connection_id, &device_name, &key_b64).await;
+
+                    // Mark device as enrolled in K8s.
+                    if let Ok(Some(device)) = Device::find(api.clone(), public_key_obj.clone()).await {
+                        if let Err(e) = DeviceStatusUpdate::default()
+                            .mark_enrolled()
+                            .apply(api.clone(), device.clone())
+                            .await
+                        {
+                            error!("Error updating device status to Enrolled: {e}");
+                        }
+                    }
+
+                    let _ = ctx.reply(ServerMessage::DeviceUuid { uuid: device_uuid });
+                },
+                Err(e) => {
+                    error!("Failed to create Device CRD: {}", e);
+                    let _ = ctx.reply(ServerMessage::EnrollmentRejected {
+                        reason: format!("Failed to create device: {}", e).into_bytes()
+                    });
+                }
+            }
+        },
+        Err(e) => {
+            error!("K8s error while looking up device: {}", e);
+            let _ = ctx.reply(ServerMessage::EnrollmentRejected {
+                reason: "Internal error".as_bytes().to_vec()
+            });
+        }
+    }
+}
+
+/// Domain separation tag for the proof-of-possession transcript. Keeps a
+/// signature produced here from being meaningful in any other context.
+const POP_CONTEXT: &[u8] = b"wasmbed-pop-v1";
+
+/// The bytes a device signs to prove it holds the private key for `spki`.
+///
+/// Binding the announced key into the transcript alongside the nonce means a
+/// signature captured from one device cannot be presented by another that
+/// claims a different key.
+fn pop_transcript(nonce: &[u8], spki: &[u8]) -> Vec<u8> {
+    use sha2::{Digest, Sha256};
+    let mut hasher = Sha256::new();
+    hasher.update(POP_CONTEXT);
+    hasher.update(nonce);
+    hasher.update(spki);
+    hasher.finalize().to_vec()
+}
+
+/// Extract the uncompressed EC point from a SubjectPublicKeyInfo DER blob.
+///
+/// `TlsUtils::extract_public_key` and `Device.spec.publicKey` both carry a full
+/// SPKI, while ring verifies against the raw point, so unwrap one to the other.
+fn ec_point_from_spki(spki: &[u8]) -> anyhow::Result<Vec<u8>> {
+    use x509_parser::prelude::FromDer;
+    let (_, info) = x509_parser::x509::SubjectPublicKeyInfo::from_der(spki)
+        .map_err(|e| anyhow::anyhow!("not a valid SubjectPublicKeyInfo: {e}"))?;
+    Ok(info.subject_public_key.data.to_vec())
+}
+
+/// Check a device's signature over the challenge transcript.
+fn verify_pop_signature(spki: &[u8], nonce: &[u8], signature: &[u8]) -> anyhow::Result<()> {
+    let point = ec_point_from_spki(spki)?;
+    let transcript = pop_transcript(nonce, spki);
+    ring::signature::UnparsedPublicKey::new(
+        &ring::signature::ECDSA_P256_SHA256_ASN1,
+        point,
+    )
+    .verify(&transcript, signature)
+    .map_err(|_| anyhow::anyhow!("signature does not verify against the announced key"))
+}
+
+#[cfg(test)]
+mod pop_tests {
+    use super::{ec_point_from_spki, pop_transcript, verify_pop_signature};
+
+    /// A P-256 identity as a device would be provisioned with: PKCS#8 private
+    /// key plus the SPKI that goes into `Device.spec.publicKey`.
+    fn identity() -> (Vec<u8>, Vec<u8>) {
+        let key_pair = rcgen::KeyPair::generate_for(&rcgen::PKCS_ECDSA_P256_SHA256).unwrap();
+        (key_pair.serialize_der(), key_pair.public_key_der())
+    }
+
+    fn sign(pkcs8: &[u8], transcript: &[u8]) -> Vec<u8> {
+        let rng = ring::rand::SystemRandom::new();
+        let key = ring::signature::EcdsaKeyPair::from_pkcs8(
+            &ring::signature::ECDSA_P256_SHA256_ASN1_SIGNING,
+            pkcs8,
+            &rng,
+        )
+        .unwrap();
+        key.sign(&rng, transcript).unwrap().as_ref().to_vec()
+    }
+
+    #[test]
+    fn accepts_a_signature_from_the_announced_key() {
+        let (pkcs8, spki) = identity();
+        let nonce = vec![0x11; 32];
+        let sig = sign(&pkcs8, &pop_transcript(&nonce, &spki));
+
+        assert!(verify_pop_signature(&spki, &nonce, &sig).is_ok());
+    }
+
+    #[test]
+    fn rejects_a_signature_from_a_different_key() {
+        let (_, spki) = identity();
+        let (other_pkcs8, _) = identity();
+        let nonce = vec![0x22; 32];
+        let sig = sign(&other_pkcs8, &pop_transcript(&nonce, &spki));
+
+        assert!(verify_pop_signature(&spki, &nonce, &sig).is_err());
+    }
+
+    /// The replay a stolen public key alone would otherwise allow: an attacker
+    /// who watched a session cannot reuse its signature against a fresh nonce.
+    #[test]
+    fn rejects_a_signature_replayed_against_a_new_nonce() {
+        let (pkcs8, spki) = identity();
+        let captured_nonce = vec![0x33; 32];
+        let sig = sign(&pkcs8, &pop_transcript(&captured_nonce, &spki));
+
+        let fresh_nonce = vec![0x44; 32];
+        assert!(verify_pop_signature(&spki, &fresh_nonce, &sig).is_err());
+    }
+
+    /// The key is bound into the transcript, so a signature made while claiming
+    /// one identity does not verify while claiming another.
+    #[test]
+    fn transcript_is_bound_to_the_announced_key() {
+        let (pkcs8, spki) = identity();
+        let (_, other_spki) = identity();
+        let nonce = vec![0x55; 32];
+        let sig = sign(&pkcs8, &pop_transcript(&nonce, &other_spki));
+
+        assert!(verify_pop_signature(&spki, &nonce, &sig).is_err());
+    }
+
+    #[test]
+    fn unwraps_the_ec_point_from_the_spki() {
+        let (_, spki) = identity();
+        let point = ec_point_from_spki(&spki).unwrap();
+
+        // Uncompressed P-256 point: 0x04 followed by two 32-byte coordinates.
+        assert_eq!(point.len(), 65);
+        assert_eq!(point[0], 0x04);
+        assert!(spki.ends_with(&point));
+    }
+
+    #[test]
+    fn rejects_a_public_key_that_is_not_an_spki() {
+        assert!(ec_point_from_spki(&[0xab; 32]).is_err());
+    }
 }

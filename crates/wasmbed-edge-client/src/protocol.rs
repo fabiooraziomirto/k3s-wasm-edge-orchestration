@@ -11,6 +11,7 @@ use tokio::sync::mpsc;
 use tokio_rustls::TlsConnector;
 use wasmbed_protocol::{ClientMessage, ServerMessage};
 
+use crate::identity::DeviceIdentity;
 use crate::wasm_runner::WasmRunner;
 
 // ── TLS helpers ──────────────────────────────────────────────────────────────
@@ -134,9 +135,11 @@ fn decode_server(payload: &[u8]) -> Result<ServerMessage> {
 
 // ── Enrollment ───────────────────────────────────────────────────────────────
 
-/// Carries out the 6-step enrollment handshake.
-/// The public_key is the 32-byte Ed25519 raw key that identifies this device in the CRD.
-async fn enroll<R, W>(reader: &mut R, writer: &mut W, public_key: &[u8]) -> Result<()>
+/// Carries out the enrollment handshake, including the proof-of-possession
+/// challenge: the device announces its SubjectPublicKeyInfo (the value stored in
+/// `Device.spec.publicKey`) and then signs the gateway's nonce with the matching
+/// private key.
+async fn enroll<R, W>(reader: &mut R, writer: &mut W, identity: &DeviceIdentity) -> Result<()>
 where
     R: AsyncReadExt + Unpin,
     W: AsyncWriteExt + Unpin,
@@ -163,6 +166,7 @@ where
     }
 
     // 3 — PublicKey
+    let public_key = identity.spki();
     tracing::info!("Enrollment: sending PublicKey ({} bytes)", public_key.len());
     send_message(
         writer,
@@ -172,14 +176,40 @@ where
     )
     .await?;
 
-    // 4 — DeviceUuid
+    // 4 — Challenge, then the signature proving we hold the private key.
+    // A gateway that predates the challenge exchange answers with DeviceUuid
+    // straight away; accept that so a new client still talks to an old gateway.
     let payload = read_frame(reader).await?;
     match decode_server(&payload)? {
+        ServerMessage::Challenge { nonce } => {
+            tracing::info!("Enrollment: signing {}-byte challenge", nonce.len());
+            let signature = identity.sign_challenge(&nonce)?;
+            send_message(writer, &ClientMessage::ChallengeResponse { signature }).await?;
+
+            let payload = read_frame(reader).await?;
+            match decode_server(&payload)? {
+                ServerMessage::DeviceUuid { uuid } => {
+                    tracing::info!("Enrollment: received UUID {}", uuid);
+                }
+                ServerMessage::EnrollmentRejected { reason } => {
+                    anyhow::bail!(
+                        "Proof of possession rejected: {}",
+                        String::from_utf8_lossy(&reason)
+                    );
+                }
+                other => {
+                    anyhow::bail!("Expected DeviceUuid after challenge, got {:?}", other);
+                }
+            }
+        }
         ServerMessage::DeviceUuid { uuid } => {
-            tracing::info!("Enrollment: received UUID {}", uuid);
+            tracing::warn!(
+                "Enrollment: gateway issued no challenge; identity is unproven (UUID {})",
+                uuid
+            );
         }
         other => {
-            anyhow::bail!("Expected DeviceUuid, got {:?}", other);
+            anyhow::bail!("Expected Challenge or DeviceUuid, got {:?}", other);
         }
     }
 
@@ -355,7 +385,11 @@ fn available_memory_bytes() -> u64 {
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 /// Connect to the gateway, enroll, and run the event loop indefinitely.
-pub async fn run(gateway_addr: &str, public_key: Vec<u8>, ca_cert: Option<&Path>) -> Result<()> {
+pub async fn run(
+    gateway_addr: &str,
+    identity: DeviceIdentity,
+    ca_cert: Option<&Path>,
+) -> Result<()> {
     let connector = match ca_cert {
         Some(path) => {
             tracing::info!("TLS: verifying server with CA cert {}", path.display());
@@ -391,7 +425,7 @@ pub async fn run(gateway_addr: &str, public_key: Vec<u8>, ca_cert: Option<&Path>
     let (mut reader, mut writer) = tokio::io::split(tls_stream);
 
     // Enrollment
-    enroll(&mut reader, &mut writer, &public_key).await?;
+    enroll(&mut reader, &mut writer, &identity).await?;
     tracing::info!("Enrolled successfully");
 
     // Channel: event loop → writer task

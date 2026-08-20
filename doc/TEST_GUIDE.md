@@ -108,9 +108,14 @@ Build and smoke-test the non-Zephyr edge daemon:
 
 ```bash
 cargo build -p wasmbed-edge-client
-openssl genpkey -algorithm ed25519 -out /tmp/device-key.pem
-PUBKEY_HEX=$(openssl pkey -in /tmp/device-key.pem -pubout -outform DER | tail -c 32 | xxd -p -c 32)
-RUST_LOG=info ./target/debug/wasmbed-edge-client --gateway 127.0.0.1:30443 --public-key "$PUBKEY_HEX"
+# The device signs the gateway's challenge with this key; the public half is
+# what goes into Device.spec.publicKey.
+# -topk8 matters: plain `genpkey -outform DER` emits a bare SEC1 key, and the
+# client expects PKCS#8.
+openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 \
+  | openssl pkcs8 -topk8 -nocrypt -outform DER -out /tmp/device-key.der
+RUST_LOG=info ./target/debug/wasmbed-edge-client \
+  --gateway 127.0.0.1:30443 --identity-key /tmp/device-key.der
 ```
 
 With gateway down, expect a TCP connection error (not a panic).

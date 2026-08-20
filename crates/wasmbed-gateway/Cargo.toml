@@ -49,6 +49,8 @@ base64 = "0.21"
 # Crypto
 sha2 = "0.10"
 ring = "0.17"
+# SubjectPublicKeyInfo parsing for proof-of-possession verification
+x509-parser = "0.16"
 
 # CBOR encoding
 ciborium = "0.2"

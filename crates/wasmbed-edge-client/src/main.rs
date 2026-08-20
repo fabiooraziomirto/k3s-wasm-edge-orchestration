@@ -5,6 +5,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
 
+mod identity;
 mod protocol;
 mod wasm_runner;
 
@@ -15,9 +16,11 @@ pub struct Args {
     #[arg(long, env = "WASMBED_GATEWAY_ENDPOINT", default_value = "127.0.0.1:8081")]
     pub gateway: String,
 
-    /// 32-byte Ed25519 public key in hex (device identity sent during enrollment)
-    #[arg(long, env = "WASMBED_DEVICE_PUBLIC_KEY")]
-    pub public_key: String,
+    /// PKCS#8 DER private key provisioned for this device. Required to answer
+    /// the gateway's proof-of-possession challenge; the announced public key is
+    /// derived from it.
+    #[arg(long, env = "WASMBED_DEVICE_KEY")]
+    pub identity_key: PathBuf,
 
     /// CA certificate (PEM) for server verification; omit to skip TLS server verification (dev only)
     #[arg(long, env = "WASMBED_CA_CERT")]
@@ -39,15 +42,9 @@ async fn main() -> Result<()> {
 
     let args = Args::parse();
 
-    let public_key_bytes = hex::decode(&args.public_key)
-        .context("Public key must be a hex string")?;
-    if public_key_bytes.len() != 32 {
-        anyhow::bail!(
-            "Public key must be 32 bytes (Ed25519), got {}",
-            public_key_bytes.len()
-        );
-    }
+    let identity = identity::DeviceIdentity::load(&args.identity_key)
+        .context("Loading the device identity key")?;
 
     tracing::info!("Connecting to gateway at {}", args.gateway);
-    protocol::run(&args.gateway, public_key_bytes, args.ca_cert.as_deref()).await
+    protocol::run(&args.gateway, identity, args.ca_cert.as_deref()).await
 }

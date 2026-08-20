@@ -64,6 +64,10 @@ pub struct HttpApiServer {
     pub pending_senders: Arc<RwLock<HashMap<String, mpsc::Sender<ServerMessage>>>>,
     /// Map connection_id -> device_id, set after CBOR enrollment completes
     pub connection_to_device: Arc<RwLock<HashMap<String, String>>>,
+    /// Map connection_id -> outstanding proof-of-possession challenge.
+    /// A challenge is single use and expires, so a signature captured from one
+    /// session cannot be replayed on another.
+    pub pending_challenges: Arc<RwLock<HashMap<String, PendingChallenge>>>,
     pub applications: Arc<RwLock<HashMap<String, DeployedApplication>>>,
     /// Board registry: device_id -> BoardRegistration (boards registered by Renode Manager)
     pub board_registry: Arc<RwLock<HashMap<String, BoardRegistration>>>,
@@ -74,6 +78,18 @@ pub struct HttpApiServer {
     pub pairing_timeout_seconds: Arc<RwLock<u64>>,
     pub heartbeat_timeout_seconds: Arc<RwLock<u64>>,
 }
+
+/// A nonce issued to a connection, awaiting the device's signature.
+#[derive(Debug, Clone)]
+pub struct PendingChallenge {
+    pub nonce: Vec<u8>,
+    /// The public key the device announced, which the signature must verify against
+    pub announced_key: Vec<u8>,
+    pub issued_at: SystemTime,
+}
+
+/// How long a challenge stays valid once issued.
+pub const CHALLENGE_TTL: std::time::Duration = std::time::Duration::from_secs(30);
 
 /// Active device connection information with TLS support
 #[derive(Debug, Clone)]
@@ -228,6 +244,7 @@ impl HttpApiServer {
             public_key_to_device: Arc::new(RwLock::new(HashMap::new())),
             pending_senders: Arc::new(RwLock::new(HashMap::new())),
             connection_to_device: Arc::new(RwLock::new(HashMap::new())),
+            pending_challenges: Arc::new(RwLock::new(HashMap::new())),
             applications: Arc::new(RwLock::new(HashMap::new())),
             board_registry: Arc::new(RwLock::new(HashMap::new())),
             device_api,
@@ -403,6 +420,42 @@ impl HttpApiServer {
         }
     }
 
+    /// Issue a fresh single-use challenge for a connection, replacing any
+    /// challenge already outstanding on it.
+    pub async fn issue_challenge(&self, connection_id: &str, announced_key: &[u8]) -> Vec<u8> {
+        use rand::RngCore;
+        let mut nonce = vec![0u8; 32];
+        rand::thread_rng().fill_bytes(&mut nonce);
+        self.pending_challenges.write().await.insert(
+            connection_id.to_string(),
+            PendingChallenge {
+                nonce: nonce.clone(),
+                announced_key: announced_key.to_vec(),
+                issued_at: SystemTime::now(),
+            },
+        );
+        debug!("Issued proof-of-possession challenge for connection {}", connection_id);
+        nonce
+    }
+
+    /// Consume the challenge outstanding on a connection. Returns None when
+    /// there is none or when it has expired; either way the entry is dropped,
+    /// so a nonce can never be answered twice.
+    pub async fn take_challenge(&self, connection_id: &str) -> Option<PendingChallenge> {
+        let challenge = self.pending_challenges.write().await.remove(connection_id)?;
+        match challenge.issued_at.elapsed() {
+            Ok(age) if age > CHALLENGE_TTL => {
+                warn!(
+                    "Challenge for connection {} expired after {}s",
+                    connection_id,
+                    age.as_secs()
+                );
+                None
+            },
+            _ => Some(challenge),
+        }
+    }
+
     /// Resolve device_id from connection_id (fast) or public_key (fallback).
     pub async fn resolve_device_id(&self, connection_id: &str, public_key_b64: &str) -> Option<String> {
         {
@@ -426,6 +479,7 @@ impl HttpApiServer {
     /// Clean up in-memory connection state on TLS disconnect.
     pub async fn remove_connection(&self, connection_id: &str) {
         self.pending_senders.write().await.remove(connection_id);
+        self.pending_challenges.write().await.remove(connection_id);
         let device_id = self.connection_to_device.write().await.remove(connection_id);
         if let Some(device_id) = device_id {
             let mut connections = self.device_connections.write().await;
