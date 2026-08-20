@@ -47,9 +47,10 @@ struct Args {
     #[arg(long, env = "WASMBED_GATEWAY_POD_NAME")]
     pod_name: String,
     /// Require devices to present a certificate issued by the client CA.
-    /// Off by default so the fleet can be migrated to provisioned identities
-    /// before the handshake starts refusing anonymous devices.
-    #[arg(long, env = "WASMBED_GATEWAY_REQUIRE_CLIENT_AUTH", default_value = "false")]
+    /// On by default: an anonymous channel gives the gateway no way to tell one
+    /// device from another. Set to false only to bring up a fleet that has not
+    /// been through scripts/provision-device-identity.sh yet.
+    #[arg(long, env = "WASMBED_GATEWAY_REQUIRE_CLIENT_AUTH", default_value = "true")]
     require_client_auth: bool,
     #[arg(long, env = "WASMBED_GATEWAY_PAIRING_MODE", default_value = "false")]
     pairing_mode: bool,

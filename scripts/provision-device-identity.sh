@@ -35,10 +35,19 @@ if [ ! -f "$CERT_DIR/ca-key.pem" ] || [ ! -f "$CERT_DIR/ca-cert.pem" ]; then
   exit 66
 fi
 
-TOOL="$REPO_ROOT/target/debug/wasmbed-cert-tool"
-if [ ! -x "$TOOL" ]; then
+# Prefer whichever build already exists. On the lab host the workspace cannot be
+# built with the system cargo (1.75 against a v4 lock file), so the binary comes
+# from the same rust:1.88-slim image the Dockerfiles use:
+#   docker run --rm -v "$PWD":/src -w /src rust:1.88-slim \
+#     cargo build --release -p wasmbed-cert-tool
+TOOL=""
+for candidate in "$REPO_ROOT/target/release/wasmbed-cert-tool" "$REPO_ROOT/target/debug/wasmbed-cert-tool"; do
+  [ -x "$candidate" ] && TOOL="$candidate" && break
+done
+if [ -z "$TOOL" ]; then
   echo "Building wasmbed-cert-tool..."
   cargo build -q -p wasmbed-cert-tool --manifest-path "$REPO_ROOT/Cargo.toml"
+  TOOL="$REPO_ROOT/target/debug/wasmbed-cert-tool"
 fi
 
 mkdir -p "$DEVICE_DIR"

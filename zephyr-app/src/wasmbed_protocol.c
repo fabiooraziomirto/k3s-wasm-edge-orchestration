@@ -50,11 +50,15 @@ static uint8_t device_public_key[128] = {0};
 static uint32_t device_public_key_len = 0U;
 /* TLS client certificate, PKCS#8 private key and fleet CA, all DER, all read
  * out of injected memory during init for the same reason as the public key. */
-static uint8_t device_client_cert[1024] = {0};
+/* Sized to what the fleet actually issues, because RAM here is scarce: a P-256
+ * client certificate is ~550 bytes, its PKCS#8 key 138, and an RSA-2048 CA
+ * certificate ~800. These buffers must outlive registration: Zephyr's
+ * tls_credential_add stores pointers, it does not copy. */
+static uint8_t device_client_cert[768] = {0};
 static uint32_t device_client_cert_len = 0U;
-static uint8_t device_private_key[256] = {0};
+static uint8_t device_private_key[192] = {0};
 static uint32_t device_private_key_len = 0U;
-static uint8_t fleet_ca_cert[1536] = {0};
+static uint8_t fleet_ca_cert[1024] = {0};
 static uint32_t fleet_ca_cert_len = 0U;
 
 static void read_device_public_key(void);
