@@ -68,6 +68,22 @@ enum Command {
         )]
         out_cert: PathBuf,
     },
+
+    /// Issue the ECDSA P-256 identity a device authenticates with.
+    ///
+    /// Produces the three artefacts the fleet needs: the PKCS#8 private key and
+    /// client certificate injected into the device, and the SubjectPublicKeyInfo
+    /// that goes into `Device.spec.publicKey`.
+    IssueDevice {
+        #[arg(long, help = "Fleet CA private key (PEM)")]
+        ca_key: PathBuf,
+        #[arg(long, help = "Fleet CA certificate (PEM)")]
+        ca_cert: PathBuf,
+        #[arg(long, help = "Device name, used as the certificate common name")]
+        device_id: String,
+        #[arg(long, help = "Directory to write <device-id>.{key,crt,spki} into")]
+        out_dir: PathBuf,
+    },
 }
 
 #[derive(ValueEnum, Clone)]
@@ -113,6 +129,9 @@ fn build_distinguished_name(args: &Command) -> DistinguishedName {
             if let Some(v) = locality {
                 dn.push(DnType::LocalityName, v);
             }
+        },
+        Command::IssueDevice { device_id, .. } => {
+            dn.push(DnType::CommonName, device_id);
         },
     }
     dn
@@ -206,7 +225,87 @@ fn main() -> Result<()> {
                 },
             }
         },
+
+        Command::IssueDevice {
+            ca_key,
+            ca_cert,
+            device_id,
+            out_dir,
+        } => {
+            issue_device_identity(ca_key, ca_cert, device_id, out_dir)?;
+        },
     }
+
+    Ok(())
+}
+
+/// Issue one device identity signed by the fleet CA.
+///
+/// The device key is always ECDSA P-256: it is the only signature algorithm the
+/// firmware's mbedTLS build can both present in the TLS handshake and use to
+/// sign the gateway's proof-of-possession challenge. The CA key is loaded from
+/// PEM so whatever algorithm the fleet CA already uses keeps working.
+fn issue_device_identity(
+    ca_key: &PathBuf,
+    ca_cert: &PathBuf,
+    device_id: &str,
+    out_dir: &PathBuf,
+) -> Result<()> {
+    use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
+    use rcgen::{
+        CertificateParams, DistinguishedName, DnType, ExtendedKeyUsagePurpose, KeyPair,
+        KeyUsagePurpose, PKCS_ECDSA_P256_SHA256,
+    };
+
+    let ca_key_pem = std::fs::read_to_string(ca_key)
+        .with_context(|| format!("failed to read CA key from {ca_key:?}"))?;
+    let ca_cert_pem = std::fs::read_to_string(ca_cert)
+        .with_context(|| format!("failed to read CA cert from {ca_cert:?}"))?;
+
+    let ca_key_pair = KeyPair::from_pem(&ca_key_pem)
+        .with_context(|| format!("failed to parse the CA key in {ca_key:?}"))?;
+    let ca_params = CertificateParams::from_ca_cert_pem(&ca_cert_pem)
+        .with_context(|| format!("failed to parse the CA certificate in {ca_cert:?}"))?;
+    // rcgen signs against a Certificate, so rebuild one from the CA's own
+    // parameters and key; the reconstructed certificate carries the same
+    // subject and key, which is all the signature depends on.
+    let ca_certificate = ca_params
+        .self_signed(&ca_key_pair)
+        .with_context(|| "failed to reconstruct the CA certificate")?;
+
+    let device_key = KeyPair::generate_for(&PKCS_ECDSA_P256_SHA256)
+        .with_context(|| "failed to generate a P-256 key pair")?;
+
+    let mut dn = DistinguishedName::new();
+    dn.push(DnType::CommonName, device_id);
+
+    let mut params = CertificateParams::default();
+    params.distinguished_name = dn;
+    params.key_usages = vec![KeyUsagePurpose::DigitalSignature];
+    params.extended_key_usages = vec![ExtendedKeyUsagePurpose::ClientAuth];
+
+    let certificate = params
+        .signed_by(&device_key, &ca_certificate, &ca_key_pair)
+        .with_context(|| "failed to sign the device certificate")?;
+
+    std::fs::create_dir_all(out_dir)
+        .with_context(|| format!("failed to create {out_dir:?}"))?;
+
+    let key_path = out_dir.join(format!("{device_id}.key"));
+    let cert_path = out_dir.join(format!("{device_id}.crt"));
+    let spki_path = out_dir.join(format!("{device_id}.spki"));
+
+    let spki = device_key.public_key_der();
+
+    std::fs::write(&key_path, device_key.serialize_der())
+        .with_context(|| format!("failed to write {key_path:?}"))?;
+    std::fs::write(&cert_path, certificate.der())
+        .with_context(|| format!("failed to write {cert_path:?}"))?;
+    std::fs::write(&spki_path, &spki)
+        .with_context(|| format!("failed to write {spki_path:?}"))?;
+
+    // The encoding PublicKey::to_base64 produces, i.e. what Device::find looks up.
+    println!("{}", URL_SAFE_NO_PAD.encode(&spki));
 
     Ok(())
 }

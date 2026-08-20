@@ -174,11 +174,49 @@ const DEVICE_ENDPOINT_ADDR: u32 = 0x2000_1000;
 /// Memory address where the device public key is injected (read by the firmware,
 /// see `DEVICE_KEY_ADDR` in `zephyr-app/src/wasmbed_protocol.c`).
 const DEVICE_KEY_ADDR: u32 = 0x2000_2000;
-/// Ed25519 public key size, and the buffer size the firmware expects.
-const DEVICE_KEY_LEN: usize = 32;
+/// Buffer the firmware reserves for the public key. A P-256
+/// SubjectPublicKeyInfo is 91 bytes; the 256 bytes up to `DEVICE_MAC_ADDR`
+/// hold that plus the 4-byte length prefix with room to spare.
+const DEVICE_KEY_LEN: usize = 128;
 /// Memory address where the device MAC is injected (read by the firmware before
 /// DHCP, see `DEVICE_MAC_ADDR` in `zephyr-app/src/network_handler.c`).
 const DEVICE_MAC_ADDR: u32 = 0x2000_2100;
+/// Memory address where the device's TLS client certificate (DER) is injected,
+/// see `DEVICE_CERT_ADDR` in `zephyr-app/src/wasmbed_protocol.c`.
+const DEVICE_CERT_ADDR: u32 = 0x2000_3000;
+/// Memory address where the device's PKCS#8 private key (DER) is injected,
+/// see `DEVICE_PRIVKEY_ADDR` in `zephyr-app/src/wasmbed_protocol.c`.
+const DEVICE_PRIVKEY_ADDR: u32 = 0x2000_4000;
+
+/// Directory holding the identities written by
+/// `scripts/provision-device-identity.sh`: `<device-id>.{key,crt,spki}`.
+fn device_identity_dir() -> std::path::PathBuf {
+    std::env::var("WASMBED_DEVICE_IDENTITY_DIR")
+        .unwrap_or_else(|_| "config/devices".to_string())
+        .into()
+}
+
+/// Read one provisioned identity artefact for a device.
+fn device_identity_file(device_id: &str, extension: &str) -> Option<Vec<u8>> {
+    let path = device_identity_dir().join(format!("{device_id}.{extension}"));
+    match std::fs::read(&path) {
+        Ok(bytes) if !bytes.is_empty() => Some(bytes),
+        Ok(_) => {
+            eprintln!("WARN: {} is empty", path.display());
+            None
+        },
+        Err(e) => {
+            eprintln!(
+                "WARN: no {} for device {} at {} ({}); run scripts/provision-device-identity.sh",
+                extension,
+                device_id,
+                path.display(),
+                e
+            );
+            None
+        },
+    }
+}
 
 /// SHA-256 of the device id, used to derive all per-device identifiers.
 fn device_digest(device_id: &str) -> [u8; 32] {
@@ -261,24 +299,51 @@ fn device_public_key_bytes(device_id: &str) -> (Vec<u8>, bool) {
         }
         eprintln!(
             "WARN: device {} has a publicKey that is not raw base64 ('{}'); \
-             falling back to a key derived from the device id",
+             falling back to the provisioned identity on disk",
             device_id, key_b64
         );
     } else {
         eprintln!(
             "WARN: could not read spec.publicKey for device {} from the CRD; \
-             falling back to a key derived from the device id",
+             falling back to the provisioned identity on disk",
             device_id
         );
     }
 
-    let derived = device_digest(device_id).to_vec();
+    // The key must be the public half of a key pair the device actually holds:
+    // it has to sign the gateway's challenge with the matching private key.
+    // Deriving something from the device id, as this used to do, produced a
+    // unique but unusable identity that could never enroll.
+    if let Some(spki) = device_identity_file(device_id, "spki") {
+        eprintln!(
+            "Device {} will enroll with its provisioned key {}",
+            device_id,
+            URL_SAFE_NO_PAD.encode(&spki)
+        );
+        return (spki, false);
+    }
+
     eprintln!(
-        "Device {} will enroll with derived key {} (set this as spec.publicKey to pre-register it)",
-        device_id,
-        URL_SAFE_NO_PAD.encode(&derived)
+        "ERROR: device {} has no provisioned identity; it will not be able to enroll",
+        device_id
     );
-    (derived, false)
+    (Vec::new(), false)
+}
+
+/// Renode commands injecting a device's provisioned TLS credentials.
+///
+/// Returns an empty string when the identity is missing, so the firmware fails
+/// on a zero-length credential rather than silently starting an unauthenticated
+/// session.
+fn device_credential_writes(device_id: &str) -> String {
+    let mut out = String::new();
+    if let Some(cert) = device_identity_file(device_id, "crt") {
+        out.push_str(&format!("\n{}", renode_write_blob(DEVICE_CERT_ADDR, &cert)));
+    }
+    if let Some(key) = device_identity_file(device_id, "key") {
+        out.push_str(&format!("\n{}", renode_write_blob(DEVICE_PRIVKEY_ADDR, &key)));
+    }
+    out
 }
 
 /// Check whether the per-device TAP exists in the HOST network namespace.
@@ -1613,7 +1678,11 @@ impl RenodeManager {
         let (key_bytes, _from_crd) = device_public_key_bytes(device_id);
         let key_write = renode_write_blob(DEVICE_KEY_ADDR, &key_bytes);
         let mac_write = renode_write_blob(DEVICE_MAC_ADDR, &device_mac_bytes(device_id));
-        Ok(format!("{}\n{}\n{}\n{}", renode_commands, endpoint_write, key_write, mac_write))
+        let credential_writes = device_credential_writes(device_id);
+        Ok(format!(
+            "{}\n{}\n{}\n{}{}",
+            renode_commands, endpoint_write, key_write, mac_write, credential_writes
+        ))
     }
 
     /// Test-only wrapper around [`RenodeManager::build_resc_script`], so integration
@@ -1667,6 +1736,9 @@ impl RenodeManager {
         );
         let key_write = renode_write_blob(DEVICE_KEY_ADDR, &key_bytes);
         let mac_write = renode_write_blob(DEVICE_MAC_ADDR, &device_mac_bytes(device_id));
+        // TLS client certificate and private key: without them the device
+        // cannot authenticate the transport or sign the enrollment challenge.
+        let credential_writes = device_credential_writes(device_id);
 
         let mut script = format!(
             "using sysbus\n\
@@ -1690,6 +1762,8 @@ impl RenodeManager {
         script.push_str(&key_write);
         script.push('\n');
         script.push_str(&mac_write);
+        script.push('\n');
+        script.push_str(&credential_writes);
         script.push('\n');
         script.push_str(pc_sp);
         script.push_str("logLevel 3\n");
@@ -1983,6 +2057,8 @@ impl RenodeManager {
         );
         endpoint_write_commands.push_str(&format!("\n{}", renode_write_blob(DEVICE_KEY_ADDR, &key_bytes)));
         endpoint_write_commands.push_str(&format!("\n{}", renode_write_blob(DEVICE_MAC_ADDR, &device_mac_bytes(device_id))));
+        // TLS client certificate and private key for this device.
+        endpoint_write_commands.push_str(&device_credential_writes(device_id));
         
         // Append endpoint configuration to Renode commands
         let renode_commands_with_endpoint = format!("{}{}", renode_commands, endpoint_write_commands);
@@ -2279,6 +2355,7 @@ mod tests {
     fn test_resc_scripts_isolate_devices() {
         let manager = RenodeManager::new("renode".to_string(), 30000);
         let ids = ["fleet-device-1", "fleet-device-2", "fleet-device-3"];
+        let _identities = stub_identity_dir(&ids);
 
         let scripts: Vec<String> = ids
             .iter()
@@ -2325,15 +2402,50 @@ mod tests {
         assert_ne!(key_lines[0], key_lines[2]);
     }
 
-    #[test]
-    fn test_derived_key_is_32_bytes_and_unique() {
-        // Without a reachable cluster this exercises the fallback path.
-        let (k1, from_crd1) = device_public_key_bytes("fleet-device-1");
-        let (k2, _) = device_public_key_bytes("fleet-device-2");
-        if !from_crd1 {
-            assert_eq!(k1.len(), DEVICE_KEY_LEN);
+    /// Write a distinct SPKI, certificate and private key per device, standing in
+    /// for what scripts/provision-device-identity.sh produces.
+    fn stub_identity_dir(ids: &[&str]) -> std::path::PathBuf {
+        let dir = std::env::temp_dir()
+            .join(format!("wasmbed-unit-identities-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).expect("identity dir");
+        for (i, id) in ids.iter().enumerate() {
+            // 91 bytes, the size of a real P-256 SubjectPublicKeyInfo.
+            std::fs::write(dir.join(format!("{id}.spki")), vec![0xA0 + i as u8; 91]).unwrap();
+            std::fs::write(dir.join(format!("{id}.crt")), vec![0xC0 + i as u8; 64]).unwrap();
+            std::fs::write(dir.join(format!("{id}.key")), vec![0xD0 + i as u8; 48]).unwrap();
         }
+        std::env::set_var("WASMBED_DEVICE_IDENTITY_DIR", &dir);
+        dir
+    }
+
+    #[test]
+    fn test_provisioned_keys_are_distinct_per_device() {
+        let ids = ["fleet-device-1", "fleet-device-2"];
+        let _identities = stub_identity_dir(&ids);
+
+        // Without a reachable cluster this exercises the on-disk fallback.
+        let (k1, _) = device_public_key_bytes(ids[0]);
+        let (k2, _) = device_public_key_bytes(ids[1]);
+
+        assert!(!k1.is_empty(), "a provisioned device must have a key to enroll with");
+        assert!(k1.len() <= DEVICE_KEY_LEN, "key must fit the firmware buffer");
         assert_ne!(k1, k2, "each device must enroll with a distinct public key");
+    }
+
+    /// The old fallback derived a key from the device id. It was unique but no
+    /// private key backed it, so such a device can never prove possession. An
+    /// unprovisioned device must therefore get nothing, and fail loudly.
+    #[test]
+    fn test_unprovisioned_device_gets_no_key() {
+        let dir = std::env::temp_dir()
+            .join(format!("wasmbed-unit-identities-none-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).expect("identity dir");
+        std::env::set_var("WASMBED_DEVICE_IDENTITY_DIR", &dir);
+
+        let (key, from_crd) = device_public_key_bytes("never-provisioned-device");
+
+        assert!(key.is_empty());
+        assert!(!from_crd);
     }
 
     #[tokio::test]

@@ -116,6 +116,65 @@ fn each_device_is_given_its_own_crd_public_key() {
     assert_eq!(injected.len(), ids.len(), "keys must be distinct across the fleet");
 }
 
+/// Provision a temporary identity directory holding a distinct certificate and
+/// private key per device, the way `scripts/provision-device-identity.sh` does.
+fn install_identities(ids: &[&str]) -> std::path::PathBuf {
+    let dir = std::env::temp_dir().join(format!("wasmbed-identities-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).expect("identity dir");
+    for (i, id) in ids.iter().enumerate() {
+        std::fs::write(dir.join(format!("{id}.crt")), vec![0xC0 + i as u8; 64]).unwrap();
+        std::fs::write(dir.join(format!("{id}.key")), vec![0xD0 + i as u8; 48]).unwrap();
+    }
+    std::env::set_var("WASMBED_DEVICE_IDENTITY_DIR", &dir);
+    dir
+}
+
+/// A device must be handed the private key it signs the enrollment challenge
+/// with and the certificate it authenticates the transport with. Sharing either
+/// across the fleet would put every board back on one identity.
+#[test]
+fn each_device_is_given_its_own_tls_credentials() {
+    let _stub = install_stub_kubectl();
+    let ids = ["cred-device-1", "cred-device-2", "cred-device-3"];
+    let _dir = install_identities(&ids);
+    let manager = RenodeManager::new("renode".to_string(), 30000);
+
+    let mut certs = Vec::new();
+    let mut keys = Vec::new();
+    for (i, id) in ids.iter().enumerate() {
+        let script = manager_build(&manager, id);
+        // DEVICE_CERT_ADDR / DEVICE_PRIVKEY_ADDR in wasmbed_protocol.c
+        let cert = decode_blob(&script, 0x2000_3000);
+        let key = decode_blob(&script, 0x2000_4000);
+
+        assert_eq!(cert, vec![0xC0 + i as u8; 64], "device {id} must get its own certificate");
+        assert_eq!(key, vec![0xD0 + i as u8; 48], "device {id} must get its own private key");
+        certs.push(cert);
+        keys.push(key);
+    }
+
+    certs.dedup();
+    keys.dedup();
+    assert_eq!(certs.len(), ids.len(), "certificates must be distinct across the fleet");
+    assert_eq!(keys.len(), ids.len(), "private keys must be distinct across the fleet");
+}
+
+/// With no provisioned identity nothing is injected, so the firmware fails on an
+/// absent credential instead of quietly opening an unauthenticated session.
+#[test]
+fn a_device_without_a_provisioned_identity_gets_no_credentials() {
+    let _stub = install_stub_kubectl();
+    let dir = std::env::temp_dir().join(format!("wasmbed-identities-empty-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).expect("identity dir");
+    std::env::set_var("WASMBED_DEVICE_IDENTITY_DIR", &dir);
+
+    let manager = RenodeManager::new("renode".to_string(), 30000);
+    let script = manager_build(&manager, "unprovisioned-device");
+
+    assert!(!script.contains("0x20003000"), "no certificate should be injected");
+    assert!(!script.contains("0x20004000"), "no private key should be injected");
+}
+
 fn manager_build(manager: &RenodeManager, id: &str) -> String {
     manager
         .build_resc_script_for_test(&device(id), id, "192.168.1.1:30443", "/firmware/zephyr.elf")

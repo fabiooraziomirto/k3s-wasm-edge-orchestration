@@ -58,13 +58,17 @@ fi
 command -v kubectl >/dev/null || { echo "kubectl mancante"; exit 2; }
 kubectl get ns "$NAMESPACE" >/dev/null 2>&1 || { echo "namespace $NAMESPACE non raggiungibile: avvia il cluster"; exit 2; }
 
-# --- 1. Device CRD con chiavi pubbliche distinte ----------------------------
-step "1) Creazione Device CRD con chiave pubblica distinta"
+# --- 1. Device CRD con identita' provisionate distinte ----------------------
+step "1) Provisioning identita' e creazione Device CRD"
 declare -A KEYS
 for d in "${DEVICES[@]}"; do
-  # spec.publicKey = base64 url-safe senza padding dei 32 byte grezzi
-  # (stesso formato di PublicKey::to_base64, usato da Device::find nel gateway).
-  key=$(openssl rand 32 | base64 | tr '+/' '-_' | tr -d '=\n')
+  # Ogni device riceve una coppia di chiavi ECDSA P-256 e un certificato client
+  # firmato dalla CA di fleet. spec.publicKey e' il SubjectPublicKeyInfo in
+  # base64 url-safe senza padding (il formato di PublicKey::to_base64, usato da
+  # Device::find nel gateway). Byte casuali non basterebbero piu': il device
+  # deve firmare il nonce del gateway con la chiave privata corrispondente.
+  key=$(APPLY=0 ./scripts/provision-device-identity.sh "$d" | awk '/spec.publicKey:/ {print $2}')
+  [ -n "$key" ] || { ko "provisioning identita' fallito per $d"; continue; }
   KEYS[$d]="$key"
   kubectl apply -f - >/dev/null <<CRD
 apiVersion: wasmbed.github.io/v0
@@ -114,6 +118,10 @@ for d in "${DEVICES[@]}"; do
       && ok "$d.resc usa TAP/MAC propri" || ko "$d.resc non usa TAP/MAC propri"
     grep -q "WriteDoubleWord 0x20002000" "$f" \
       && ok "$d.resc inietta la chiave pubblica" || ko "$d.resc non inietta la chiave pubblica"
+    grep -q "WriteDoubleWord 0x20003000" "$f" \
+      && ok "$d.resc inietta il certificato client" || ko "$d.resc non inietta il certificato client"
+    grep -q "WriteDoubleWord 0x20004000" "$f" \
+      && ok "$d.resc inietta la chiave privata" || ko "$d.resc non inietta la chiave privata"
   else
     ko "$f non generato"
   fi

@@ -4,4 +4,8 @@ metadata:
   name: test-device-2
   namespace: wasmbed
 spec:
-  publicKey: "test-public-key-12345"
+  # PLACEHOLDER, not a usable identity. The real value is the device's
+  # SubjectPublicKeyInfo in url-safe base64, and the device must hold the
+  # matching P-256 private key to answer the gateway's enrollment challenge.
+  # Generate both with:  ./scripts/provision-device-identity.sh <device-name>
+  publicKey: "test-device-2-placeholder"

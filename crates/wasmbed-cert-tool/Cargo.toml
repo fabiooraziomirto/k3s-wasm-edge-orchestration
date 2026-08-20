@@ -11,6 +11,12 @@ workspace = true
 
 [dependencies]
 anyhow = "1.0.98"
+# Device identities are issued directly with rcgen rather than through
+# wasmbed-cert: the fleet CA is an existing PEM key of whatever algorithm
+# scripts/generate-gateway-certs.sh produced, and device keys must be P-256
+# because that is what the firmware's mbedTLS build can sign with.
+rcgen = { version = "0.13", default-features = false, features = ["crypto", "ring", "pem", "x509-parser"] }
+base64 = "0.21"
 
 [dependencies.clap]
 version = "4.5.40"

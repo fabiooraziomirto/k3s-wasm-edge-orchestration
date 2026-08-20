@@ -4,6 +4,10 @@ metadata:
   name: mcu-board-3
   namespace: wasmbed
 spec:
+  # PLACEHOLDER, not a usable identity. The real value is the device's
+  # SubjectPublicKeyInfo in url-safe base64, and the device must hold the
+  # matching P-256 private key to answer the gateway's enrollment challenge.
+  # Generate both with:  ./scripts/provision-device-identity.sh <device-name>
   publicKey: "mcu-board-3-public-key-12345"
 status:
   phase: "Enrolled"

@@ -16,6 +16,9 @@ certs/
 *.pem
 *.key
 *.crt
+# Per-device identities from scripts/provision-device-identity.sh: private keys
+# for the whole fleet, never to be committed.
+config/devices/
 
 kubeconfig.yaml
 .env
