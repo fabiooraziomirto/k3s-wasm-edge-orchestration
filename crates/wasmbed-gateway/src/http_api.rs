@@ -17,9 +17,6 @@ use kube::Api;
 use serde::{Deserialize, Serialize};
 use tokio::sync::{RwLock, mpsc};
 use tracing::{debug, error, info, warn};
-use tokio::net::TcpStream;
-use tokio::io::AsyncWriteExt;
-use minicbor;
 
 use wasmbed_k8s_resource::{
     Application, ApplicationConfig, ApplicationPhase, ApplicationStatusUpdate, Device,
@@ -100,20 +97,10 @@ pub struct DeviceConnection {
     pub connected_since: SystemTime,
     pub last_heartbeat: SystemTime,
     pub capabilities: DeviceCapabilities,
-    pub tls_connection: Option<Arc<RwLock<TcpStream>>>,
     /// Sender to push ServerMessage to the device over TLS (set when TLS connection is ready)
     pub tls_sender: Option<Arc<mpsc::Sender<ServerMessage>>>,
     pub is_enrolled: bool,
     pub tls_connected: bool, // Flag to indicate if TLS connection is active
-}
-
-/// CBOR/TLS message wrapper
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CborTlsMessage {
-    pub message_type: String,
-    pub data: Vec<u8>,
-    pub signature: Vec<u8>,
-    pub timestamp: SystemTime,
 }
 
 /// Device capabilities
@@ -331,7 +318,6 @@ impl HttpApiServer {
             connected_since: SystemTime::now(),
             last_heartbeat: SystemTime::now(),
             capabilities,
-            tls_connection: None,
             tls_sender: None,
             is_enrolled: false,
             tls_connected: false, // Set true when TLS connection is ready (sender set)
@@ -612,23 +598,6 @@ impl HttpApiServer {
                     .await
                     .map_err(|e| anyhow::anyhow!("TLS send to device {}: {}", device_id, e))?;
                 debug!("Sent message to device {} via TLS sender", device_id);
-                return Ok(());
-            }
-            if let Some(tls_stream) = &connection.tls_connection {
-                let mut stream = tls_stream.write().await;
-                let cbor_data = minicbor::to_vec(message)?;
-                let cbor_message = CborTlsMessage {
-                    message_type: "server_message".to_string(),
-                    data: cbor_data,
-                    signature: vec![],
-                    timestamp: SystemTime::now(),
-                };
-                let message_data = serde_cbor::to_vec(&cbor_message)?;
-                let length = message_data.len() as u32;
-                stream.write_all(&length.to_be_bytes()).await?;
-                stream.write_all(&message_data).await?;
-                stream.flush().await?;
-                debug!("Sent CBOR/TLS message to device {}", device_id);
                 return Ok(());
             }
             Err(anyhow::anyhow!("No TLS connection for device {}", device_id))
