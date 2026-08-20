@@ -7,8 +7,8 @@ Enrollment establishes the transition from a protected transport session to a pl
 \begin{enumerate}
     \item The device opens a protected session with the gateway and requests enrollment.
     \item The gateway validates the request before proceeding.
-    \item The device provides identity material that can be bound to a known platform resource.
-    \item The gateway compares that material with the identity registered in the control plane.
+    \item The device provides identity material that can be bound to a known platform resource, and signs a single-use gateway nonce to demonstrate that it holds the matching private key.
+    \item The gateway verifies the signature and compares the material with the identity registered in the control plane.
     \item The device confirms that enrollment information has been received and that it is ready for managed operation.
     \item The gateway stores the device\textendash{}session association and updates the corresponding resource status.
 \end{enumerate}
@@ -69,22 +69,24 @@ Figures~\ref{fig:enrollment-sequence} and~\ref{fig:deployment-sequence} summariz
 \node[actor] (gateway) at (3.25,0) {Gateway\\TLS/CBOR};
 \node[actor] (control) at (6.5,0) {Kubernetes\\CRDs};
 
-\draw[lifeline] (device) -- (0,-5.6);
-\draw[lifeline] (gateway) -- (3.25,-5.6);
-\draw[lifeline] (control) -- (6.5,-5.6);
+\draw[lifeline] (device) -- (0,-5.55);
+\draw[lifeline] (gateway) -- (3.25,-5.55);
+\draw[lifeline] (control) -- (6.5,-5.55);
 
-\draw[msg] (0,-0.65) -- node[above,note]{EnrollmentRequest} (3.25,-0.65);
-\draw[ret] (3.25,-1.25) -- node[above,note]{EnrollmentAccepted} (0,-1.25);
-\draw[msg] (0,-1.85) -- node[above,note]{PublicKey / identity material} (3.25,-1.85);
-\draw[msg] (3.25,-2.45) -- node[above,note]{match expected identity} (6.5,-2.45);
-\draw[ret] (6.5,-3.05) -- node[above,note]{Device status context} (3.25,-3.05);
-\draw[ret] (3.25,-3.65) -- node[above,note]{EnrollmentCompleted} (0,-3.65);
-\draw[msg] (0,-4.35) -- node[above,note]{Heartbeat} (3.25,-4.35);
-\draw[msg] (3.25,-4.95) -- node[above,note]{patch phase / freshness} (6.5,-4.95);
-\draw[ret] (3.25,-5.45) -- node[above,note]{HeartbeatAck} (0,-5.45);
+\draw[msg] (0,-0.52) -- node[above,note]{EnrollmentRequest} (3.25,-0.52);
+\draw[ret] (3.25,-1.00) -- node[above,note]{EnrollmentAccepted} (0,-1.00);
+\draw[msg] (0,-1.48) -- node[above,note]{PublicKey / identity material} (3.25,-1.48);
+\draw[ret] (3.25,-1.96) -- node[above,note]{Challenge (single-use nonce)} (0,-1.96);
+\draw[msg] (0,-2.44) -- node[above,note]{ChallengeResponse (signed nonce)} (3.25,-2.44);
+\draw[msg] (3.25,-2.92) -- node[above,note]{match expected identity} (6.5,-2.92);
+\draw[ret] (6.5,-3.40) -- node[above,note]{Device status context} (3.25,-3.40);
+\draw[ret] (3.25,-3.88) -- node[above,note]{EnrollmentCompleted} (0,-3.88);
+\draw[msg] (0,-4.44) -- node[above,note]{Heartbeat} (3.25,-4.44);
+\draw[msg] (3.25,-4.92) -- node[above,note]{patch phase / freshness} (6.5,-4.92);
+\draw[ret] (3.25,-5.40) -- node[above,note]{HeartbeatAck} (0,-5.40);
 \end{tikzpicture}%
 }
-\caption{Enrollment and heartbeat sequence. Device-originated evidence is validated by the gateway and reflected into Kubernetes status.}%
+\caption{Enrollment and heartbeat sequence. The device proves key possession by signing a single-use nonce before its evidence is reflected into Kubernetes status.}%
 \label{fig:enrollment-sequence}
 \end{figure}
 
@@ -124,10 +126,10 @@ Figures~\ref{fig:enrollment-sequence} and~\ref{fig:deployment-sequence} summariz
 %Removed (ridondanza): During enrollment, the decisive event is not the opening of a protected transport session alone, but the successful association between the device-provided identity material and the \texttt{Device} resource expected by the control plane. Heartbeats then refresh the same association by producing liveness evidence that the gateway can interpret before patching Kubernetes status. Deployment follows the complementary direction: the \texttt{Application} resource records desired state, the controller resolves the mediation path, and the gateway converts intent into a southbound command. The returned \texttt{DeployResult} is treated as execution evidence, not merely as a transport acknowledgment, only after this evidence is propagated does application status converge to the reported outcome.
 \revD{The decisive event in enrollment is not the opening of a protected session but the
 association between the device-provided identity material and the expected \texttt{Device}
-resource; heartbeats then refresh that association. Deployment runs the complementary
-direction, and the returned \texttt{DeployResult} is treated as execution evidence rather
-than as a transport acknowledgment: application status converges only once that evidence is
-propagated.}
+resource, admitted only once possession of the matching private key is proved; heartbeats
+then refresh that association. Deployment runs the complementary direction, and the
+returned \texttt{DeployResult} is treated as execution evidence rather than as a transport
+acknowledgment: application status converges only once that evidence is propagated.}
 
 \subsection{Reconciliation Policy}
 Protocol correctness becomes platform correctness only when message outcomes are interpreted consistently by the control plane. The framework therefore gives the gateway authority over protocol-derived observations and constrains controllers to reconcile those observations without overreacting to transient visibility gaps.
