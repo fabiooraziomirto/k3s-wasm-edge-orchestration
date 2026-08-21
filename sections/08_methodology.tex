@@ -54,7 +54,7 @@ status after reconciliation, and timing evidence from the harness's monotonic ti
 trial succeeds only when all four agree before the configured timeout, so success cannot be
 reported from a single eventually consistent field.}
 
-Latency measurements follow the same separation. Enrollment latency measures the interval needed to complete the identity-binding path and expose the enrolled device to the control plane. Deployment latency measures the path from declared Application intent to reported execution outcome. End-to-end latency is the sum of enrollment and deployment for the evaluated transaction. Heartbeat observability is reported separately because it measures how quickly the harness can observe a fresh heartbeat after it is available through the gateway; it is not the firmware heartbeat period and should not be interpreted as a liveness interval.
+Latency measurements follow the same separation. Enrollment latency measures how quickly the control plane registers an attached device and exposes it through the API. \revD{It does not span the southbound handshake and enrollment exchange, which run before it and are timed on the device itself in Section~\ref{sec:implementation}.} Deployment latency measures the path from declared Application intent to reported execution outcome. End-to-end latency is the sum of enrollment and deployment for the evaluated transaction. Heartbeat observability is reported separately because it measures how quickly the harness can observe a fresh heartbeat after it is available through the gateway; it is not the firmware heartbeat period and should not be interpreted as a liveness interval.
 
 \begin{table}[pos=t]
 \centering
@@ -346,7 +346,7 @@ Edge runtime & kubelet + container runtime + OS & Zephyr + WAMR ({\color{red}402
 % Removed: Edge cluster agent RAM & 100--350~MiB per node (literature) & none on device \\
 {\color{red}Edge cluster agent footprint} & {\color{red}kubelet + container runtime + OS services required} & none on device \\
 % Removed: Steady control traffic & CRI/container probes & 1728~B/h per device \\
-{\color{red}Steady heartbeat traffic} & CRI/container probes & {\color{red}1728~B/h per device (application layer)}\revD{, ${\approx}40$~KB/h on the wire} \\
+{\color{red}Steady heartbeat traffic} & CRI/container probes & {\color{red}1728~B/h per device (application layer)}\revD{, ${\approx}40$~KiB/h on the wire} \\
 Fog mediation RAM & per-node agent & ${<}5$~MiB shared gateway \\
 \bottomrule
 \end{tabular}
