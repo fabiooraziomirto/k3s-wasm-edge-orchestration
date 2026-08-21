@@ -1,0 +1,19 @@
+commit: 67ffac1cc4b0c12ee19ab7e6ee2c83d44c597070
+describe: 67ffac1-dirty
+assembled: 2026-08-21T09:02:15Z
+
+--- uncommitted changes at assembly time ---
+ M figures/latency_boxplot.png
+ M figures/latency_cdf.png
+ M figures/latency_trial_scatter.png
+ M main.pdf
+ M references.bib
+ M sections/00_abstract.tex
+ M sections/01_highlights.tex
+ M sections/07_implementation.tex
+ M sections/08_methodology.tex
+ M sections/13_conclusion.tex
+?? artifact/
+?? "comcom_retrospect (3).pdf"
+?? "comcom_retrospect (7).pdf"
+?? experiments/20260821-083420/

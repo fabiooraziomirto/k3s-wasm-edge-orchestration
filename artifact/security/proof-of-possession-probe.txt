@@ -1,0 +1,10 @@
+### Proof-of-possession check, release image gateway:v1.0
+# Same client certificate in both runs; only the key used to sign the
+# gateway's challenge differs.
+
+phase before: Disconnected
+forged signature  -> EnrollmentRejected: Proof of possession failed
+phase after forged: Connected
+honest signature  -> DeviceUuid
+phase after honest: Connected
+

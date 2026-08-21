@@ -1,0 +1,43 @@
+{
+  "experiment": "system_snapshot",
+  "trial": 1,
+  "success": true,
+  "duration_ms": 0.0,
+  "details": {
+    "metrics": {
+      "error": "Error from server (Forbidden): pods.metrics.k8s.io is forbidden: User \"system:serviceaccount:wasmbed:wasmbed-api-server\" cannot list resource \"pods\" in API group \"metrics.k8s.io\" in the namespace \"wasmbed\"\n",
+      "metrics": []
+    },
+    "source": "pod-snapshot",
+    "pods": [
+      {
+        "name": "gateway-1-deployment-74589d64db-lct25",
+        "phase": "Running",
+        "restarts": 0
+      },
+      {
+        "name": "wasmbed-api-server-fcff6c7b5-f7ds9",
+        "phase": "Running",
+        "restarts": 0
+      },
+      {
+        "name": "wasmbed-application-controller-c95d5d4c8-nxx78",
+        "phase": "Running",
+        "restarts": 0
+      }
+    ]
+  },
+  "measurement_scope": "host_shared_with_renode",
+  "energy": {
+    "window_start": 1787301281.6627145,
+    "window_end": 1787301282.0118134,
+    "window_s": 0.349,
+    "scrape_interval_s": 5,
+    "low_confidence": true,
+    "namespace_watts": null,
+    "all_pods_watts": null,
+    "host_watts": null,
+    "unattributed_watts_approx": null,
+    "unavailable": true
+  }
+}

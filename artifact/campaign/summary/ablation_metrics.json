@@ -1,0 +1,12 @@
+{
+  "hardened": {
+    "txn_rate": 1.0,
+    "stale_phases": 0,
+    "false_disconnect": 0
+  },
+  "unhardened": {
+    "txn_rate": 1.0,
+    "stale_phases": 0,
+    "false_disconnect": 0
+  }
+}

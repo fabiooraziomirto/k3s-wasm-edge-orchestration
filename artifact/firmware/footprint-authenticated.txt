@@ -1,0 +1,12 @@
+# Firmware footprint -- authenticated build (the evaluated configuration)
+# board: stm32f746g_disco, Zephyr 3.5.0 + WAMR
+# source: /home/ubuntu/retrospect/zephyr-app
+
+## Linker memory regions
+FLASH:      411272 B    1 MB     39.22%
+RAM:        260208 B    256 KB   99.26%
+DTCM:        12544 B    64 KB    19.14%
+
+## size(1)
+   text	   data	    bss	    dec	    hex	filename
+ 401876	   9384	 264119	 675379	  a4e33	/home/ubuntu/retrospect/zephyr-workspace/build/stm32f746g_disco/zephyr/zephyr.elf

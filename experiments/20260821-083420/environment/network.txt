@@ -1,0 +1,52 @@
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: ens18: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether bc:24:11:da:85:73 brd ff:ff:ff:ff:ff:ff
+    altname enp0s18
+4: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default 
+    link/ether b2:fc:ae:ae:a3:2f brd ff:ff:ff:ff:ff:ff
+5: flannel.1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UNKNOWN mode DEFAULT group default 
+    link/ether 2e:3c:9d:0e:e1:44 brd ff:ff:ff:ff:ff:ff
+6: cni0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 06:87:a7:fc:88:ca brd ff:ff:ff:ff:ff:ff
+25878: vethf8c62169@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether 52:fb:76:0e:86:7d brd ff:ff:ff:ff:ff:ff link-netns cni-99c39b08-2258-37dc-7b65-6a20671f0ec9
+25893: veth2a1af083@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether 0a:7c:18:a5:b7:af brd ff:ff:ff:ff:ff:ff link-netns cni-31287354-ab74-f0cb-fa9e-c3363741f27b
+25894: veth40394887@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether a2:54:b7:6f:50:dc brd ff:ff:ff:ff:ff:ff link-netns cni-be402a24-32c6-4091-b4c3-7c99edb57c44
+25895: wasmbr0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 06:f4:cf:23:c8:62 brd ff:ff:ff:ff:ff:ff
+25896: wtap-295b324f: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel master wasmbr0 state UP mode DEFAULT group default qlen 1000
+    link/ether ba:4c:63:5a:e5:a2 brd ff:ff:ff:ff:ff:ff
+25901: wtap-0917cd52: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UNKNOWN mode DEFAULT group default qlen 1000
+    link/ether 4a:64:f4:c0:de:bd brd ff:ff:ff:ff:ff:ff
+25669: vetha6ed98b1@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether d6:d3:31:7b:b1:b3 brd ff:ff:ff:ff:ff:ff link-netns cni-2f59be63-9cbf-17af-dab2-ff8c1565fb3e
+25687: tailscale0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1280 qdisc fq_codel state UNKNOWN mode DEFAULT group default qlen 500
+    link/none 
+25528: veth3d77fc95@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether 8e:de:15:ed:d5:a3 brd ff:ff:ff:ff:ff:ff link-netns cni-8212ffba-fa66-cc7e-e083-86fc237b7c20
+25529: veth6a0f9cb3@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether 76:ce:75:07:c5:e0 brd ff:ff:ff:ff:ff:ff link-netns cni-9a35b609-a1e0-5423-fced-1f17e42ccf3e
+25530: veth89de1311@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether c2:e7:af:d8:2a:64 brd ff:ff:ff:ff:ff:ff link-netns cni-3152a5bb-fcea-1cc7-b1fb-ffea342e9dcd
+25531: veth09ab6d27@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether d6:aa:4f:e1:e9:53 brd ff:ff:ff:ff:ff:ff link-netns cni-749875bd-5be9-c258-cf3b-c6613adf89d1
+25532: veth27f59024@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether 9a:36:e4:79:b5:fd brd ff:ff:ff:ff:ff:ff link-netns cni-63ba5b7b-c9a7-8c97-11a7-a776392a943b
+25533: veth45ceb677@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue master cni0 state UP mode DEFAULT group default 
+    link/ether 32:f7:83:da:00:2b brd ff:ff:ff:ff:ff:ff link-netns cni-44597939-5d01-f821-ec1e-6815f4010911
+25534: veth92ee041@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master docker0 state UP mode DEFAULT group default 
+    link/ether ee:33:40:d8:88:70 brd ff:ff:ff:ff:ff:ff link-netnsid 6
+LISTEN 0      4096                     127.0.0.1:8080       0.0.0.0:*          
+LISTEN 0      4096                     127.0.0.1:3001       0.0.0.0:*          
+LISTEN 0      4096                     127.0.0.1:30443      0.0.0.0:*          
+LISTEN 0      4096                         [::1]:30443         [::]:*          
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination         
+KUBE-SERVICES  0    --  0.0.0.0/0            0.0.0.0/0            /* kubernetes service portals */
+CNI-HOSTPORT-DNAT  0    --  0.0.0.0/0            0.0.0.0/0            ADDRTYPE match dst-type LOCAL
+CNI-HOSTPORT-DNAT  0    --  0.0.0.0/0            0.0.0.0/0            ADDRTYPE match dst-type LOCAL
+DOCKER     0    --  0.0.0.0/0            0.0.0.0/0            ADDRTYPE match dst-type LOCAL
+DNAT       6    --  0.0.0.0/0            192.168.1.1          tcp dpt:30443 to:10.42.0.118:8443

@@ -57,7 +57,7 @@ digest the firmware recomputes before instantiation. Three limits remain: TLS~1.
 than 1.3; one authority with no revocation path; and a digest that binds a module to what
 the gateway announced, not to a signature by its publisher. Workload identity
 attestation~\cite{spiffe} and signed artifact metadata~\cite{tuf,rfc9019} close these gaps.
-On the emulated STM32F746G target the signature costs 79~ms and enrollment completes 86--182~ms after the TLS session opens.}
+On the emulated STM32F746G target the signature costs 79~ms and enrollment completes 111--185~ms after the TLS session opens.}
 
 \subsection{Embedded Execution Path}
 On the embedded side, the firmware implements only the southbound protocol roles required by the orchestration model. It establishes the protected channel, sends enrollment and heartbeat records, receives deployment commands, passes the WASM payload to WAMR, and returns a structured result. It does not embed Kubernetes client logic, service-account credentials, resource watches, or container-image management. The edge endpoint is therefore closer to a managed execution target than to a miniature cluster node. This is a deliberate implementation constraint: the more Kubernetes behavior is pushed into the firmware, the harder it becomes to keep the device portable, auditable, and suitable for constrained deployments.

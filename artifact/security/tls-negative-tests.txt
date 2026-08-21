@@ -1,0 +1,17 @@
+# Gateway client-authentication checks, release image gateway:v1.0
+# Each case is one TLS 1.2 handshake against the gateway TLS listener.
+
+## 1. Certificate not issued by the fleet CA -- must be refused
+$ openssl s_client -connect <gw> -cert rogue.pem -key rogue.key -tls1_2
+4007B03FB0760000:error:0A000416:SSL routines:ssl3_read_bytes:sslv3 alert certificate unknown:../ssl/record/rec_layer_s3.c:1599:SSL alert number 46
+    Verify return code: 0 (ok)
+
+## 2. No client certificate at all -- must be refused
+$ openssl s_client -connect <gw> -tls1_2
+40E75F23C8790000:error:0A00045C:SSL routines:ssl3_read_bytes:tlsv13 alert certificate required:../ssl/record/rec_layer_s3.c:1599:SSL alert number 116
+    Verify return code: 0 (ok)
+
+## 3. Certificate issued by the fleet CA -- must complete
+$ openssl s_client -connect <gw> -cert probe.pem -key probe.key -tls1_2
+New, TLSv1.2, Cipher is ECDHE-RSA-AES128-GCM-SHA256
+    Verify return code: 0 (ok)

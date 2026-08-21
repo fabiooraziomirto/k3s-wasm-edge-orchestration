@@ -1,0 +1,13 @@
+# Firmware footprint -- baseline build, authentication removed
+# Same tree with the pre-authentication sources and prj.conf, built to
+# measure what mutual authentication costs. It reproduces the footprint
+# published before the channel was authenticated.
+
+## Linker memory regions
+FLASH:      406568 B    1 MB     38.77%
+RAM:        256944 B    256 KB   98.02%
+DTCM:        12544 B    64 KB    19.14%
+
+## size(1)
+   text	   data	    bss	    dec	    hex	filename
+ 397172	   9384	 260854	 667410	  a2f12	/home/ubuntu/retrospect/zephyr-workspace/build/pre-mtls/zephyr/zephyr.elf

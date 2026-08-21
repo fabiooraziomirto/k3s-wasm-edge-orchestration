@@ -1,0 +1,2848 @@
+{
+  "generated_at": "2026-08-21T08:46:20.628622+00:00",
+  "namespace": "wasmbed",
+  "api_base": "http://127.0.0.1:3001",
+  "gateway_http": "http://127.0.0.1:8080",
+  "measurement_scope": "host_shared_with_renode",
+  "energy_enabled": true,
+  "prometheus_base": "http://127.0.0.1:9090",
+  "energy_power_provenance": {
+    "platform_power_source": "none",
+    "components_power_source": "estimator",
+    "cpu_architecture": "K8",
+    "is_estimated": true,
+    "detail": "MODEL ESTIMATE -- no hardware power meter (platform_power_source='none'); watts are regression output, not measurements"
+  },
+  "records": [
+    {
+      "experiment": "system_snapshot",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 0.0,
+      "details": {
+        "metrics": {
+          "error": "Error from server (Forbidden): pods.metrics.k8s.io is forbidden: User \"system:serviceaccount:wasmbed:wasmbed-api-server\" cannot list resource \"pods\" in API group \"metrics.k8s.io\" in the namespace \"wasmbed\"\n",
+          "metrics": []
+        },
+        "source": "pod-snapshot",
+        "pods": [
+          {
+            "name": "gateway-1-deployment-74589d64db-lct25",
+            "phase": "Running",
+            "restarts": 0
+          },
+          {
+            "name": "wasmbed-api-server-fcff6c7b5-f7ds9",
+            "phase": "Running",
+            "restarts": 0
+          }
+        ]
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301820.2749317,
+        "window_end": 1787301820.5715148,
+        "window_s": 0.297,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 1.230656752090945,
+        "all_pods_watts": 1.3513658430000253,
+        "host_watts": 16.380218181818385,
+        "unattributed_watts_approx": 15.02885233881836
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 775.8399052545428,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:43:24.996121372Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301820.61645,
+        "window_end": 1787301825.9097574,
+        "window_s": 5.293,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 4.699876997619867,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 17.8
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301820.61645,
+        "window_end": 1787301825.9097574,
+        "window_s": 5.293,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 1,
+      "success": true,
+      "duration_ms": 1082.7575488947332,
+      "details": {
+        "application": "experiment-1-1787301824",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301820.61645,
+        "window_end": 1787301825.9097574,
+        "window_s": 5.293,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 2,
+      "success": true,
+      "duration_ms": 1494.4944381713867,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:43:24.996121372Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301825.932323,
+        "window_end": 1787301831.8023343,
+        "window_s": 5.87,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 2,
+      "success": true,
+      "duration_ms": 4.602424800395966,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 24.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301825.932323,
+        "window_end": 1787301831.8023343,
+        "window_s": 5.87,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 2,
+      "success": true,
+      "duration_ms": 719.8267127387226,
+      "details": {
+        "application": "experiment-2-1787301830",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301825.932323,
+        "window_end": 1787301831.8023343,
+        "window_s": 5.87,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 3,
+      "success": true,
+      "duration_ms": 1081.1649658717215,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:43:24.996121372Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301831.8267906,
+        "window_end": 1787301837.1815145,
+        "window_s": 5.355,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 1.1157806458441524,
+        "all_pods_watts": 1.2248170094805044,
+        "host_watts": 15.36027272727171,
+        "unattributed_watts_approx": 14.135455717791205
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 3,
+      "success": true,
+      "duration_ms": 5.427342373877764,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 29.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301831.8267906,
+        "window_end": 1787301837.1815145,
+        "window_s": 5.355,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 1.1157806458441524,
+        "all_pods_watts": 1.2248170094805044,
+        "host_watts": 15.36027272727171,
+        "unattributed_watts_approx": 14.135455717791205
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 3,
+      "success": true,
+      "duration_ms": 813.9004339464009,
+      "details": {
+        "application": "experiment-3-1787301836",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301831.8267906,
+        "window_end": 1787301837.1815145,
+        "window_s": 5.355,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 1.1157806458441524,
+        "all_pods_watts": 1.2248170094805044,
+        "host_watts": 15.36027272727171,
+        "unattributed_watts_approx": 14.135455717791205
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 4,
+      "success": true,
+      "duration_ms": 1167.8528091870248,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:43:24.996121372Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301837.204021,
+        "window_end": 1787301842.3050137,
+        "window_s": 5.101,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 4,
+      "success": true,
+      "duration_ms": 6.09202915802598,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 34.7
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301837.204021,
+        "window_end": 1787301842.3050137,
+        "window_s": 5.101,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 4,
+      "success": true,
+      "duration_ms": 755.2883792668581,
+      "details": {
+        "application": "experiment-4-1787301841",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301837.204021,
+        "window_end": 1787301842.3050137,
+        "window_s": 5.101,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 5,
+      "success": true,
+      "duration_ms": 760.049220174551,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:43:24.996121372Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301842.325116,
+        "window_end": 1787301848.3039515,
+        "window_s": 5.979,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 5,
+      "success": true,
+      "duration_ms": 4.746665712445974,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 39.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301842.325116,
+        "window_end": 1787301848.3039515,
+        "window_s": 5.979,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 5,
+      "success": true,
+      "duration_ms": 1294.0071737393737,
+      "details": {
+        "application": "experiment-5-1787301846",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301842.325116,
+        "window_end": 1787301848.3039515,
+        "window_s": 5.979,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 6,
+      "success": true,
+      "duration_ms": 769.2309627309442,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:43:24.996121372Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301848.3271253,
+        "window_end": 1787301852.9534013,
+        "window_s": 4.626,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 1.04185168090911,
+        "all_pods_watts": 1.1560698627272838,
+        "host_watts": 14.632472727278417,
+        "unattributed_watts_approx": 13.476402864551133
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 6,
+      "success": true,
+      "duration_ms": 4.993758164346218,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 45.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301848.3271253,
+        "window_end": 1787301852.9534013,
+        "window_s": 4.626,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 1.04185168090911,
+        "all_pods_watts": 1.1560698627272838,
+        "host_watts": 14.632472727278417,
+        "unattributed_watts_approx": 13.476402864551133
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 6,
+      "success": true,
+      "duration_ms": 720.3877163119614,
+      "details": {
+        "application": "experiment-6-1787301852",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301848.3271253,
+        "window_end": 1787301852.9534013,
+        "window_s": 4.626,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 1.04185168090911,
+        "all_pods_watts": 1.1560698627272838,
+        "host_watts": 14.632472727278417,
+        "unattributed_watts_approx": 13.476402864551133
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 7,
+      "success": true,
+      "duration_ms": 1030.9828156605363,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:10.994608358Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301852.9759803,
+        "window_end": 1787301857.9976022,
+        "window_s": 5.022,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 7,
+      "success": true,
+      "duration_ms": 5.275197792798281,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 4.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301852.9759803,
+        "window_end": 1787301857.9976022,
+        "window_s": 5.022,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 7,
+      "success": true,
+      "duration_ms": 731.2021628022194,
+      "details": {
+        "application": "experiment-7-1787301857",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301852.9759803,
+        "window_end": 1787301857.9976022,
+        "window_s": 5.022,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 8,
+      "success": true,
+      "duration_ms": 758.5472660139203,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:10.994608358Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301858.0210495,
+        "window_end": 1787301862.7579575,
+        "window_s": 4.737,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 8,
+      "success": true,
+      "duration_ms": 4.982867278158665,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 9.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301858.0210495,
+        "window_end": 1787301862.7579575,
+        "window_s": 4.737,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 8,
+      "success": true,
+      "duration_ms": 790.4850128106773,
+      "details": {
+        "application": "experiment-8-1787301861",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301858.0210495,
+        "window_end": 1787301862.7579575,
+        "window_s": 4.737,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 9,
+      "success": true,
+      "duration_ms": 787.779517006129,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:10.994608358Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301862.7828984,
+        "window_end": 1787301869.1068594,
+        "window_s": 6.324,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9858690845455186,
+        "all_pods_watts": 1.0957236300000843,
+        "host_watts": 13.789909090906042,
+        "unattributed_watts_approx": 12.694185460905958
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 9,
+      "success": true,
+      "duration_ms": 5.331641994416714,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 14.1
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301862.7828984,
+        "window_end": 1787301869.1068594,
+        "window_s": 6.324,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9858690845455186,
+        "all_pods_watts": 1.0957236300000843,
+        "host_watts": 13.789909090906042,
+        "unattributed_watts_approx": 12.694185460905958
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 9,
+      "success": true,
+      "duration_ms": 1792.669429909438,
+      "details": {
+        "application": "experiment-9-1787301866",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301862.7828984,
+        "window_end": 1787301869.1068594,
+        "window_s": 6.324,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9858690845455186,
+        "all_pods_watts": 1.0957236300000843,
+        "host_watts": 13.789909090906042,
+        "unattributed_watts_approx": 12.694185460905958
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 10,
+      "success": true,
+      "duration_ms": 820.3642349690199,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:10.994608358Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301869.1276274,
+        "window_end": 1787301873.8973527,
+        "window_s": 4.77,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 10,
+      "success": true,
+      "duration_ms": 5.328156054019928,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 20.3
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301869.1276274,
+        "window_end": 1787301873.8973527,
+        "window_s": 4.77,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 10,
+      "success": true,
+      "duration_ms": 761.9311478920281,
+      "details": {
+        "application": "experiment-10-1787301872",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301869.1276274,
+        "window_end": 1787301873.8973527,
+        "window_s": 4.77,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 11,
+      "success": true,
+      "duration_ms": 1066.1839349195361,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:10.994608358Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301873.919014,
+        "window_end": 1787301879.0520906,
+        "window_s": 5.133,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 11,
+      "success": true,
+      "duration_ms": 5.372067913413048,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 25.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301873.919014,
+        "window_end": 1787301879.0520906,
+        "window_s": 5.133,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 11,
+      "success": true,
+      "duration_ms": 774.5427768677473,
+      "details": {
+        "application": "experiment-11-1787301878",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301873.919014,
+        "window_end": 1787301879.0520906,
+        "window_s": 5.133,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 12,
+      "success": true,
+      "duration_ms": 732.981382869184,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:10.994608358Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301879.0726604,
+        "window_end": 1787301883.808352,
+        "window_s": 4.736,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.8779636363636365,
+        "all_pods_watts": 0.9932181818181752,
+        "host_watts": 13.230981818188658,
+        "unattributed_watts_approx": 12.237763636370483
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 12,
+      "success": true,
+      "duration_ms": 5.121748894453049,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 30.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301879.0726604,
+        "window_end": 1787301883.808352,
+        "window_s": 4.736,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.8779636363636365,
+        "all_pods_watts": 0.9932181818181752,
+        "host_watts": 13.230981818188658,
+        "unattributed_watts_approx": 12.237763636370483
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 12,
+      "success": true,
+      "duration_ms": 873.2081898488104,
+      "details": {
+        "application": "experiment-12-1787301882",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301879.0726604,
+        "window_end": 1787301883.808352,
+        "window_s": 4.736,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.8779636363636365,
+        "all_pods_watts": 0.9932181818181752,
+        "host_watts": 13.230981818188658,
+        "unattributed_watts_approx": 12.237763636370483
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 13,
+      "success": true,
+      "duration_ms": 779.9288178794086,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:10.994608358Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301883.8301613,
+        "window_end": 1787301889.9019141,
+        "window_s": 6.072,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 13,
+      "success": true,
+      "duration_ms": 4.73271869122982,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 35.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301883.8301613,
+        "window_end": 1787301889.9019141,
+        "window_s": 6.072,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 13,
+      "success": true,
+      "duration_ms": 1183.640476781875,
+      "details": {
+        "application": "experiment-13-1787301888",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301883.8301613,
+        "window_end": 1787301889.9019141,
+        "window_s": 6.072,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 14,
+      "success": true,
+      "duration_ms": 783.2851726561785,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:10.994608358Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301889.9239383,
+        "window_end": 1787301894.751384,
+        "window_s": 4.827,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.8991818181818174,
+        "all_pods_watts": 1.0075636363636322,
+        "host_watts": 13.252527272726663,
+        "unattributed_watts_approx": 12.244963636363032
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 14,
+      "success": true,
+      "duration_ms": 5.057238042354584,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 41.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301889.9239383,
+        "window_end": 1787301894.751384,
+        "window_s": 4.827,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.8991818181818174,
+        "all_pods_watts": 1.0075636363636322,
+        "host_watts": 13.252527272726663,
+        "unattributed_watts_approx": 12.244963636363032
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 14,
+      "success": true,
+      "duration_ms": 729.710650164634,
+      "details": {
+        "application": "experiment-14-1787301893",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301889.9239383,
+        "window_end": 1787301894.751384,
+        "window_s": 4.827,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.8991818181818174,
+        "all_pods_watts": 1.0075636363636322,
+        "host_watts": 13.252527272726663,
+        "unattributed_watts_approx": 12.244963636363032
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 15,
+      "success": true,
+      "duration_ms": 963.9099398627877,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:10.994608358Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301894.7728438,
+        "window_end": 1787301900.5517688,
+        "window_s": 5.779,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.8991818181818174,
+        "all_pods_watts": 1.0075636363636322,
+        "host_watts": 13.252527272726663,
+        "unattributed_watts_approx": 12.244963636363032
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 15,
+      "success": true,
+      "duration_ms": 5.442731082439423,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 46.3
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301894.7728438,
+        "window_end": 1787301900.5517688,
+        "window_s": 5.779,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.8991818181818174,
+        "all_pods_watts": 1.0075636363636322,
+        "host_watts": 13.252527272726663,
+        "unattributed_watts_approx": 12.244963636363032
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 15,
+      "success": true,
+      "duration_ms": 743.0870742537081,
+      "details": {
+        "application": "experiment-15-1787301899",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301894.7728438,
+        "window_end": 1787301900.5517688,
+        "window_s": 5.779,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.8991818181818174,
+        "all_pods_watts": 1.0075636363636322,
+        "host_watts": 13.252527272726663,
+        "unattributed_watts_approx": 12.244963636363032
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 16,
+      "success": true,
+      "duration_ms": 727.9356378130615,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:57.228286352Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301900.5708518,
+        "window_end": 1787301905.7582731,
+        "window_s": 5.187,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 16,
+      "success": true,
+      "duration_ms": 6.1157927848398685,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 5.1
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301900.5708518,
+        "window_end": 1787301905.7582731,
+        "window_s": 5.187,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 16,
+      "success": true,
+      "duration_ms": 744.3149359896779,
+      "details": {
+        "application": "experiment-16-1787301904",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301900.5708518,
+        "window_end": 1787301905.7582731,
+        "window_s": 5.187,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 17,
+      "success": true,
+      "duration_ms": 1363.6802453547716,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:57.228286352Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301905.7809849,
+        "window_end": 1787301911.7574782,
+        "window_s": 5.976,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9127636363636376,
+        "all_pods_watts": 1.030363636363626,
+        "host_watts": 13.334399999999864,
+        "unattributed_watts_approx": 12.304036363636238
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 17,
+      "success": true,
+      "duration_ms": 5.061837378889322,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 11.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301905.7809849,
+        "window_end": 1787301911.7574782,
+        "window_s": 5.976,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9127636363636376,
+        "all_pods_watts": 1.030363636363626,
+        "host_watts": 13.334399999999864,
+        "unattributed_watts_approx": 12.304036363636238
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 17,
+      "success": true,
+      "duration_ms": 737.6713501289487,
+      "details": {
+        "application": "experiment-17-1787301910",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301905.7809849,
+        "window_end": 1787301911.7574782,
+        "window_s": 5.976,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9127636363636376,
+        "all_pods_watts": 1.030363636363626,
+        "host_watts": 13.334399999999864,
+        "unattributed_watts_approx": 12.304036363636238
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 18,
+      "success": true,
+      "duration_ms": 791.1256537772715,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:57.228286352Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301911.784718,
+        "window_end": 1787301918.1801698,
+        "window_s": 6.395,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 18,
+      "success": true,
+      "duration_ms": 6.166507955640554,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 16.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301911.784718,
+        "window_end": 1787301918.1801698,
+        "window_s": 6.395,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 18,
+      "success": true,
+      "duration_ms": 1452.7056468650699,
+      "details": {
+        "application": "experiment-18-1787301915",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301911.784718,
+        "window_end": 1787301918.1801698,
+        "window_s": 6.395,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 19,
+      "success": true,
+      "duration_ms": 767.7804138511419,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:57.228286352Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301918.2027774,
+        "window_end": 1787301923.057403,
+        "window_s": 4.855,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 19,
+      "success": true,
+      "duration_ms": 5.196429323405027,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 22.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301918.2027774,
+        "window_end": 1787301923.057403,
+        "window_s": 4.855,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 19,
+      "success": true,
+      "duration_ms": 713.793489150703,
+      "details": {
+        "application": "experiment-19-1787301922",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301918.2027774,
+        "window_end": 1787301923.057403,
+        "window_s": 4.855,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 20,
+      "success": true,
+      "duration_ms": 1108.3937869407237,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:57.228286352Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301923.0779397,
+        "window_end": 1787301928.6432028,
+        "window_s": 5.565,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9202909090909085,
+        "all_pods_watts": 1.0296000000000036,
+        "host_watts": 13.106290909089147,
+        "unattributed_watts_approx": 12.076690909089143
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 20,
+      "success": true,
+      "duration_ms": 5.437782034277916,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 27.6
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301923.0779397,
+        "window_end": 1787301928.6432028,
+        "window_s": 5.565,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9202909090909085,
+        "all_pods_watts": 1.0296000000000036,
+        "host_watts": 13.106290909089147,
+        "unattributed_watts_approx": 12.076690909089143
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 20,
+      "success": true,
+      "duration_ms": 1320.9182349964976,
+      "details": {
+        "application": "experiment-20-1787301927",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301923.0779397,
+        "window_end": 1787301928.6432028,
+        "window_s": 5.565,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9202909090909085,
+        "all_pods_watts": 1.0296000000000036,
+        "host_watts": 13.106290909089147,
+        "unattributed_watts_approx": 12.076690909089143
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 21,
+      "success": true,
+      "duration_ms": 862.5900889746845,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:57.228286352Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301928.667141,
+        "window_end": 1787301933.8053758,
+        "window_s": 5.138,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 21,
+      "success": true,
+      "duration_ms": 5.563708022236824,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 33.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301928.667141,
+        "window_end": 1787301933.8053758,
+        "window_s": 5.138,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 21,
+      "success": true,
+      "duration_ms": 754.0959250181913,
+      "details": {
+        "application": "experiment-21-1787301932",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301928.667141,
+        "window_end": 1787301933.8053758,
+        "window_s": 5.138,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 22,
+      "success": true,
+      "duration_ms": 718.9757782034576,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:57.228286352Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301933.829132,
+        "window_end": 1787301939.8570743,
+        "window_s": 6.028,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9166909090909089,
+        "all_pods_watts": 1.0362545454545493,
+        "host_watts": 13.142836363639004,
+        "unattributed_watts_approx": 12.106581818184456
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 22,
+      "success": true,
+      "duration_ms": 5.482726264744997,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 38.1
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301933.829132,
+        "window_end": 1787301939.8570743,
+        "window_s": 6.028,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9166909090909089,
+        "all_pods_watts": 1.0362545454545493,
+        "host_watts": 13.142836363639004,
+        "unattributed_watts_approx": 12.106581818184456
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 22,
+      "success": true,
+      "duration_ms": 1491.6227110661566,
+      "details": {
+        "application": "experiment-22-1787301938",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301933.829132,
+        "window_end": 1787301939.8570743,
+        "window_s": 6.028,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9166909090909089,
+        "all_pods_watts": 1.0362545454545493,
+        "host_watts": 13.142836363639004,
+        "unattributed_watts_approx": 12.106581818184456
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 23,
+      "success": true,
+      "duration_ms": 859.1834837570786,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:44:57.228286352Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301939.8857894,
+        "window_end": 1787301944.9050105,
+        "window_s": 5.019,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 23,
+      "success": true,
+      "duration_ms": 5.999666638672352,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 44.2
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301939.8857894,
+        "window_end": 1787301944.9050105,
+        "window_s": 5.019,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 23,
+      "success": true,
+      "duration_ms": 778.7866615690291,
+      "details": {
+        "application": "experiment-23-1787301943",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301939.8857894,
+        "window_end": 1787301944.9050105,
+        "window_s": 5.019,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 24,
+      "success": true,
+      "duration_ms": 1067.3589906655252,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:45:43.786181571Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301944.926595,
+        "window_end": 1787301950.1815042,
+        "window_s": 5.255,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 24,
+      "success": true,
+      "duration_ms": 5.229140631854534,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 3.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301944.926595,
+        "window_end": 1787301950.1815042,
+        "window_s": 5.255,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 24,
+      "success": true,
+      "duration_ms": 808.690341655165,
+      "details": {
+        "application": "experiment-24-1787301949",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301944.926595,
+        "window_end": 1787301950.1815042,
+        "window_s": 5.255,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 25,
+      "success": true,
+      "duration_ms": 784.3643543310463,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:45:43.786181571Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301950.2049687,
+        "window_end": 1787301954.952138,
+        "window_s": 4.747,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.911018181818182,
+        "all_pods_watts": 1.0290000000000048,
+        "host_watts": 13.196236363637514,
+        "unattributed_watts_approx": 12.167236363637508
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 25,
+      "success": true,
+      "duration_ms": 5.180909764021635,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 8.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301950.2049687,
+        "window_end": 1787301954.952138,
+        "window_s": 4.747,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.911018181818182,
+        "all_pods_watts": 1.0290000000000048,
+        "host_watts": 13.196236363637514,
+        "unattributed_watts_approx": 12.167236363637508
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 25,
+      "success": true,
+      "duration_ms": 746.6244911774993,
+      "details": {
+        "application": "experiment-25-1787301953",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301950.2049687,
+        "window_end": 1787301954.952138,
+        "window_s": 4.747,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.911018181818182,
+        "all_pods_watts": 1.0290000000000048,
+        "host_watts": 13.196236363637514,
+        "unattributed_watts_approx": 12.167236363637508
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 26,
+      "success": true,
+      "duration_ms": 726.5388877131045,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:45:43.786181571Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301954.9772089,
+        "window_end": 1787301960.456182,
+        "window_s": 5.479,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 26,
+      "success": true,
+      "duration_ms": 6.350272800773382,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 13.1
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301954.9772089,
+        "window_end": 1787301960.456182,
+        "window_s": 5.479,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 26,
+      "success": true,
+      "duration_ms": 1392.96067180112,
+      "details": {
+        "application": "experiment-26-1787301958",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301954.9772089,
+        "window_end": 1787301960.456182,
+        "window_s": 5.479,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 27,
+      "success": true,
+      "duration_ms": 737.348475959152,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:45:43.786181571Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301960.4772928,
+        "window_end": 1787301965.0982146,
+        "window_s": 4.621,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 27,
+      "success": true,
+      "duration_ms": 5.754936020821333,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 18.6
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301960.4772928,
+        "window_end": 1787301965.0982146,
+        "window_s": 4.621,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 27,
+      "success": true,
+      "duration_ms": 723.0287310667336,
+      "details": {
+        "application": "experiment-27-1787301964",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301960.4772928,
+        "window_end": 1787301965.0982146,
+        "window_s": 4.621,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 28,
+      "success": true,
+      "duration_ms": 972.2734573297203,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:45:43.786181571Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301965.1225715,
+        "window_end": 1787301970.2429981,
+        "window_s": 5.12,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9127636363636371,
+        "all_pods_watts": 1.0253454545454612,
+        "host_watts": 13.250890909093009,
+        "unattributed_watts_approx": 12.225545454547548
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 28,
+      "success": true,
+      "duration_ms": 5.016481038182974,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 23.5
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301965.1225715,
+        "window_end": 1787301970.2429981,
+        "window_s": 5.12,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9127636363636371,
+        "all_pods_watts": 1.0253454545454612,
+        "host_watts": 13.250890909093009,
+        "unattributed_watts_approx": 12.225545454547548
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 28,
+      "success": true,
+      "duration_ms": 839.9552889168262,
+      "details": {
+        "application": "experiment-28-1787301969",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301965.1225715,
+        "window_end": 1787301970.2429981,
+        "window_s": 5.12,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": 0.9127636363636371,
+        "all_pods_watts": 1.0253454545454612,
+        "host_watts": 13.250890909093009,
+        "unattributed_watts_approx": 12.225545454547548
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 29,
+      "success": true,
+      "duration_ms": 720.3586990945041,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:45:43.786181571Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301970.268245,
+        "window_end": 1787301974.8970268,
+        "window_s": 4.629,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 29,
+      "success": true,
+      "duration_ms": 5.188213661313057,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 28.4
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301970.268245,
+        "window_end": 1787301974.8970268,
+        "window_s": 4.629,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 29,
+      "success": true,
+      "duration_ms": 720.2587109059095,
+      "details": {
+        "application": "experiment-29-1787301973",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301970.268245,
+        "window_end": 1787301974.8970268,
+        "window_s": 4.629,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "enrollment",
+      "trial": 30,
+      "success": true,
+      "duration_ms": 753.5831490531564,
+      "details": {
+        "device": "fleet-device-1",
+        "phase": "Connected",
+        "last_heartbeat": "2026-08-21T08:45:43.786181571Z",
+        "board_registered": true,
+        "api_visible": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301974.9293554,
+        "window_end": 1787301980.6082547,
+        "window_s": 5.679,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "heartbeat",
+      "trial": 30,
+      "success": true,
+      "duration_ms": 5.94200799241662,
+      "details": {
+        "device": "fleet-device-1",
+        "gateway_connected": true,
+        "heartbeat_age_s": 33.1
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301974.9293554,
+        "window_end": 1787301980.6082547,
+        "window_s": 5.679,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    },
+    {
+      "experiment": "deployment",
+      "trial": 30,
+      "success": true,
+      "duration_ms": 1333.087001927197,
+      "details": {
+        "application": "experiment-30-1787301978",
+        "device": "fleet-device-1",
+        "phase": "Running",
+        "device_status": {
+          "restart_count": 0,
+          "status": "Running"
+        },
+        "api_status": "Running",
+        "api_running_devices": 1,
+        "api_failed_devices": 0,
+        "api_deployed_count": 1,
+        "error": null,
+        "evidence_consistent": true,
+        "evidence_issues": [],
+        "gateway_ack": true,
+        "api_stats_corroborated": true
+      },
+      "measurement_scope": "host_shared_with_renode",
+      "energy": {
+        "window_start": 1787301974.9293554,
+        "window_end": 1787301980.6082547,
+        "window_s": 5.679,
+        "scrape_interval_s": 5,
+        "low_confidence": true,
+        "namespace_watts": null,
+        "all_pods_watts": null,
+        "host_watts": null,
+        "unattributed_watts_approx": null,
+        "unavailable": true
+      }
+    }
+  ],
+  "summary": {
+    "system_snapshot": {
+      "trials": 1,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.20654329147389294,
+          1.0
+        ],
+        "successes": 1,
+        "total": 1
+      },
+      "duration_ms": {
+        "count": 1,
+        "mean": 0.0,
+        "stdev": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "latency_ms": {
+        "count": 1,
+        "mean": 0.0,
+        "stdev": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "p90": 0.0,
+        "p99": 0.0,
+        "iqr": 0.0,
+        "cv": null
+      },
+      "failure_reasons": {},
+      "goodput_tps": null
+    },
+    "enrollment": {
+      "trials": 30,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.8864829086095221,
+          1.0
+        ],
+        "successes": 30,
+        "total": 30
+      },
+      "duration_ms": {
+        "count": 30,
+        "mean": 891.136216201509,
+        "stdev": 200.13215845406577,
+        "min": 718.9757782034576,
+        "max": 1494.4944381713867,
+        "median": 786.0719356685877,
+        "p95": 1422.5466321222484,
+        "ci95": [
+          816.41403095817,
+          965.858401444848
+        ]
+      },
+      "latency_ms": {
+        "count": 30,
+        "mean": 891.136216201509,
+        "stdev": 200.13215845406577,
+        "min": 718.9757782034576,
+        "max": 1494.4944381713867,
+        "median": 786.0719356685877,
+        "p95": 1422.5466321222484,
+        "ci95": [
+          816.41403095817,
+          965.858401444848
+        ],
+        "p90": 1114.3396891653538,
+        "p99": 1456.5583222545686,
+        "iqr": 257.3827215237543,
+        "cv": 0.22458088316411853
+      },
+      "failure_reasons": {},
+      "goodput_tps": 1.122162899250718
+    },
+    "heartbeat": {
+      "trials": 30,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.8864829086095221,
+          1.0
+        ],
+        "successes": 30,
+        "total": 30
+      },
+      "duration_ms": {
+        "count": 30,
+        "mean": 5.363095908736189,
+        "stdev": 0.4639197807177502,
+        "min": 4.602424800395966,
+        "max": 6.350272800773382,
+        "median": 5.301676923409104,
+        "p95": 6.249202135950327,
+        "ci95": [
+          5.189884866289968,
+          5.53630695118241
+        ]
+      },
+      "latency_ms": {
+        "count": 30,
+        "mean": 5.363095908736189,
+        "stdev": 0.4639197807177502,
+        "min": 4.602424800395966,
+        "max": 6.350272800773382,
+        "median": 5.301676923409104,
+        "p95": 6.249202135950327,
+        "ci95": [
+          5.189884866289968,
+          5.53630695118241
+        ],
+        "p90": 6.094405520707369,
+        "p99": 6.296980995684862,
+        "iqr": 0.4850747063755989,
+        "cv": 0.08650223464436844
+      },
+      "failure_reasons": {},
+      "goodput_tps": 186.4594661398941
+    },
+    "deployment": {
+      "trials": 30,
+      "success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.8864829086095221,
+          1.0
+        ],
+        "successes": 30,
+        "total": 30
+      },
+      "duration_ms": {
+        "count": 30,
+        "mean": 944.1719692821304,
+        "stdev": 305.90196112781945,
+        "min": 713.793489150703,
+        "max": 1792.669429909438,
+        "median": 776.6647192183882,
+        "p95": 1627.0937345456332,
+        "ci95": [
+          829.959125218192,
+          1058.3848133460688
+        ]
+      },
+      "latency_ms": {
+        "count": 30,
+        "mean": 944.1719692821304,
+        "stdev": 305.90196112781945,
+        "min": 713.793489150703,
+        "max": 1792.669429909438,
+        "median": 776.6647192183882,
+        "p95": 1627.0937345456332,
+        "ci95": [
+          829.959125218192,
+          1058.3848133460688
+        ],
+        "p90": 1398.935169307515,
+        "p99": 1705.3658814448868,
+        "iqr": 419.3944636499509,
+        "cv": 0.32398966616261843
+      },
+      "failure_reasons": {},
+      "goodput_tps": 1.0591290914517582
+    },
+    "transactional": {
+      "trials": 30,
+      "all_stages_success_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.8864829086095221,
+          1.0
+        ],
+        "successes": 30,
+        "total": 30
+      },
+      "evidence_consistency_rate": {
+        "rate": 1.0,
+        "ci95": [
+          0.8864829086095221,
+          1.0
+        ],
+        "successes": 30,
+        "total": 30
+      },
+      "end_to_end_latency_ms": {
+        "count": 30,
+        "mean": 1835.3081854836394,
+        "stdev": 312.32395117201065,
+        "min": 1440.6174100004137,
+        "max": 2580.448946915567,
+        "median": 1826.477729016915,
+        "p95": 2497.323638177477,
+        "ci95": [
+          1718.6976001800138,
+          1951.918770787265
+        ],
+        "p90": 2217.2721658833325,
+        "p99": 2536.6192386718467,
+        "iqr": 521.168656880036,
+        "cv": 0.17017520743509745
+      }
+    }
+  }
+}

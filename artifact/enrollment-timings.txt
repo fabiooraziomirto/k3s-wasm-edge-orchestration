@@ -1,0 +1,22 @@
+### Device-side enrollment timings over three boots
+-- boot 1
+fleet-device-3: enrollment  138 ms   sign   79 ms
+fleet-device-2: enrollment  185 ms   sign   79 ms
+fleet-device-1: enrollment  158 ms   sign   79 ms
+native-sim-1: no completed enrollment in the log
+enrollment: n=3 mean=160.3 ms median=158.0 ms sd=23.6 ms min=138 max=185
+signature: n=3 mean=79.0 ms median=79.0 ms sd=0.0 ms min=79 max=79
+-- boot 2
+fleet-device-3: enrollment  125 ms   sign   79 ms
+fleet-device-2: enrollment  111 ms   sign   78 ms
+fleet-device-1: enrollment  148 ms   sign   78 ms
+native-sim-1: no completed enrollment in the log
+enrollment: n=3 mean=128.0 ms median=125.0 ms sd=18.7 ms min=111 max=148
+signature: n=3 mean=78.3 ms median=78.0 ms sd=0.6 ms min=78 max=79
+-- boot 3
+fleet-device-3: enrollment  126 ms   sign   79 ms
+fleet-device-2: enrollment  156 ms   sign   79 ms
+fleet-device-1: enrollment  114 ms   sign   79 ms
+native-sim-1: no completed enrollment in the log
+enrollment: n=3 mean=132.0 ms median=126.0 ms sd=21.6 ms min=114 max=156
+signature: n=3 mean=79.0 ms median=79.0 ms sd=0.0 ms min=79 max=79

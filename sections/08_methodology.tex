@@ -34,9 +34,10 @@ Device networking & Bridge \texttt{wasmbr0} at 192.168.1.1/24, one TAP per devic
 \revC{Consecutive trials share a host, a warmed cache and long-lived control-plane
 processes, so they are repetitions rather than independent draws, and the $t$-based
 intervals summarize dispersion within this campaign rather than across deployments. The
-series is stationary after the discarded warm-up run: lag-1 autocorrelation $-0.09$,
-Spearman correlation with trial index $-0.14$ ($t{=}{-}1.42$), and half-campaign means of
-1212.1~ms and 1159.5~ms (Figure~\ref{fig:latency-trial-scatter}). The campaign also induces
+series is stationary after the discarded warm-up run: lag-1 autocorrelation $+0.04$,
+Spearman correlation with trial index $-0.19$ ($t{=}{-}1.93$, short of significance at
+$n{=}100$), and half-campaign means of 1913.3~ms and 1794.0~ms
+(Figure~\ref{fig:latency-trial-scatter}). The campaign also induces
 no faults, so 100/100 establishes that the evidence-convergence criterion of
 Table~\ref{tab:trial-semantics} holds whenever the mechanism runs without induced failure,
 not an availability figure for a fleet.}
@@ -83,15 +84,14 @@ registration precedes the same enrollment path, placing resource creation inside
 measured window.} %Removed (minore): Because {\color{red}every measured stage succeeded in all trials}, a per-stage success table would repeat identical Wilson bounds and is omitted; the meaningful variation lies in latency and its distribution.
 \revD{Every measured stage succeeded in all trials, so the meaningful variation lies in latency and its distribution.}
 
-Table~\ref{tab:quantitative-latency} reports the latency profile. Mean end-to-end latency {\color{red}(enrollment plus deployment; heartbeat observability reported separately)} is 1286.0~ms with 95\% CI [1226.4, 1345.6]~ms. %Removed (M9): Deployment carries a heavy upper tail (CV 0.43, maximum 3000.8~ms against a median of 574.1~ms) that the mean and the p95 both understate; it reproduces across independent campaigns on this testbed and is the dominant contribution to end-to-end variability.
+Table~\ref{tab:quantitative-latency} reports the latency profile. Mean end-to-end latency {\color{red}(enrollment plus deployment; heartbeat observability reported separately)} is 1853.6~ms with 95\% CI [1768.4, 1938.8]~ms. %Removed (M9): Deployment carries a heavy upper tail (CV 0.43, maximum 3000.8~ms against a median of 574.1~ms) that the mean and the p95 both understate; it reproduces across independent campaigns on this testbed and is the dominant contribution to end-to-end variability.
 \revD{Deployment latency covers the synchronous deployment request followed by a status query,
 and the harness retries that query on a two-second cycle when the first one does not yet
-see a terminal phase. Ninety-nine trials resolve on the first query and span
-487--1126~ms with a coefficient of variation of 0.260; one does not, and pays a full
-retry interval, giving the 3000.8~ms maximum, 1.9~s clear of the next value. That single
-quantization event, rather than a heavy-tailed process, is what raises the reported
-coefficient of variation to 0.43 and separates the mean (676.5~ms) from the median
-(574.1~ms).}
+see a terminal phase. Ninety-seven trials resolve without a retry and span 669--1627~ms
+with a coefficient of variation of 0.259; three pay one retry interval, at 2768, 3020 and
+3106~ms. That quantization, rather than a heavy-tailed process, is what raises the reported
+coefficient of variation to 0.451 and separates the mean (936.8~ms) from the median
+(772.0~ms).}
 
 \begin{table}[pos=t]
 \centering
@@ -104,10 +104,10 @@ coefficient of variation to 0.43 and separates the mean (676.5~ms) from the medi
 \toprule
 \textbf{Stage} & \textbf{Mean} & \textbf{Median} & \textbf{p95} & \textbf{p99} & \textbf{IQR} & \textbf{CV} & \textbf{95\% CI of mean} \\
 \midrule
-Enrollment & 609.5 & 568.1 & 839.6 & 889.8 & 50.4 & 0.164 & [589.6, 629.4] \\
-Heartbeat obs. & 4.08 & 4.01 & 4.97 & 5.29 & 0.53 & 0.114 & [3.99, 4.17] \\
-Deployment & 676.5 & 574.1 & 1021.8 & 1145.2 & 228.4 & 0.428 & [619.1, 733.9] \\
-End-to-end & 1286.0 & 1168.7 & 1661.5 & 1974.3 & 270.7 & 0.234 & [1226.4, 1345.6] \\
+Enrollment & 916.8 & 878.6 & 1190.8 & 1227.7 & 102.5 & 0.154 & [888.8, 944.8] \\
+Heartbeat obs. & 5.7 & 5.6 & 6.9 & 8.5 & 0.7 & 0.182 & [5.5, 5.9] \\
+Deployment & 936.8 & 772.0 & 1442.3 & 3020.5 & 265.8 & 0.451 & [852.9, 1020.7] \\
+End-to-end & 1853.6 & 1768.4 & 2485.0 & 3883.3 & 283.6 & 0.232 & [1768.4, 1938.8] \\
 \bottomrule
 \end{tabular}%
 }
@@ -115,10 +115,10 @@ End-to-end & 1286.0 & 1168.7 & 1661.5 & 1974.3 & 270.7 & 0.234 & [1226.4, 1345.6
 
 Figure~\ref{fig:latency-boxplot} compares stage latency distributions on a logarithmic scale. Heartbeat observability is two orders of magnitude faster than enrollment or deployment. %Removed (M9): Figure~\ref{fig:latency-cdf} shows that deployment contributes most of the tail mass: its p95 (1021.8~ms) and p99 (1145.2~ms) exceed enrollment's, so WASM orchestration, not TLS enrollment, dominates end-to-end variability (deployment CV\,=\,0.428 vs.\ enrollment CV\,=\,0.164).
 \revD{Figure~\ref{fig:latency-cdf} shows that deployment contributes most of the tail mass, with
-p95 1021.8~ms and p99 1145.2~ms against enrollment's. Excluding the single retried trial
-its dispersion is closer to enrollment's than the headline figures suggest (CV 0.260
-against 0.164), the residual difference reflecting that enrollment is timed on the protocol
-exchange itself whereas deployment is timed on a subsequent status query.}
+p95 1442.3~ms and p99 3020.5~ms against enrollment's. Excluding the three retried trials its
+dispersion is closer to enrollment's than the headline figures suggest (CV 0.259 against
+0.154), the residual difference reflecting that enrollment is timed on the protocol exchange
+itself whereas deployment is timed on a subsequent status query.}
 
 \begin{figure}[pos=t]
 \centering
