@@ -53,7 +53,7 @@ matching private key. Since a public key is not a secret, the second check separ
 an identity from having observed one; since the nonce is consumed whether or not the
 signature verifies, a captured response cannot be replayed. Dispatched modules carry a
 SHA-256 digest the firmware recomputes and refuses to instantiate on mismatch. The mechanism
-is exercised, not only implemented: a certificate the authority did not issue, an absent
+is exercised directly: a certificate the authority did not issue, an absent
 certificate, and a nonce signed with the wrong key are each refused, the last leaving no
 association recorded. The signature costs 79~ms on the emulated target, where enrollment
 completes 111--185~ms after the TLS session opens. Revocation, a second issuing authority,

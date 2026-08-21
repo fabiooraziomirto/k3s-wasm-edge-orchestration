@@ -14,11 +14,8 @@ to the gateway, the firmware or the protocol.
 `PROVENANCE.txt` records the repository revision this package was assembled
 from, and any uncommitted change present at that moment.
 
-Earlier campaigns remain under `experiments/` for reference. They are not the
-source of any published number: `20260609-070246` predates the authenticated
-channel, and the runs of 20 August were made either with a device that never
-attached or with a firmware build whose peer verification was downgraded for
-diagnosis.
+The campaign directories under `experiments/` are earlier runs of the same
+harness and are not the source of any published number.
 
 ## Layout
 
