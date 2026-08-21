@@ -34,7 +34,7 @@ zephyr-app/        firmware Zephyr RTOS per MCU reali/emulate (WAMR/wasm integra
 renode-scripts/    script Renode per emulazione hardware (STM32, nRF52840, Arduino Nano BLE)
 scripts/           deploy, cleanup, cert generation, esperimenti/benchmark
 doc/               documentazione architetturale
-experiments/       artefatti di una campagna sperimentale già eseguita (20260609-070246)
+experiments/       artefatti delle campagne sperimentali eseguite
 ```
 
 ### Deployment k3s/Kubernetes

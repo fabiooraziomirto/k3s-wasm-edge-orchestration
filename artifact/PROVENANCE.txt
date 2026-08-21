@@ -1,8 +1,11 @@
-commit: 98a86a0aba44a886f15f2b5725c78ff6f23fd727
+commit: d3ec221c224976ff8fcda1b7dbdc844d56932bc0
 describe: v1.0
-assembled: 2026-08-21T09:18:12Z
+assembled: 2026-08-21T09:42:21Z
 
---- uncommitted changes at assembly time ---
+--- modified tracked files at assembly time ---
+ M README.md
+ M doc/energy-tracking-assessment.md
  M references.bib
-?? "comcom_retrospect (3).pdf"
-?? "comcom_retrospect (7).pdf"
+ M scripts/build_artifact.sh
+ M scripts/collect_experiment_metrics.py
+ M scripts/run_experiment_campaign.sh

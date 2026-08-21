@@ -30,10 +30,11 @@ cp -r "$CAMPAIGN/raw" "$CAMPAIGN/summary" "$CAMPAIGN/environment" "$OUT/campaign
   echo "describe: $(git describe --tags --always 2>/dev/null || echo none)"
   echo "assembled: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo
-  echo "--- uncommitted changes at assembly time ---"
-  # The package's own files are excluded: writing this file dirties the tree,
-  # so including them would report a difference that assembling caused.
-  git status --short -- . ":(exclude)$OUT" || true
+  echo "--- modified tracked files at assembly time ---"
+  # Tracked modifications only. Untracked files do not change what the package
+  # describes, and the package's own output is excluded because writing this
+  # file dirties the tree that it is reporting on.
+  git status --short --untracked-files=no -- . ":(exclude)$OUT" || true
 } > "$OUT/PROVENANCE.txt"
 
 echo "Wrote $OUT/ from $CAMPAIGN"

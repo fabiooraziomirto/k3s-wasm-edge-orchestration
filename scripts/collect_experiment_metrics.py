@@ -8,8 +8,8 @@ aggregated statistics for the paper.
 Energy metrics (added alongside latency/success-rate, not in place of them):
 each trial round is bracketed by a wall-clock window and, unless --no-energy
 is passed, that window is used to query the Kepler-derived Prometheus
-recording rules set up in k8s/monitoring/prometheus-rules.yaml (Phase 1 of
-doc/energy-tracking-assessment.md). Every TrialRecord carries a
+recording rules set up in k8s/monitoring/prometheus-rules.yaml. Every
+TrialRecord carries a
 `measurement_scope` field so nobody downstream has to remember the caveat
 by hand: these numbers are host-wide (RAPL/estimate for the whole k3s node),
 NOT isolated to this process or namespace -- see
@@ -48,7 +48,7 @@ DEFAULT_PROMETHEUS_BASE = "http://127.0.0.1:9090"
 # host, which also runs the wasmbed-renode Docker container (started outside
 # kubelet, see crates/wasmbed-qemu-manager/src/lib.rs) -- energy numbers are
 # NOT isolated to the wasmbed namespace or to a single trial's process.
-# See k8s/monitoring/README.md and doc/energy-tracking-assessment.md.
+# See k8s/monitoring/README.md.
 MEASUREMENT_SCOPE = "host_shared_with_renode"
 
 # Must match global.scrape_interval in k8s/monitoring/prometheus-config.yaml.
@@ -80,7 +80,7 @@ class TrialRecord:
     success: bool
     duration_ms: float | None = None
     details: dict[str, Any] | None = None
-    # Additive fields (energy metrics, Phase 3 of doc/energy-tracking-assessment.md).
+    # Additive fields carrying the energy metrics.
     # Existing consumers (postprocess_experiment.py, run_experiment_campaign.sh)
     # access records by known key, so these are ignored where unused -- no
     # existing column is removed or renamed.

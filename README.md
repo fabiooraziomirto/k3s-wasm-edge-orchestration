@@ -305,6 +305,8 @@ they describe. The revision evaluated in the paper is tagged `v1.0`.
 | Figures as published | `figures/` |
 | Records behind every reported number | `artifact/` (start at `artifact/README.md`) |
 | Reported campaign | `experiments/20260821-083420/` |
+| Build the paper | `latexmk -pdf main.tex` |
+| Build the code | `cargo build --workspace --release` |
 
 `artifact/README.md` maps each published table, figure and in-text value to the
 file it comes from and the script that produces it. See
