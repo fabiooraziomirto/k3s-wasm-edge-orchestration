@@ -7,6 +7,7 @@ This repository implements a Kubernetes-native platform for deploying and managi
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Repository Structure](#repository-structure)
+- [Code and data availability](#code-and-data-availability)
 - [Deployment Locations](#deployment-locations)
 - [Quick Start](#quick-start)
 - [Emulated device networking (TAP + DHCP + routing)](#emulated-device-networking-tap--dhcp--routing)
@@ -293,6 +294,22 @@ This ensures emulated devices are treated identically to physical devices from t
 - Orchestrates Renode Manager
 - Provides REST API for dashboard
 
+## Code and data availability
+
+The paper and the records behind it live in this repository alongside the code
+they describe. The revision evaluated in the paper is tagged `v1.0`.
+
+| | |
+|---|---|
+| Paper source and built PDF | `sections/`, `main.tex`, `main.pdf` |
+| Figures as published | `figures/` |
+| Records behind every reported number | `artifact/` (start at `artifact/README.md`) |
+| Reported campaign | `experiments/20260821-083420/` |
+
+`artifact/README.md` maps each published table, figure and in-text value to the
+file it comes from and the script that produces it. See
+[doc/EXPERIMENTS.md](doc/EXPERIMENTS.md) to reproduce the campaign.
+
 ## Repository Structure
 
 ```
@@ -373,6 +390,14 @@ k8s-wasm-edge-orchestration/
 │   ├── RENODE_TLS_DEPLOY_VERIFICATION.md
 │   ├── FIRMWARE.md
 │   └── MCU_SUPPORT.md
+│
+├── artifact/                        # Code-and-data package for the paper
+│   ├── README.md                   # Maps each published number to its record
+│   ├── campaign/                   # Raw trial records, summaries, figures
+│   ├── firmware/                   # Linker output for the compared builds
+│   └── security/                   # Authentication checks
+│
+├── experiments/                     # Measurement campaigns
 │
 ├── config/                          # Configuration files
 │   └── wasmbed-config.yaml         # Main configuration

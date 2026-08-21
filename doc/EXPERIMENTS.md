@@ -4,15 +4,27 @@ The repository ships artifacts from a 100-trial hardened campaign plus a 30-tria
 
 ## Artifacts
 
+The campaign the paper reports is `experiments/20260821-083420`, collected together
+with the rest of the published evidence in `artifact/`:
+
 ```
-experiments/20260609-070246/
-├── raw/           # JSONL trial records
-├── summary/       # Tables, Wilson intervals, ablation report
-├── figures/       # Boxplot, CDF, CI profile
-└── environment/   # Host and toolchain snapshot (when captured)
+artifact/
+├── README.md                 # Maps each published number to the record behind it
+├── PROVENANCE.txt            # Revision the package was assembled from
+├── campaign/
+│   ├── raw/                  # JSONL trial records
+│   ├── summary/              # Tables and Wilson intervals
+│   ├── figures/              # Boxplot, CDF, trial scatter
+│   └── environment/          # Host, toolchain and commit capture
+├── firmware/                 # Linker output for the compared builds
+├── security/                 # Authentication checks
+├── pod-resources.txt         # Control-plane CPU and memory samples
+└── enrollment-timings.txt    # Device-side enrollment and signature timings
 ```
 
-See also `experiments/experimental_agent_brief.md` for the full measurement specification.
+Earlier campaigns are kept under `experiments/` and are not the source of any
+published number. See `experiments/experimental_agent_brief.md` for the full
+measurement specification.
 
 ## Prerequisites
 
