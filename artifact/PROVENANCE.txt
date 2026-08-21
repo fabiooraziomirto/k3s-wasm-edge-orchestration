@@ -1,9 +1,8 @@
-commit: f65d1baf1a1b663bb6f4a4163acf31f54f98af25
-describe: f65d1ba
-assembled: 2026-08-21T09:02:55Z
+commit: feb82a1a7a71c49fe7c933ce18c21fe380054907
+describe: feb82a1
+assembled: 2026-08-21T09:03:05Z
 
 --- uncommitted changes at assembly time ---
  M references.bib
- M scripts/build_artifact.sh
 ?? "comcom_retrospect (3).pdf"
 ?? "comcom_retrospect (7).pdf"
