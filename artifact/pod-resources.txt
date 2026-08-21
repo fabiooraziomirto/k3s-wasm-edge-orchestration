@@ -1,0 +1,23 @@
+=== sample 1
+gateway-1-deployment-74589d64db-lct25            1m     4Mi
+wasmbed-api-server-fcff6c7b5-f7ds9               103m   30Mi
+wasmbed-application-controller-c95d5d4c8-dd9fp   92m    12Mi
+=== sample 2
+gateway-1-deployment-74589d64db-lct25            2m     4Mi
+wasmbed-api-server-fcff6c7b5-f7ds9               166m   17Mi
+wasmbed-application-controller-c95d5d4c8-dd9fp   94m    12Mi
+=== sample 3
+gateway-1-deployment-74589d64db-lct25            3m     4Mi
+wasmbed-api-server-fcff6c7b5-f7ds9               232m   17Mi
+wasmbed-application-controller-c95d5d4c8-dd9fp   74m    12Mi
+=== sample 4
+gateway-1-deployment-74589d64db-lct25            3m     4Mi
+wasmbed-api-server-fcff6c7b5-f7ds9               203m   40Mi
+wasmbed-application-controller-c95d5d4c8-dd9fp   74m    12Mi
+=== sample 5
+gateway-1-deployment-74589d64db-lct25            3m     4Mi
+wasmbed-api-server-fcff6c7b5-f7ds9               203m   26Mi
+wasmbed-application-controller-c95d5d4c8-dd9fp   64m    12Mi
+CGROUP gateway memory.current=5251072 anon=3432448
+CGROUP api-server memory.current=31715328 anon=18120704
+CGROUP app-controller memory.current=13402112 anon=11333632

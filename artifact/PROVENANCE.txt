@@ -1,8 +1,12 @@
-commit: feb82a1a7a71c49fe7c933ce18c21fe380054907
-describe: feb82a1
-assembled: 2026-08-21T09:03:05Z
+commit: 89cd7a8982de22f27105cfea16d29dfb26a6a36b
+describe: v1.0
+assembled: 2026-08-21T09:17:44Z
 
 --- uncommitted changes at assembly time ---
+ M figures/pod_resources_bar.png
+ M main.pdf
  M references.bib
+ M scripts/cpu_time_per_phase.py
+ M sections/08_methodology.tex
 ?? "comcom_retrospect (3).pdf"
 ?? "comcom_retrospect (7).pdf"

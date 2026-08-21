@@ -5,7 +5,7 @@ Re-measures Table `cpu-time-per-phase` of the paper. Reuses the trial harness in
 collect_experiment_metrics.py so the stages are exactly the ones behind the
 latency table.
 """
-import json, statistics, subprocess, sys, time, math
+import json, random, statistics, subprocess, sys, time, math
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -60,6 +60,26 @@ def ci95(vals):
     return [m - h, m + h]
 
 
+def bootstrap_ci95(vals, resamples=10000, seed=0):
+    """Percentile bootstrap of the mean.
+
+    CPU time per stage is non-negative and skewed at n=5, where a t interval
+    puts its lower bound below zero. Resampling keeps the interval inside the
+    range the measurement can take.
+    """
+    n = len(vals)
+    if n < 2:
+        return [None, None]
+    rng = random.Random(seed)
+    means = sorted(
+        statistics.mean(rng.choice(vals) for _ in range(n))
+        for _ in range(resamples)
+    )
+    lo = means[int(0.025 * resamples)]
+    hi = means[int(0.975 * resamples) - 1]
+    return [lo, hi]
+
+
 def main():
     trials = int(sys.argv[1]) if len(sys.argv) > 1 else 5
     cgs = pod_cgroups()
@@ -105,7 +125,9 @@ def main():
                     "median_cpu_s": statistics.median(r["cpu_s"][pod] for r in rows),
                     "p95_cpu_s": cem.percentile(sorted(r["cpu_s"][pod] for r in rows), 95),
                     "max_cpu_s": max(r["cpu_s"][pod] for r in rows),
+                    "min_cpu_s": min(r["cpu_s"][pod] for r in rows),
                     "ci95": ci95([r["cpu_s"][pod] for r in rows]),
+                    "ci95_bootstrap": bootstrap_ci95([r["cpu_s"][pod] for r in rows]),
                 } for pod in cgs
             },
         }

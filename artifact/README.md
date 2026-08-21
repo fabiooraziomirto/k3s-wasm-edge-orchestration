@@ -43,6 +43,8 @@ diagnosis.
 | Wire-size figure | `figures/wire_sizes_bar.png` | `scripts/generate_wire_sizes_figure.py` |
 | Firmware flash and RAM footprint | `firmware/footprint-authenticated.txt` | Zephyr linker report |
 | Cost of authentication in flash and RAM | difference against `firmware/footprint-baseline.txt` | Zephyr linker report |
+| Control-plane pod CPU and memory | `pod-resources.txt` | `kubectl top`, cgroup v2 reads |
+| Per-phase, per-pod CPU time | `cpu-time-per-phase.json` | `scripts/cpu_time_per_phase.py` |
 | Enrollment and signature timings on the device | `enrollment-timings.txt` | `scripts/measure_enrollment_timings.py` |
 | Refusal of an unproven device (fault-injection row) | `security/proof-of-possession-probe.txt` | `scripts/probe_proof_of_possession.py` |
 | Refusal of an untrusted or absent client certificate | `security/tls-negative-tests.txt` | `openssl s_client`, commands in that file |

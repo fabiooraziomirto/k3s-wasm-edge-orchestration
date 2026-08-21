@@ -199,7 +199,7 @@ level; Section~\ref{sec:discussion} states what this does not characterize.
 \endgroup
 
 \subsubsection{Control-plane resources}
-Figure~\ref{fig:pod-resources} reports mean Kubernetes pod usage ($n{=}5$ samples, one TLS-connected device, sampled while the trial campaign was running). {\color{red}The metric is the container working set reported by \texttt{metrics-server}, cross-checked against cgroup~v2 \texttt{memory.current} and the anonymous resident set in \texttt{memory.stat}, which agree with it to within a few hundred kilobytes.} The gateway averaged 3.0~millicores CPU and 4.4~MiB RAM (\texttt{memory.current} 5.60~MB, anonymous 3.82~MB), the API server averaged 169.2~millicores and 33.4~MiB under campaign load (\texttt{memory.current} 32.3--33.0~MB), and the application controller averaged 38.4~millicores and 12.0~MiB (\texttt{memory.current} 13.3~MB). %Removed (minore): Registering 50 synthetic boards through the gateway HTTP registry left gateway resident memory unchanged (\texttt{memory.current} identical before and after), indicating lightweight per-device mediation state at the fog layer.
+Figure~\ref{fig:pod-resources} reports mean Kubernetes pod usage ($n{=}5$ samples, one TLS-connected device, sampled while the trial campaign was running). {\color{red}The metric is the container working set reported by \texttt{metrics-server}, cross-checked against cgroup~v2 \texttt{memory.current} and the anonymous resident set in \texttt{memory.stat}. The two agree closely for the gateway and the controller; the API server's working set fluctuates between samples while its \texttt{memory.current} stays steady, so the sampled mean understates it.} The gateway averaged 2.4~millicores CPU and 4.0~MiB RAM (\texttt{memory.current} 5.25~MB, anonymous 3.43~MB), the API server averaged 181.4~millicores and 26.0~MiB under campaign load (\texttt{memory.current} 31.7~MB), and the application controller averaged 79.6~millicores and 12.0~MiB (\texttt{memory.current} 13.4~MB). %Removed (minore): Registering 50 synthetic boards through the gateway HTTP registry left gateway resident memory unchanged (\texttt{memory.current} identical before and after), indicating lightweight per-device mediation state at the fog layer.
 \revD{Registering 50 synthetic boards through the gateway HTTP registry left gateway resident
 memory unchanged, bounding the cost of registry state alone: those boards are
 \texttt{Device} entries rather than TLS-connected sessions.}
@@ -305,15 +305,15 @@ Given $n{=}5$, this table demonstrates the instrumentation working end-to-end on
 %Deployment & app-controller & 0.057557 & 0.027365 & 0.111654 & [$-$0.002620, 0.117734] \\
 \textbf{Stage} & \textbf{Pod} & \textbf{Mean} & \textbf{Median} & \revD{\textbf{Min--max}} & \revD{\textbf{95\% CI (bootstrap)}} \\
 \midrule
-Enrollment & gateway & 0.000350 & 0.000326 & \revD{0.000266--0.000503} & \revD{[0.000291, 0.000432]} \\
-Enrollment & api-server & 0.143510 & 0.083265 & \revD{0.080665--0.384413} & \revD{[0.082006, 0.264079]} \\
-Enrollment & app-controller & 0.036625 & 0.035557 & \revD{0.030778--0.045817} & \revD{[0.032261, 0.041684]} \\
-Heartbeat & gateway & 0.000413 & 0.000390 & \revD{0.000227--0.000684} & \revD{[0.000292, 0.000563]} \\
-Heartbeat & api-server & 0.020483 & 0.000000 & \revD{0.000000--0.102417} & \revD{[0.000000, 0.061450]} \\
-Heartbeat & app-controller & 0.010088 & 0.010080 & \revD{0.009197--0.010956} & \revD{[0.009415, 0.010760]} \\
-Deployment & gateway & 0.006338 & 0.006521 & \revD{0.003787--0.008674} & \revD{[0.004659, 0.008018]} \\
-Deployment & api-server & 0.564172 & 0.465255 & \revD{0.307216--0.823915} & \revD{[0.390794, 0.739244]} \\
-Deployment & app-controller & 0.057557 & 0.027365 & \revD{0.019152--0.111654} & \revD{[0.021213, 0.093901]} \\
+Enrollment & gateway & 0.000527 & 0.000446 & \revD{0.000424--0.000786} & \revD{[0.000431, 0.000666]} \\
+Enrollment & api-server & 0.211061 & 0.146935 & \revD{0.117500--0.344147} & \revD{[0.129463, 0.295833]} \\
+Enrollment & app-controller & 0.109378 & 0.109339 & \revD{0.100157--0.116024} & \revD{[0.104368, 0.114173]} \\
+Heartbeat & gateway & 0.000739 & 0.000648 & \revD{0.000432--0.001431} & \revD{[0.000496, 0.001095]} \\
+Heartbeat & api-server & 0.035672 & 0.000000 & \revD{0.000000--0.096947} & \revD{[0.000000, 0.074451]} \\
+Heartbeat & app-controller & 0.028725 & 0.028743 & \revD{0.021564--0.032722} & \revD{[0.025062, 0.031752]} \\
+Deployment & gateway & 0.010171 & 0.010998 & \revD{0.006330--0.013636} & \revD{[0.007791, 0.012254]} \\
+Deployment & api-server & 0.790809 & 0.881200 & \revD{0.437644--1.108854} & \revD{[0.553002, 1.037498]} \\
+Deployment & app-controller & 0.129507 & 0.144385 & \revD{0.044876--0.172308} & \revD{[0.084680, 0.160578]} \\
 \bottomrule
 \end{tabular}%
 }
@@ -327,7 +327,7 @@ Table~\ref{tab:arch-compare} contrasts gateway-mediated WASM orchestration with 
 keeping cluster agents off the device. Only the right-hand column is instrumented here;
 establishing the left-hand one would require the same WASM workload on a Linux
 single-board node with a cluster agent. The pod measurements also locate the cost
-differently: the gateway averages 3.0~millicores against the API server's 169.2, so the
+differently: the gateway averages 2.4~millicores against the API server's 181.4, so the
 control plane rather than the fog layer dominates at this scale, and the fleet size at
 which gateway mediation overtakes per-device agents is not determined here.}
 
