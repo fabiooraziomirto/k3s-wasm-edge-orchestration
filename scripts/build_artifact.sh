@@ -27,11 +27,13 @@ cp -r "$CAMPAIGN/raw" "$CAMPAIGN/summary" "$CAMPAIGN/environment" "$OUT/campaign
 # that a mismatch is visible rather than hidden.
 {
   echo "commit: $(git rev-parse HEAD)"
-  echo "describe: $(git describe --tags --always --dirty 2>/dev/null || echo none)"
+  echo "describe: $(git describe --tags --always 2>/dev/null || echo none)"
   echo "assembled: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo
   echo "--- uncommitted changes at assembly time ---"
-  git status --short || true
+  # The package's own files are excluded: writing this file dirties the tree,
+  # so including them would report a difference that assembling caused.
+  git status --short -- . ":(exclude)$OUT" || true
 } > "$OUT/PROVENANCE.txt"
 
 echo "Wrote $OUT/ from $CAMPAIGN"
