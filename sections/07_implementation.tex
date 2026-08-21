@@ -44,20 +44,21 @@ The gateway runtime maintains the small amount of mutable state that cannot natu
 
 This organization gives the framework a precise failure boundary. If the firmware disconnects, the gateway loses the active transport session but the Device resource still retains the latest desired configuration and the latest valid reported association until reconciliation determines that the condition is stale. If the Kubernetes API is temporarily unavailable, the gateway can still preserve the immediate transport view, but durable convergence waits until status patches are accepted. If the gateway restarts, the cloud-side desired state survives and devices must re-establish session-bound evidence. These cases are not hidden behind a best-effort transport acknowledgment; they are reflected as missing, stale, or inconsistent evidence that controllers can interpret conservatively.
 
-\revD{The southbound channel is mutually authenticated: each device holds an ECDSA P-256 key
-pair and a certificate issued by a fleet authority, the gateway requires that certificate
-during the handshake, and the firmware verifies the gateway against the same authority.
-Identity binding rests on two checks rather than on presenting an identifier: the key
-announced at enrollment must be the one the peer authenticated the transport with, and the
-device must sign a single-use gateway nonce with the matching private key before any
-association is recorded. A public key is not a secret, so the second check separates holding
-an identity from having observed one, and the nonce is consumed whether or not the signature
-verifies, so a captured response cannot be replayed. Dispatched modules carry a SHA-256
-digest the firmware recomputes before instantiation. Three limits remain: TLS~1.2 rather
-than 1.3; one authority with no revocation path; and a digest that binds a module to what
-the gateway announced, not to a signature by its publisher. Workload identity
-attestation~\cite{spiffe} and signed artifact metadata~\cite{tuf,rfc9019} close these gaps.
-On the emulated STM32F746G target the signature costs 79~ms and enrollment completes 111--185~ms after the TLS session opens.}
+\revD{The southbound channel is mutually authenticated. Each device holds an ECDSA P-256 key
+pair and a certificate issued by a fleet authority; the gateway requires that certificate and
+the firmware verifies the gateway against the same authority. A device is admitted only when
+two independent checks agree: the key announced at enrollment is the key the peer
+authenticated the transport with, and the device signs a single-use gateway nonce with the
+matching private key. Since a public key is not a secret, the second check separates holding
+an identity from having observed one; since the nonce is consumed whether or not the
+signature verifies, a captured response cannot be replayed. Dispatched modules carry a
+SHA-256 digest the firmware recomputes and refuses to instantiate on mismatch. The mechanism
+is exercised, not only implemented: a certificate the authority did not issue, an absent
+certificate, and a nonce signed with the wrong key are each refused, the last leaving no
+association recorded. The signature costs 79~ms on the emulated target, where enrollment
+completes 111--185~ms after the TLS session opens. Revocation, a second issuing authority,
+TLS~1.3, and a digest bound to a publisher's signature remain outstanding; workload identity
+attestation~\cite{spiffe} and signed artifact metadata~\cite{tuf,rfc9019} address the last.}
 
 \subsection{Embedded Execution Path}
 On the embedded side, the firmware implements only the southbound protocol roles required by the orchestration model. It establishes the protected channel, sends enrollment and heartbeat records, receives deployment commands, passes the WASM payload to WAMR, and returns a structured result. It does not embed Kubernetes client logic, service-account credentials, resource watches, or container-image management. The edge endpoint is therefore closer to a managed execution target than to a miniature cluster node. This is a deliberate implementation constraint: the more Kubernetes behavior is pushed into the firmware, the harder it becomes to keep the device portable, auditable, and suitable for constrained deployments.
