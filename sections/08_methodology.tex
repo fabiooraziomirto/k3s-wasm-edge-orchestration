@@ -20,7 +20,7 @@ Experiments run on a single-node K3s cluster with API server, gateway, applicati
 Host OS & Ubuntu 24.04 LTS (kernel 6.8.0), x86\_64 KVM guest \\
 Host resources & 32 vCPUs, 62~GiB RAM, 293~GiB SSD \\
 Orchestrator & K3s v1.35.4+k3s1, single control-plane node \\
-Southbound emulation & Renode \texttt{antmicro/renode:nightly}, board \texttt{Stm32F746gDisco} \\
+Southbound emulation & Renode \texttt{antmicro/renode@sha256:a254ed0e}, board \texttt{Stm32F746gDisco} \\
 Firmware stack & Zephyr RTOS 3.5.0, WAMR 2.4.1, minimal WASM test module (33~B) \\
 Device networking & Bridge \texttt{wasmbr0} at 192.168.1.1/24, one TAP per device, DHCP, DNAT to the gateway pod's TLS port \\
 \bottomrule
@@ -151,7 +151,7 @@ Application messages use a 4-byte big-endian length prefix followed by CBOR payl
 cipher suite each record adds 5~B of header, an 8~B explicit nonce and a 16~B tag, so a
 6~B heartbeat becomes a 35~B record, a 75~B IPv4 segment and a 93~B Ethernet frame. At a
 25~s period the delayed-acknowledgment timer expires between exchanges, giving roughly
-300~B per exchange and of order 40~KB/h per device, some $25\times$ the application-layer
+300~B per exchange and of order 40~KiB/h per device, some $25\times$ the application-layer
 figure. Session establishment is excluded from both and is paid again on every
 reconnection, so a frequently reconnecting device is dominated by handshake cost rather
 than by heartbeats, and client authentication widens that gap: the payload grew from 87
@@ -169,7 +169,7 @@ against the framing cost itself.}
 \subsubsection{Edge footprint}
 \begingroup
 \color{red}
-The evaluated Zephyr/WAMR/TLS/CBOR firmware fits the STM32F746NG internal-memory budget: the flash-resident \texttt{zephyr.bin} image is 411{,}272~B ($\approx$402~KiB), corresponding to text plus initialized data, and the static RAM allocation is 273{,}503~B ($\approx$267~KiB), corresponding to data (9{,}384~B) plus BSS (264{,}119~B). \revD{Mutual authentication costs 4{,}704~B of flash and 3{,}265~B of RAM -- the curve and X.509 code was already linked in for the anonymous handshake -- taking RAM to 99.3\% of the 256~KiB region.}\footnote{The \texttt{zephyr.elf} file is 8{,}095{,}176~B (7.72~MiB), but only because it carries ELF metadata and debug symbols for the Renode \texttt{sysbus LoadELF} workflow; it is not the image written to device flash.} The benchmark WASM module remains 33~B. The architectural point supported by these measurements is therefore that embedded endpoints run no kubelet, container runtime, or Linux userspace while retaining an embedded-class memory footprint.
+The evaluated Zephyr/WAMR/TLS/CBOR firmware fits the STM32F746NG internal-memory budget: the flash-resident \texttt{zephyr.bin} image is 411{,}272~B ($\approx$402~KiB), corresponding to text plus initialized data, and the static RAM allocation is 273{,}503~B ($\approx$267~KiB), corresponding to data (9{,}384~B) plus BSS (264{,}119~B). \revD{Mutual authentication costs 4{,}704~B of flash and 3{,}265~B of RAM -- the curve and X.509 code was already linked in for the anonymous handshake. The linker's 256~KiB SRAM1 region, which is separate from the 64~KiB DTCM, is left 99.3\% full, and that is what now bounds further additions: raising the mbedTLS heap to 64~KiB overflows it at link time.}\footnote{The \texttt{zephyr.elf} file is 8{,}095{,}176~B (7.72~MiB), but only because it carries ELF metadata and debug symbols for the Renode \texttt{sysbus LoadELF} workflow; it is not the image written to device flash.} The benchmark WASM module remains 33~B. The architectural point supported by these measurements is therefore that embedded endpoints run no kubelet, container runtime, or Linux userspace while retaining an embedded-class memory footprint.
 \endgroup
 
 
@@ -220,7 +220,7 @@ Beyond control-plane pod resources, we instrument a representative WASM computat
 The pod runs under Guaranteed QoS (\texttt{requests}\,=\,\texttt{limits}, 2 vCPU) to remove self-induced CFS-throttling variance observed at the original 1-vCPU limit (835/27{,}021 accounting periods throttled under load, a scheduling artifact of the container's own quota, not of co-located tenants).
 
 Two independent signals are collected. First, cgroup CPU time (\texttt{cpu.stat} \texttt{usage\_usec}) is an exact kernel accounting figure, not an estimate: at $N{=}200{,}000$, across $n{=}39$ paired cycles, the pod consumed $29.9289\pm0.0189$~CPU-s during each 30~s active window versus $0.000116\pm0.000053$~CPU-s during each equal-length idle window (paired difference 95\% CI $[29.9230, 29.9354]$~s, excluding zero). Second, we deploy Kepler~\cite{kepler} as a DaemonSet and query \texttt{kepler\_container\_joules\_total\{mode="dynamic"\}} scoped to the probe pod's own \texttt{pod\_name} label, isolating it from co-located wasmbed pods in the same namespace. 
-Because the host is a virtualized guest without exposed RAPL counters, Kepler's output is a regression-based power estimate rather than a direct hardware measurement; with that caveat, it shows a clear and physically plausible increase under load: it attributes no dynamic power to the pod during the idle windows and $3.952$~W during the active ones (Figure~\ref{fig:energy-idle-active}). {\color{red}The exactly-zero idle attribution is a property of the estimator, not a measurement of the pod drawing no power.} We therefore treat the exact cgroup CPU-time as the primary, reproducible quantity throughout, and the Kepler wattage as a secondary, model-based signal consistent with it.
+Because the host is a virtualized guest without exposed RAPL counters, Kepler's output is a regression-based power estimate rather than a direct hardware measurement; with that caveat, it shows a clear and physically plausible increase under load: it attributes no dynamic power to the pod during the idle windows and ${\approx}4$~W during the active ones (Figure~\ref{fig:energy-idle-active}). {\color{red}The exactly-zero idle attribution is a property of the estimator, not a measurement of the pod drawing no power.} We therefore treat the exact cgroup CPU-time as the primary, reproducible quantity throughout, and the Kepler wattage as a secondary, model-based signal consistent with it.
 
 \begin{figure}[pos=t]
 \centering

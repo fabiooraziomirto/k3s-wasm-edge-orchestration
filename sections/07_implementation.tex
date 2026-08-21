@@ -68,9 +68,8 @@ The WASM payload used in the evaluation is intentionally minimal so that the mea
 \revD{Larger WASM modules, richer WASI support, and application-specific input/output
 channels sit above the same deployment and evidence path and leave the control ownership
 model unchanged. Their feasibility on this target is a separate question, and a tight one:
-against the 327{,}680~B of internal SRAM on the STM32F746NG, the 270{,}238~B static
-allocation reported in Section~\ref{sec:evaluation} leaves roughly 56~KiB for the WAMR
+against the 327{,}680~B of internal SRAM on the STM32F746NG, the 273{,}503~B static
+allocation reported in Section~\ref{sec:evaluation} leaves roughly 53~KiB for the WAMR
 heap, the stacks and the module itself. Establishing the largest module the path can carry,
-and whether the transfer needs chunking and an integrity check, requires measurement not
-attempted here.}
+and whether the transfer needs chunking, requires measurement not attempted here.}
 \endgroup
